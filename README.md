@@ -260,7 +260,7 @@ python -m venv venv
 
 Activate the virtual environment:
 
-# On Windows
+## On Windows
 ```
 venv\Scripts\activate
 ```
@@ -329,7 +329,8 @@ npm run dev
 
 The frontend will be accessible at http://localhost:3000.
 
-# Designs (Figma Mockups, Circuit Diagram, App Interfaces)
+## Designs (Figma Mockups, Circuit Diagram, App Interfaces)
+
 Figma Mockups: View Figma Design
 Include the Figma link to view your app designs (e.g., wireframes, UI components).
 
@@ -345,17 +346,18 @@ Seller Dashboard:
 
 Chatbot:
 
-# Circuit Diagram:
+##  Circuit Diagram:
 
 The WomXchange Rwanda platform consists of various components that work together to form a robust and interactive e-commerce platform. Below is the description of the system architecture and how different pages, APIs, and services interact within the system. This overview includes frontend and backend components, as well as how they interact with each other.
 
-1. System Overview (High-Level Architecture)
+## System Overview (High-Level Architecture)
+
 The system architecture can be broken down into two main layers: Frontend and Backend.
 
-Frontend Layer (React)
+1. Frontend Layer (React)
 The frontend is responsible for the user interface (UI) of the platform, which includes all the interactions that users (both buyers and sellers) have with the application. The React frontend communicates with the Django backend through API calls.
 
-Pages:
+1.1. Pages
 
 Homepage: Displays featured products, product categories, promotions, etc.
 
@@ -375,10 +377,11 @@ Order Confirmation Page: Displays a summary of the order and order number.
 
 Login/Registration Pages: Allows both buyers and sellers to sign up or log in.
 
-Backend Layer (Django + PostgreSQL)
+2. Backend Layer (Django + PostgreSQL)
+
 The backend is responsible for handling business logic, managing data, and providing services through APIs. The Django REST Framework is used to build the APIs that interact with the React frontend. The PostgreSQL database is used for data storage.
 
-APIs:
+2.1. APIs
 
 User Authentication API: Allows users to register, log in, and manage profiles (using Django Rest Auth).
 
@@ -392,7 +395,8 @@ Chatbot API: Handles user queries and interactions with the chatbot.
 
 Admin API: Allows admins to manage users, products, and monitor platform usage.
 
-2. System Interaction Flow
+## System Interaction Flow
+
 Frontend to Backend Interaction
 Homepage:
 
@@ -454,10 +458,10 @@ After successful payment, buyers are redirected to the Order Confirmation Page w
 
 This page is populated with data from the Order API, showing order details like the product list, total cost, shipping info, and order number.
 
-3. Circuit Diagram
+# Circuit Diagram
 A circuit diagram for this system represents the data flow between the Frontend, Backend, and Database.
 
-# Frontend (React App) → Backend (Django APIs):
+## Frontend (React App) → Backend (Django APIs):
 
 User Authentication: The frontend sends registration/login data to the User Authentication API in the backend. The backend verifies the data and sends a response (success/error) back to the frontend.
 
@@ -467,7 +471,7 @@ Order Management: The frontend allows users to place, track, or cancel orders. T
 
 Payment Processing: When an order is confirmed, the frontend sends payment data to the Payment API, which handles the payment transaction through MoMoPay.
 
-# Backend (Django + PostgreSQL Database):
+## Backend (Django + PostgreSQL Database):
 
 The Django Backend interacts with the PostgreSQL database to store user data, product listings, orders, and payment transactions.
 
@@ -479,7 +483,8 @@ The PostgreSQL database stores all data related to products, users (buyers and s
 
 It uses SQL queries to retrieve, insert, update, and delete data based on the requests made by the frontend through the backend APIs.
 
-4. Design Flow (Pages and Interactions)
+## Design Flow (Pages and Interactions)
+```
 Homepage → Product Listing Page → Product Detail Page → Add to Cart → Checkout Page → Order Confirmation Page
 
 Seller Dashboard → Product Management → Order Tracking
@@ -487,6 +492,7 @@ Seller Dashboard → Product Management → Order Tracking
 Buyer Dashboard → Order Tracking → Wishlist Management
 
 Chatbot → Backend API → Chatbot Response
+```
 
 ## System Flow (API Interaction)
 User makes a request (Frontend → Backend):
@@ -499,7 +505,7 @@ Response is sent back to the frontend:
 Once the backend finishes processing, it sends the response back to the frontend to display the relevant data (product list, order status, chatbot response, etc.).
 
 
-# Deployment Plan
+## Deployment Plan
 
 Deploy Backend on Heroku:
 
@@ -514,18 +520,20 @@ git remote add heroku https://git.heroku.com/womxchange-backend.git
 git push heroku master
 ```
 
-# Deploy Frontend on Heroku:
+## Deploy Frontend on Heroku:
 
 Build the frontend for production:
 
-```npm run build```
+```npm run build
+```
 
 
 # Deploy the React app on Heroku (using serve to serve static files):
 
 Create a Procfile in the frontend project:
 
-```web: serve -s build```
+```web: serve -s build
+```
 
 # Push to Heroku:
 ```
@@ -540,7 +548,16 @@ CORS_ALLOWED_ORIGINS = [
     "https://womxchange-frontend.herokuapp.com",
 ]
 ```
-# GitHub Repository
+##  GitHub Repository
 You can view and contribute to the project by visiting the GitHub repository:
 
 https://github.com/Beritha-n12/womxchange_e_commerce
+
+# License
+This project is licensed under the MIT License.
+
+# Acknowledgments
+This project was inspired by the e-commerce platform, WomxChange, and is a replica of its features.
+
+# Contact
+If you have any questions or feedback, please contact me at nberitha12@gmail.com.
