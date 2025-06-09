@@ -1,18 +1,18 @@
-## WomXchange Rwanda: E-Commerce Platform for Women Entrepreneurs
+# WomXchange Rwanda: E-Commerce Platform for Women Entrepreneurs
 
-# Description
+## Description
 WomXchange Rwanda is a free and easy-to-use online platform designed to help women entrepreneurs in Kigali sell their products, manage orders, and grow their businesses. It provides simple tools for both sellers and buyers, including a chatbot for support, product management, order tracking, and an integrated payment system via MoMoPay (Mobile Money). The platform supports both English and Kinyarwanda, making it more accessible to a wide range of users.
 
-# Programming Language Used
+## Programming Language Used
 
 1. Backend: Python (Django)
 2. Frontend: JavaScript (React)
 
-# Database
+## Database
 
 PostgreSQL: A powerful, open-source relational database used to store data such as user information, products, orders, and payments.
 
-# Basic Features
+## Basic Features
 
 1. Seller Dashboard:
 
@@ -54,18 +54,18 @@ Supports MoMoPay for payments through the MTN MoMo API.
 
 Available in both English and Kinyarwanda.
 
-# Author
+## Author
 
 Beritha Niyotwagira
 Fullstack Developer
 Email: nberitha12@gmail.com 
 GitHub: https://github.com/Beritha-n12
 
-# Installation
+## Installation
 
 Dependencies Installed
 
-# Frontend Dependencies (React)
+## Frontend Dependencies (React)
 Below are the necessary dependencies for the frontend (React):
 
 1. React
@@ -136,7 +136,7 @@ For implementing dark/light mode switching.
 npm install darkmode-toggle
 ```
 
-# Backend Dependencies (Django)
+## Backend Dependencies (Django)
 Below are the necessary dependencies for the backend (Django):
 
 1. Django
@@ -261,19 +261,26 @@ python -m venv venv
 Activate the virtual environment:
 
 # On Windows
-```venv\Scripts\activate```
+```
+venv\Scripts\activate
+```
 
 ## Install the required backend dependencies:
 
 
-```pip install -r requirements.txt```
+```
+pip install -r requirements.txt
+```
 
 2.2 Database Setup
+
 Installing and creating database for the project:
 
 Create a database for the project:
 
-```CREATE DATABASE womxchange;```
+```
+CREATE DATABASE womxchange;
+```
 
 Configure the database URL in womxchange/settings.py:
 ```
@@ -284,7 +291,9 @@ DATABASES['default'] = dj_database_url.config(default='postgres://USER:PASSWORD@
 2.3 Migrate the Database
 Run migrations to set up the database schema:
 
-```python manage.py migrate```
+```
+python manage.py migrate
+```
 
 2.4 Create a Superuser
 Create a superuser to access the Django admin:
@@ -314,7 +323,9 @@ npm install
 
 Start the React development server:
 
-```npm run dev```
+```
+npm run dev
+```
 
 The frontend will be accessible at http://localhost:3000.
 
