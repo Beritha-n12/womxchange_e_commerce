@@ -4,6 +4,7 @@ import ProductCard from './ProductCard';
 interface ProductSectionProps {
   title: string;
   products: Array<{
+    id?: string;
     image: string;
     title: string;
     price: string;
@@ -21,8 +22,8 @@ const ProductSection = ({ title, products }: ProductSectionProps) => {
         </h2>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 max-w-7xl mx-auto">
           {products.map((product, index) => (
-            <div key={index} className="animate-fade-in" style={{ animationDelay: `${index * 0.1}s` }}>
-              <ProductCard {...product} />
+            <div key={product.id || index} className="animate-fade-in" style={{ animationDelay: `${index * 0.1}s` }}>
+              <ProductCard {...product} id={product.id || String(index + 1)} />
             </div>
           ))}
         </div>

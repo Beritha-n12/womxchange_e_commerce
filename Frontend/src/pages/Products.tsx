@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { Filter, ChevronDown } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -13,48 +12,56 @@ const Products = () => {
 
   const products = [
     {
+      id: "1",
       image: "/Head Phone.jpeg",
       title: "Wireless Headphones",
       price: "15,000 Rwf",
       rating: 5
     },
     {
+      id: "2",
       image: "/Jordan1.jpeg",
       title: "Jordan 1 Shoes",
       price: "25,000 Rwf",
       rating: 5
     },
     {
+      id: "3",
       image: "/Shoulder Bag.jpeg",
       title: "Shoulder Bag",
       price: "18,000 Rwf",
       rating: 5
     },
     {
+      id: "4",
       image: "/BRUCEGAO.jpeg",
       title: "BRUCEGAO's Alligator Bag",
       price: "20,000 Rwf",
       rating: 5
     },
     {
+      id: "5",
       image: "/Trivet Set.jpeg",
       title: "Trivet Set",
       price: "45,000 Rwf",
       rating: 5
     },
     {
+      id: "6",
       image: "/Dress.jpeg",
       title: "Dress",
       price: "30,000 Rwf",
       rating: 5
     },
     {
+      id: "7",
       image: "/Samba.jpeg",
       title: "Samba",
       price: "12,000 Rwf",
       rating: 5
     },
     {
+      id: "8",
       image: "/flat shoes.jpeg",
       title: "Flat Shoes",
       price: "5,000 Rwf",
@@ -162,8 +169,8 @@ const Products = () => {
           {/* Products Grid */}
           <div className="flex-1">
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
-              {products.map((product, index) => (
-                <ProductCard key={index} {...product} />
+              {products.map((product) => (
+                <ProductCard key={product.id} {...product} />
               ))}
             </div>
 
