@@ -1,17 +1,28 @@
-const express = require('express');
-const {
-  getProducts,
+
+import express from 'express';
+import {
   createProduct,
+  getProducts,
+  getProductById,
   updateProduct,
-  deleteProduct,
-} = require('../controllers/productController');
-const { protect, authorizeRoles } = require('../middlewares/authMiddleware');
+  deleteProduct
+} from '../controllers/productController.js';
+import reviewRoutes from './reviewRoutes.js';
+import { protect, authorizeRoles } from '../middleware/authMiddleware.js';
 
-const router = express.Router();
+const productRouter = express.Router();
 
-router.get('/', getProducts);
-router.post('/', protect, authorizeRoles('admin', 'vendor'), createProduct);
-router.put('/:id', protect, authorizeRoles('admin', 'vendor'), updateProduct);
-router.delete('/:id', protect, authorizeRoles('admin', 'vendor'), deleteProduct);
+// Public routes
+productRouter.route('/')
+  .get(getProducts)
+  .post(protect, authorizeRoles('seller', 'admin'), createProduct);
 
-module.exports = router;
+productRouter.route('/:id')
+  .get(getProductById)
+  .put(protect, authorizeRoles('seller', 'admin'), updateProduct)
+  .delete(protect, authorizeRoles('seller', 'admin'), deleteProduct);
+
+// Nested review routes
+productRouter.use('/:productId/reviews', reviewRoutes);
+
+export default productRouter;
