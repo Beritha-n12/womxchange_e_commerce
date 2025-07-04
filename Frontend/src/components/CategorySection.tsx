@@ -1,101 +1,144 @@
 
+import React, { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
+import { getCategories, Category } from '@/api/categories';
+import { useLanguage } from '@/contexts/LanguageContext';
+
 const CategorySection = () => {
-  const categories = [
+  const { t } = useLanguage();
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        setLoading(true);
+        const response = await getCategories();
+        setCategories(response.data.slice(0, 6)); // Show first 6 categories for the grid layout
+      } catch (error) {
+        console.error('Error fetching categories:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchCategories();
+  }, []);
+
+  // Default category data with colors and images
+  const defaultCategories = [
     {
-      title: "Cosmetics and Personal Products",
-      color: "bg-pink-100",
+      id: 1,
+      name: "Cosmetics and Personal Products",
+      description: "Beauty and personal care items",
+      bgColor: "bg-pink-100",
       textColor: "text-pink-800",
-      image: "/Cosmetics.jpeg"
+      image: "https://assets.vogue.com/photos/61e9c43c8aa98afba69ec2e8/master/w_2560%2Cc_limit/00_story.jpg"
     },
     {
-      title: "Clothes",
-      color: "bg-yellow-100",
+      id: 2,
+      name: "Clothes",
+      description: "Fashion and apparel",
+      bgColor: "bg-yellow-100",
       textColor: "text-yellow-800",
-      image: "/Clothing.jpeg"
+      image: "/Hero01.jpg"
     },
     {
-      title: "Made In Rwanda",
-      color: "bg-purple-100",
+      id: 3,
+      name: "Made in Rwanda",
+      description: "Local Rwandan products",
+      bgColor: "bg-purple-100",
       textColor: "text-purple-800",
-      image: "/Made in Rwanda shirts.jpeg"
+      image: "https://images.hindustantimes.com/img/2022/12/22/550x309/istockphoto-1279108197-170667a_1671687926903_1671687937504_1671687937504.jpg"
     },
     {
-      title: "Household Products",
-      color: "bg-gray-100",
+      id: 4,
+      name: "Household Products",
+      description: "Home and kitchen items",
+      bgColor: "bg-gray-100",
       textColor: "text-gray-800",
-      image: "/House.jpeg"
+      image: "https://magazine.eaur.ac.rw/wp-content/uploads/2025/01/some-of-the-collections-by-kezem-fashion-brand.jpg"
     },
     {
-      title: "Shoes",
-      color: "bg-green-100",
+      id: 5,
+      name: "Shoes",
+      description: "Footwear for all occasions",
+      bgColor: "bg-green-100",
       textColor: "text-green-800",
       image: "/Shoes.jpeg"
+    },
+    {
+      id: 6,
+      name: "Electronics",
+      description: "Tech and gadgets",
+      bgColor: "bg-blue-100",
+      textColor: "text-blue-800",
+      image: "/Hero.jpg"
     }
   ];
 
+  if (loading) {
+    return (
+      <section className="py-16 bg-gray-50">
+        <div className=" mx-auto px-4">
+          <div className="text-center">
+            <div className="text-lg text-gray-600">{t('categories.loading')}</div>
+          </div>
+        </div>
+      </section>
+    );
+  }
+
+  // Use fetched categories if available, otherwise use default categories
+  const displayCategories = categories.length > 0 ? categories : defaultCategories;
+
   return (
     <section className="py-16 bg-gray-50">
-      <div className="container mx-auto px-4">
+      <div className=" mx-auto px-4">
         <h2 className="text-3xl font-bold text-center mb-12 text-gray-900">
           BROWSE BY CATEGORIES
         </h2>
         
-        {/* First row - 2 categories */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
-          {categories.slice(0, 2).map((category, index) => (
-            <div 
-              key={index}
-              className={`${category.color} rounded-3xl p-8 hover:scale-105 transition-all duration-300 cursor-pointer group animate-fade-in relative overflow-hidden h-64`}
-              style={{ animationDelay: `${index * 0.1}s` }}
-            >
-              <div className="flex items-center justify-between h-full">
-                <div className="z-10 relative">
-                  <h3 className={`font-bold text-2xl ${category.textColor} mb-4`}>
-                    {category.title}
-                  </h3>
-                  <button className={`${category.textColor} opacity-80 hover:opacity-100 text-lg font-semibold`}>
-                    Shop Now →
-                  </button>
-                </div>
-                <div className="absolute right-4 top-4 w-40 h-40 rounded-2xl overflow-hidden shadow-lg">
-                  <img 
-                    src={category.image} 
-                    alt={category.title}
-                    className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
-                  />
-                </div>
-              </div>
-            </div>
-          ))}
-        </div>
-
-        {/* Second row - 3 categories */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {categories.slice(2).map((category, index) => (
-            <div 
-              key={index + 2}
-              className={`${category.color} rounded-3xl p-6 hover:scale-105 transition-all duration-300 cursor-pointer group animate-fade-in relative overflow-hidden h-56`}
-              style={{ animationDelay: `${(index + 2) * 0.1}s` }}
-            >
-              <div className="flex flex-col justify-between h-full">
-                <div className="z-10 relative">
-                  <h3 className={`font-bold text-lg ${category.textColor} mb-3`}>
-                    {category.title}
-                  </h3>
-                  <button className={`${category.textColor} opacity-80 hover:opacity-100 text-sm font-semibold`}>
-                    Shop Now →
-                  </button>
-                </div>
-                <div className="absolute right-2 bottom-2 w-40 h-40 rounded-xl overflow-hidden shadow-md">
-                  <img 
-                    src={category.image} 
-                    alt={category.title}
-                    className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
-                  />
-                </div>
-              </div>
-            </div>
-          ))}
+        <div className="max-w-4xl mx-auto">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {displayCategories.slice(0, 6).map((category, index) => {
+              const defaultCat = defaultCategories[index] || defaultCategories[0];
+              return (
+                <Link to={`/products?category=${categories[0]?.id || ''}`}>
+                  <div className={`${defaultCat.bgColor} rounded-2xl p-6 h-48 flex flex-col justify-between transition-all duration-300 group-hover:scale-105 group-hover:shadow-lg relative overflow-hidden`}>
+                    {/* Background image overlay */}
+                    <div 
+                      className="absolute inset-0 bg-cover bg-center opacity-20 group-hover:opacity-30 transition-opacity duration-300"
+                      style={{ backgroundImage: `url(${defaultCat.image})` }}
+                    />
+                    
+                    {/* Content */}
+                    <div className="relative z-10">
+                      <h3 className={`text-lg font-bold ${defaultCat.textColor} mb-2 leading-tight`}>
+                        {category.name}
+                      </h3>
+                      {category.description && (
+                        <p className={`text-sm ${defaultCat.textColor} opacity-80`}>
+                          {category.description}
+                        </p>
+                      )}
+                    </div>
+                    
+                    {/* Product illustration/icon in bottom right */}
+                    <div className="relative z-10 flex justify-end">
+                      <div className="w-16 h-16 bg-white bg-opacity-20 rounded-lg flex items-center justify-center">
+                        <img 
+                          src={defaultCat.image} 
+                          alt={category.name}
+                          className="w-12 h-12 object-cover rounded-lg opacity-80"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                </Link>
+              );
+            })}
+          </div>
         </div>
       </div>
     </section>

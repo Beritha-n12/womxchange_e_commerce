@@ -1,120 +1,74 @@
 
+import React, { useState, useEffect } from 'react';
 import Header from '@/components/Header';
 import HeroSection from '@/components/HeroSection';
 import ProductSection from '@/components/ProductSection';
 import CategorySection from '@/components/CategorySection';
 import TestimonialSection from '@/components/TestimonialSection';
 import Footer from '@/components/Footer';
+import { getProducts } from '@/api/products';
+import { Product } from '@/api/products';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 const Index = () => {
-  const newArrivals = [
-    {
-      image: "/Head Phone.jpeg",
-      title: "Wireless Headphones",
-      price: "15,000 Rwf",
-      rating: 5
-    },
-    {
-      image: "/Jordan1.jpeg",
-      title: "Jordan 1 Shoes",
-      price: "25,000 Rwf",
-      rating: 5
-    },
-    {
-      image: "/Shoulder Bag.jpeg",
-      title: "Shoulder Bag",
-      price: "18,000 Rwf",
-      rating: 5
-    },
-    {
-      image: "/BRUCEGAO.jpeg",
-      title: "BRUCEGAO's Alligator Bag",
-      price: "20,000 Rwf",
-      rating: 5
-    },
-    {
-      image: "/Trivet Set.jpeg",
-      title: "Trivet Set",
-      price: "45,000 Rwf",
-      rating: 5
-    },
-    {
-      image: "/Dress.jpeg",
-      title: "Dress",
-      price: "30,000 Rwf",
-      rating: 5
-    },
-    {
-      image: "/Samba.jpeg",
-      title: "Samba",
-      price: "12,000 Rwf",
-      rating: 5
-    },
-    {
-      image: "/flat shoes.jpeg",
-      title: "Flat Shoes",
-      price: "5,000 Rwf",
-      rating: 5
-    }
-  ];
+  const { t } = useLanguage();
+  const [newArrivals, setNewArrivals] = useState<Product[]>([]);
+  const [topSelling, setTopSelling] = useState<Product[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string>('');
 
-  const topSelling = [
-    {
-      image: "/Hill Shoes.jpeg",
-      title: "Hill Shoes",
-      price: "15,000 Rwf",
-      rating: 5
-    },
-    {
-      image: "/Women's Trendy.jpeg",
-      title: "Women's Trendy Bomber Jacket",
-      price: "12,000 Rwf",
-      rating: 5
-    },
-    {
-      image: "/Zingj Zingj Shorts Women's Summer Dress.jpeg",
-      title: "Shorts Women's Summer Dress",
-      price: "18,000 Rwf",
-      rating: 5
-    },
-    {
-      image: "/vegan brush.jpeg",
-      title: "Vegan Brush",
-      price: "22,000 Rwf",
-      rating: 5
-    },
-    {
-      image: "/This Drugstore.jpeg",
-      title: "This Drugstore ",
-      price: "28,000 Rwf",
-      rating: 5
-    },
-    {
-      image: "/Table Lamps & Table Lights _ ValueLights.jpeg",
-      title: "Table Lamps & Table Lights _ ValueLights",
-      price: "50,000 Rwf",
-      rating: 5
-    },
-    {
-      image: "/Yankees Branson.jpeg",
-      title: "Yankees Branson",
-      price: "10,000 Rwf",
-      rating: 5
-    },
-    {
-      image: "/JBL Flip 6.jpeg",
-      title: "JBL Flip 6",
-      price: "150,000 Rwf",
-      rating: 5
-    }
-  ];
+  useEffect(() => {
+    const fetchProducts = async () => {
+      try {
+        setLoading(true);
+        const response = await getProducts();
+        const products = response.data;
+        
+        // Split products for different sections (you can implement your own logic)
+        const half = Math.ceil(products.length / 2);
+        setNewArrivals(products.slice(0, half));
+        setTopSelling(products.slice(half));
+      } catch (err: any) {
+        setError(t('error.failed_load_products'));
+        console.error('Error fetching products:', err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchProducts();
+  }, [t]);
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-white">
+        <Header />
+        <div className="flex items-center justify-center min-h-[400px]">
+          <div className="text-lg text-gray-600">{t('common.loading')}</div>
+        </div>
+        <Footer />
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen bg-white">
+        <Header />
+        <div className="flex items-center justify-center min-h-[400px]">
+          <div className="text-lg text-red-600">{error}</div>
+        </div>
+        <Footer />
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-white">
       <Header />
       <HeroSection />
-      <ProductSection title="NEW ARRIVALS" products={newArrivals} />
-      <ProductSection title="TOP SELLING" products={topSelling} />
+      <ProductSection title={t('home.new_arrivals')} products={newArrivals} />
+      <ProductSection title={t('home.top_selling')} products={topSelling} />
       <CategorySection />
       <TestimonialSection />
       <Footer />
