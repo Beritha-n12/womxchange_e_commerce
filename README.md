@@ -7,7 +7,7 @@ WomXchange Rwanda is a free and easy-to-use online platform designed to help wom
 
 - **Admins**: Oversee vendors, manage users, track sales and reports
 - **Vendors**: Upload and manage products and handle customer orders
-- **Clients**: Browse products, add to cart, place orders, and track  purchases
+- **Buyers**: Browse products, add to cart, place orders, and track  purchases
 
 ## Basic Features
 
@@ -23,21 +23,18 @@ WomXchange Rwanda is a free and easy-to-use online platform designed to help wom
 
 - Add, update, and manage product listings.
 
-- Track and manage orders (pending, fulfilled, cancelled).
+- Track and manage orders (pending, Delivered, cancelled).
 
 - View sales performance and trends.
 
-- Chatbot for assistance with product and order management.
+- Community chat for assisting sellers with product listing and order management.
 
 - Buyer Dashboard:
+for updating their profiles
 
-- View and track orders.
+3. **Community Chat**:
 
-- Chatbot support for order tracking, product queries, etc.
 
-3. **Chatbot**:
-
-- A fixed, floating component that provides product suggestions, order   tracking, and answers to frequently asked questions.
 
 4. Payment Integration:
 
@@ -51,8 +48,7 @@ WomXchange Rwanda is a free and easy-to-use online platform designed to help wom
 
 - **Backend**: Node.js, Express.js, PostgreSQL using Sequelize ORM
 - **Frontend**: React with TypeScript and Vite
-- **Auth**: JWT-based authentication and role-based access for `Admin`, `Vendor`, and `Client`
-- **Open AI**: api for chartbort
+- **Auth**: JWT-based authentication and role-based access for `Admin`, `Vendor`, and `Buyer`
 
 **The app includes:**
 - Full product order flow
@@ -136,7 +132,7 @@ Admin Dashboard UI — showing analytics, user data, product stats, and sales pe
 **Authentication Pages** — login/signup interfaces with support for English and Kinyarwanda
 
 
-**Chatbot Interface** — simple, mobile-friendly chatbot window for user assistance
+**Community chat Interface** — simple, mobile-friendly chat window for user(sellers) assistance
 
 
 **Responsive Design Layouts** — optimized for both mobile and desktop views
@@ -195,7 +191,7 @@ The Node.js backend handles business logic, data management, and provides servic
 
 5. Payment API: Integrates with MoMoPay for payment processing.
 
-6. Chatbot API: Handles user queries and interactions with the chatbot.
+6. Community chat API: 
 
 7. Admin API: Allows admins to manage users, products, and monitor platform usage.
 
@@ -276,7 +272,7 @@ The Node.js APIs interact with the database, processing data sent from the front
 
 ## Database (PostgreSQL):
 
-The PostgreSQL database stores all data related to users, products, orders, payments, and chatbot interactions.
+The PostgreSQL database stores all data related to users, products, orders, payments, and community chat interactions.
 
 SQL queries are used to insert, update, delete, and retrieve data based on frontend requests through the backend APIs.
 
@@ -285,7 +281,7 @@ Homepage → Product Listing Page → Product Detail Page → Add to Cart → Ch
 
 Seller Dashboard → Product Management → Order Tracking
 
-Buyer Dashboard → Order Tracking → Wishlist Management
+Buyer Dashboard → profile Tracking → cart Management
 
 Chatbot → Backend API → Chatbot Response
 
@@ -305,8 +301,8 @@ After processing, the backend sends the response (e.g., product list, order deta
 
 ##  Deployment Plan
 
-We plan to deploy this project on Render  a cloud platform used for hosting web applications and APIs.
- Why Render?
+We plan to deploy this project on Render (Backend) and Vercel (Frontend)  a cloud platform used for hosting web applications and APIs.
+ Why Render and Vercel?
 - Easy to use and developer-friendly
 
 - Free tier suitable for student and demo projects
@@ -317,9 +313,9 @@ We plan to deploy this project on Render  a cloud platform used for hosting web 
 
 Deployment Plan
 
-Platform: Render
+Platform: Render and Vercel
 
-Both Frontend and and client will be hosted on Render
+For Frontend hosted (Vercel) and and Backend will be hosted on Render
 
 App Type: Web Service (Node.js)
 

@@ -1,7 +1,7 @@
 import asyncHandler from 'express-async-handler';
 import prisma from '../prismaClient.js';
 import { notify } from '../utils/notify.js';
-import { sendOrderConfirmationEmail, sendAdminOrderNotification, sendOrderStatusUpdateEmail, sendPaymentConfirmationEmail, sendDeliveryStatusUpdateEmail, sendOrderCancellationEmail, sendSellerOrderConfirmationEmail } from '../utils/emailService.js';
+import { sendOrderConfirmationEmail, sendAdminOrderNotification, sendOrderStatusUpdateEmail, sendPaymentConfirmationEmail, sendDeliveryStatusUpdateEmail, sendOrderCancellationEmail, sendSellerOrderConfirmationEmail, sendSellerOrderNotificationEmail } from '../utils/emailService.js';
 import { checkSellerPermission } from '../middleware/permissionMiddleware.js';
 
 // Global constants
@@ -1068,10 +1068,10 @@ export const updateOrderStatus = asyncHandler(async (req, res) => {
   
   console.log('📧 Preparing to send email to:', customerEmail, 'for customer:', customerName);
 
-  // Send email notifications for status changes
+  // FIXED: Send email notifications for status changes (prevent double emails)
   if (customerEmail) {
     try {
-      // Send delivery status email for delivery updates
+      // Priority: Send delivery status email if delivery status changes
       if (isDelivered !== undefined) {
         console.log('📧 Sending delivery status email for delivery update...');
         console.log('📧 Email details:', { customerEmail, customerName, orderNumber: updatedOrder.orderNumber });
@@ -1086,8 +1086,8 @@ export const updateOrderStatus = asyncHandler(async (req, res) => {
         });
         console.log('✅ Delivery status email sent successfully to:', customerEmail);
       }
-      // Send payment confirmation email for payment updates
-      if (isPaid === true) {
+      // Only send payment confirmation email if delivery status is NOT being updated
+      else if (isPaid === true) {
         console.log('📧 Sending payment confirmation email for payment status change...');
         await sendPaymentConfirmationEmail({
           customerEmail,
@@ -1101,7 +1101,7 @@ export const updateOrderStatus = asyncHandler(async (req, res) => {
         console.log('✅ Payment confirmation email sent successfully to:', customerEmail);
       }
       // Send general status update email for other status changes
-      if (status !== undefined && isDelivered === undefined && isPaid !== true) {
+      else if (status !== undefined) {
         console.log('📧 Sending general status update email...');
         await sendOrderStatusUpdateEmail(
           customerEmail,
@@ -1211,7 +1211,7 @@ export const confirmOrderPayment = asyncHandler(async (req, res) => {
     });
   }
 
-  // FIXED: Send payment confirmation email
+  // FIXED: Send payment confirmation email to customer
   const customerEmail = order.user?.email || order.customerEmail;
   const customerName = order.user?.name || order.customerName;
   
@@ -1224,12 +1224,39 @@ export const confirmOrderPayment = asyncHandler(async (req, res) => {
         totalPrice: order.totalPrice,
         items: order.items,
         shippingAddress: order.shippingAddress,
-        paymentCode: order.paymentCode || '0787778889'
+        paymentCode: order.paymentCode || '0784720984'
       });
-      console.log(' Payment confirmation email sent to:', customerEmail);
+      console.log('✅ Payment confirmation email sent to customer:', customerEmail);
     } catch (emailError) {
-      console.error(' Error sending payment confirmation email:', emailError);
+      console.error('❌ Error sending payment confirmation email:', emailError);
     }
+  }
+
+  // NEW: Send email notification to seller(s) when order is confirmed
+  try {
+    const sellers = new Set();
+    for (const item of order.items) {
+      if (item.product?.createdBy) {
+        sellers.add(item.product.createdBy);
+      }
+    }
+
+    for (const seller of sellers) {
+      if (seller.email) {
+        await sendSellerOrderNotificationEmail({
+          sellerEmail: seller.email,
+          sellerName: seller.businessName || seller.name,
+          customerName: order.customerName,
+          orderNumber: order.orderNumber,
+          totalPrice: order.totalPrice,
+          items: order.items.filter(item => item.product?.createdById === seller.id),
+          orderDate: order.createdAt
+        });
+        console.log('✅ Order confirmation email sent to seller:', seller.email);
+      }
+    }
+  } catch (sellerEmailError) {
+    console.error('❌ Error sending seller notification email:', sellerEmailError);
   }
 
   res.json(updatedOrder);

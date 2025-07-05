@@ -64,7 +64,7 @@ const upload = multer({
 
 // Middleware
 app.use(cors({
-  origin: ['http://localhost:3000', 'http://localhost:8080','https://womxchangerwanda.vercel.app'], // Add your frontend origins
+  origin: ['http://localhost:3000', 'http://localhost:8080','https://womxchangerwanda.vercel.app'], // Added frontend origins
   credentials: true,
  
   credentials: true,
