@@ -126,9 +126,9 @@ const AdminCategories = () => {
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-3">
             <Package className="w-8 h-8 text-purple-600" />
-            <h1 className="text-3xl font-bold bg-gradient-to-r text-purple-600  bg-clip-text">
+            <h2 className="text-3xl font-bold bg-gradient-to-r text-purple-600  bg-clip-text">
               Category Management
-            </h1>
+            </h2>
           </div>
           <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
             <DialogTrigger asChild>
