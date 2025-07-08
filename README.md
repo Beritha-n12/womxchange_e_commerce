@@ -1,13 +1,13 @@
 # WomXchange Rwanda: E-Commerce Platform for Women Entrepreneurs
 
 ## Description
-WomXchange Rwanda is a free and easy-to-use online platform designed to help women entrepreneurs in Kigali sell their products, manage orders, and grow their businesses. It provides simple tools for both sellers and buyers, including a chatbot for support, product management, order tracking, and an integrated payment system via MoMoPay (Mobile Money). The platform supports both English and Kinyarwanda, making it more accessible to a wide range of users.
+WomXchange Rwanda is Multilingual a free and easy-to-use online platform designed to help women entrepreneurs in Kigali sell their products, manage orders, and grow their businesses. It provides simple tools for both sellers and buyers, including a Community chat for supporting seller , product management, order tracking, and an integrated payment system via MoMoPay (Mobile Money). The platform supports both English and Kinyarwanda, making it more accessible to a wide range of users.
  ** Three key user roles:**
  
 
 - **Admins**: Oversee vendors, manage users, track sales and reports
 - **Vendors**: Upload and manage products and handle customer orders
-- **Buyers**: Browse products, add to cart, place orders, and track  purchases
+- **Buyers**: Browse products, add to cart, place orders, and manage their profiles
 
 ## Basic Features
 
@@ -17,22 +17,33 @@ WomXchange Rwanda is a free and easy-to-use online platform designed to help wom
 
 - Monitor product listings and flagged items.
 
-- Generate sales and performance reports.
+- Track overall sales and performance reports.
+
+- Community Chat
+
+- All users
+
+- Orders 
 
 2. Seller Dashboard:
 
 - Add, update, and manage product listings.
 
-- Track and manage orders (pending, Delivered, cancelled).
+- Track and manage orders (pending, Delivered, cancelled), But managed by admin in the first place
 
 - View sales performance and trends.
 
-- Community chat for assisting sellers with product listing and order management.
+- Community chat for assisting sellers via chats with product listing and order management Issues.
 
 - Buyer Dashboard:
 for updating their profiles
 
-3. **Community Chat**:
+3. **Community Chat**: 
+- Provide real-time communication between platform users
+
+- Enable vendors to raise questions or report issues
+
+- Allow admins to post announcements or offer assistance
 
 
 
@@ -72,7 +83,7 @@ Follow these steps to run the full project locally:
 
 - **Node.js** (v18+ recommended)
 - **npm**
-- **PostgreSQL** installed and running
+- **PostgreSQL and Prisma** installed and running
 - **Git** installed
 - Optional: **Sequelize CLI** for DB migrations
 
@@ -90,8 +101,9 @@ npm install
 ```
 ```bash
 PORT=5000
-DATABASE_URL=postgresql://username:password@localhost:5432/ecommerce_clothing
-JWT_SECRET=your_super_secret_key
+DATABASE_URL=postgresql://"here"
+JWT_SECRET=myTopSecretKey123
+JWT_EXPIRE=30d
 
 ```
 ```bash
@@ -155,13 +167,13 @@ This is link to figma designs
 https://www.figma.com/design/wYnkMmCRsebWESppOOi9Uo/WomXchange-Rwanda?node-id=0-1&t=7OiUIMFwJMCC3vBf-1
 
 ## System Architecture Overview
-The WomXchange Rwanda platform is built using Node.js for the backend, React for the frontend, and PostgreSQL as the database. These components work together to deliver an interactive, responsive e-commerce experience.
+The WomXchange Rwanda platform is built using Node.js for the backend, React for the frontend, and Prisma as ORM (Object-Relational Mapper) to manage and interact with the PostgreSQL database in a clean, type-safe way. These components work together to deliver an interactive, responsive e-commerce experience.
 
 ## Frontend Layer (React)
 The React frontend is responsible for the user interface (UI) where users (both buyers and sellers) interact with the platform. The React frontend communicates with the Node.js backend through API calls.
 
 ## Key Pages:
-1. Homepage: Displays featured products, product categories, and promotions.
+1. Homepage: Displays featured products, product categories, seller list, language switch , userprofile, cart, about, and contact.
 
 2. Product Listing Page: Shows products with filtering and sorting options.
 
@@ -179,6 +191,8 @@ The React frontend is responsible for the user interface (UI) where users (both 
 
 9. Login/Registration Pages: Allows both buyers and sellers to sign up or log in.
 
+10. Admin dashboard
+
 ## Backend Layer (Node.js + PostgreSQL)
 The Node.js backend handles business logic, data management, and provides services through APIs. PostgreSQL is used as the database for storing data.
 
@@ -191,7 +205,7 @@ The Node.js backend handles business logic, data management, and provides servic
 
 5. Payment API: Integrates with MoMoPay for payment processing.
 
-6. Community chat API: 
+6. Community chat API: Enables messaging between admins and vendors:
 
 7. Admin API: Allows admins to manage users, products, and monitor platform usage.
 
@@ -217,7 +231,8 @@ The React frontend sends a GET request to the backend to fetch detailed product 
 
 ## Seller Dashboard:
 
-Sellers log in to their Seller Dashboard to manage products and view order history.
+Sellers log in to their Seller Dashboard to manage products and view order history.Other permissions are managed by admin , on the Vendor management sections
+
 
 POST/PUT/DELETE requests are made from the React frontend to the Product Management API to update product details.
 
@@ -227,11 +242,37 @@ Buyer views order history, tracks orders, and manages their profile.
 
 GET requests are sent to the Order Management API to fetch order data.
 
-## Chatbot Interaction:
+## Community Chat
 
-The React frontend integrates a floating chatbot to handle user queries.
+Community Chat system designed to enhance real-time collaboration between vendors and administrator.
 
-POST requests are sent to the Chatbot API in the backend to process queries and provide responses.
+## Key Features
+
+1. Vendors and Admins can exchange messages
+
+2. Admins can post announcements and provide support
+
+3. Sellers can report issues or ask questions about product listing, orders, and platform usage
+
+4. Supports editing and deleting messages
+
+5. Clean, organized UI with timestamps and role labels
+
+6. Crud Operations for Editing and Deleting messages
+
+7. Handling documents, images and audio clips
+
+## Technical Flow
+
+The React frontend handles message input, rendering, and UI interactions.
+
+1. Messages are sent to the backend using POST requests to the Community Chat API.
+
+2. The backend stores messages in the PostgreSQL database and returns updated threads using GET requests.
+
+3. All messages are role-tagged (SELLER, ADMIN) and sorted chronologically.
+
+
 
 ## Cart Page:
 
@@ -243,11 +284,11 @@ POST requests are made to the Cart API to update the cart, and GET requests fetc
 
 After reviewing the cart, the Buyer enters shipping and payment details.
 
-POST request sends order details to the Order API, and the Payment API (MoMoPay) processes the payment transaction.
+POST request sends order details to the Order API, and the Payment details (MoMoPay) processes the payment transaction. Admin is the one to approve for receievd payments.
 
 ## Order Confirmation Page:
 
-After successful payment, the Buyer is redirected to the Order Confirmation Page where they can see the order summary.
+After pressing button of compelete order, the Buyer is redirected to the Order Confirmation Page where they can see the order summary.
 
 The Order API sends the data to populate the page with details such as products, total cost, shipping information, and order number.
 
@@ -260,9 +301,9 @@ User Authentication: The frontend sends login/registration data to the User Auth
 
 Product Management: The frontend sends requests to the Product Management API to retrieve or modify product data.
 
-Order Management: The frontend sends requests to the Order Management API for placing, tracking, or canceling orders.
+Order Management: The frontend sends requests to the Order Management API for placing,Paying orders,Delivering tracking, or canceling orders and Deleting orders.
 
-Payment Processing: The frontend sends payment details to the Payment API, which processes the payment via MoMoPay.
+Payment Processing: The frontend sends payment details , which processes the payment via MoMoPay.
 
 ## Backend (Node.js + PostgreSQL Database):
 
@@ -283,7 +324,6 @@ Seller Dashboard → Product Management → Order Tracking
 
 Buyer Dashboard → profile Tracking → cart Management
 
-Chatbot → Backend API → Chatbot Response
 
 ## System Flow (API Interaction)
 
@@ -293,7 +333,7 @@ The user interacts with the UI (searching for products, adding to cart). The fro
 
 Backend processes the request (Backend → Database):
 
-The backend processes the request (fetches products, processes orders, etc.) and interacts with the PostgreSQL database.
+The backend processes the request (fetches products, processes orders, Vendors, users, chat, reports.) and interacts with the PostgreSQL database.
 
 Response sent back to the frontend (Backend → Frontend):
 
@@ -311,18 +351,39 @@ We plan to deploy this project on Render (Backend) and Vercel (Frontend)  a clou
 
 - Ideal for Node.js backends like this project
 
-Deployment Plan
+# Deployment Plan
 
-Platform: Render and Vercel
+Platforms:
 
-For Frontend hosted (Vercel) and and Backend will be hosted on Render
+1. Backend: Render (Node.js Web Service)
 
-App Type: Web Service (Node.js)
+2. Frontend: Vercel (React SPA)
 
+Setup Commands:
+
+Backend (Render):
+Auto-deploys from GitHub
+
+Frontend (Vercel):
+```
+npm i -g vercel
+vercel
+vercel --prod
+```
 
 > 🔄 Updates to either frontend or backend trigger automatic deployments via GitHub commits.
 
----
+## Other Tools Used
+
+
+1. Prisma Client: ORM with npx prisma generate
+
+2. Nodemailer: For sending order and account-related emails
+
+3. Sequelize CLI: For migrations
+
+4. Vercel CLI: For local and production deployments
+
 ## Author
 Beritha Niyotwagira
 nberitha12@gmail.com
