@@ -18,6 +18,7 @@ import paymentRoutes from './routes/paymentRoutes.js';
 import sellerRoutes from './routes/sellerRoutes.js';
 import notificationRoutes from './routes/notificationRoutes.js';
 import chatRoutes from './routes/chatRoutes.js';
+import failedActionsRoutes from './routes/failedActionsRoutes.js';
 
 // ES Modules fix for __dirname
 const __filename = fileURLToPath(import.meta.url);
@@ -64,7 +65,7 @@ const upload = multer({
 
 // Middleware
 app.use(cors({
-  origin: ['http://localhost:3000', 'http://localhost:8080','https://womxchangerwanda.vercel.app'], // Added frontend origins
+  origin: ['http://localhost:3000', 'http://localhost:8080','https://wxw.vercel.app'], // Add your frontend origins
   credentials: true,
  
   credentials: true,
@@ -87,6 +88,7 @@ app.use('/api/payments', paymentRoutes);
 app.use('/api/sellers', sellerRoutes);
 app.use('/api/notifications', notificationRoutes);
 app.use('/api/chat', chatRoutes);
+app.use('/api/failed-actions', failedActionsRoutes);
 
 // File upload endpoint
 app.post('/api/upload', upload.single('image'), (req, res) => {
