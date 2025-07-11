@@ -53,7 +53,13 @@ const AudioRecorder: React.FC<AudioRecorderProps> = ({ onAudioReady, disabled })
         // Get audio duration
         const audio = new Audio(url);
         audio.onloadedmetadata = () => {
-          setDuration(audio.duration);
+          const audioDuration = audio.duration;
+          // Only set duration if it's a valid number
+          if (audioDuration && isFinite(audioDuration) && !isNaN(audioDuration)) {
+            setDuration(audioDuration);
+          } else {
+            setDuration(0);
+          }
         };
 
         // Stop all tracks
@@ -118,7 +124,7 @@ const AudioRecorder: React.FC<AudioRecorderProps> = ({ onAudioReady, disabled })
       
       const audioData: AudioData = {
         url: uploadResult.url,
-        duration,
+        duration: duration || 0, // Use 0 as fallback
         blob: audioBlob,
         file: audioFile,
       };
@@ -157,6 +163,10 @@ const AudioRecorder: React.FC<AudioRecorderProps> = ({ onAudioReady, disabled })
   };
 
   const formatTime = (seconds: number) => {
+    // Return "0:00" for invalid values
+    if (!seconds || !isFinite(seconds) || isNaN(seconds)) {
+      return "0:00";
+    }
     const mins = Math.floor(seconds / 60);
     const secs = seconds % 60;
     return `${mins}:${secs.toString().padStart(2, '0')}`;
@@ -208,9 +218,12 @@ const AudioRecorder: React.FC<AudioRecorderProps> = ({ onAudioReady, disabled })
             {isPlaying ? <Pause className="w-4 h-4" /> : <Play className="w-4 h-4" />}
           </Button>
           
-          <span className="text-sm font-mono">
-            {formatTime(Math.floor(duration))}
-          </span>
+          {/* Only show duration if it's valid */}
+          {duration > 0 && (
+            <span className="text-sm font-mono">
+              {formatTime(Math.floor(duration))}
+            </span>
+          )}
           
           <Button
             onClick={discardAudio}

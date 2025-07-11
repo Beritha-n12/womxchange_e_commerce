@@ -10,7 +10,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import { AuthContext } from '@/contexts/AuthContext';
-import { useCart } from '@/hooks/useCart';
+import  useCart  from '@/hooks/useCart';
 import { placeOrder, placeAnonymousOrder } from '@/api/orders';
 import { useToast } from '@/hooks/use-toast';
 import { APP_CONSTANTS, ROUTES } from '@/constants/app';

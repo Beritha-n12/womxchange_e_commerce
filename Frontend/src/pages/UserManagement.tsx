@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
+import { UserFilters } from '@/components/filters/UserFilters';
 import { 
   Search, 
   Edit, 
@@ -44,6 +45,9 @@ const UserManagement = () => {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [searchTerm, setSearchTerm] = useState('');
+  const [roleFilter, setRoleFilter] = useState('all');
+  const [statusFilter, setStatusFilter] = useState('all');
+  const [dateFilter, setDateFilter] = useState('all');
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isViewModalOpen, setIsViewModalOpen] = useState(false);
@@ -117,10 +121,43 @@ const UserManagement = () => {
   });
 
   const users = usersData?.data || [];
-  const filteredUsers = users.filter((user: User) =>
-    user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    user.email.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  
+  // Apply filters
+  const filteredUsers = users.filter((user: User) => {
+    const matchesSearch = user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         user.email.toLowerCase().includes(searchTerm.toLowerCase());
+    
+    const matchesRole = roleFilter === 'all' || user.role.toLowerCase() === roleFilter;
+    
+    const matchesStatus = statusFilter === 'all' || 
+                         (statusFilter === 'active' && user.isActive) ||
+                         (statusFilter === 'inactive' && !user.isActive);
+    
+    const matchesDate = dateFilter === 'all' || (() => {
+      const userDate = new Date(user.createdAt);
+      const now = new Date();
+      switch (dateFilter) {
+        case 'today':
+          return userDate.toDateString() === now.toDateString();
+        case 'week':
+          const weekAgo = new Date(now);
+          weekAgo.setDate(now.getDate() - 7);
+          return userDate >= weekAgo;
+        case 'month':
+          const monthAgo = new Date(now);
+          monthAgo.setMonth(now.getMonth() - 1);
+          return userDate >= monthAgo;
+        case 'year':
+          const yearAgo = new Date(now);
+          yearAgo.setFullYear(now.getFullYear() - 1);
+          return userDate >= yearAgo;
+        default:
+          return true;
+      }
+    })();
+    
+    return matchesSearch && matchesRole && matchesStatus && matchesDate;
+  });
 
   const handleDelete = (userId: number) => {
     if (window.confirm('Are you sure you want to delete this user?')) {
@@ -198,16 +235,17 @@ const UserManagement = () => {
           </Button>
         </div>
 
-        {/* Search */}
-        <div className="relative max-w-md">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
-          <Input
-            placeholder="Search users..."
-            className="pl-10 bg-gray-50 border-gray-200"
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-          />
-        </div>
+        {/* Filters */}
+        <UserFilters
+          searchTerm={searchTerm}
+          onSearchChange={setSearchTerm}
+          roleFilter={roleFilter}
+          onRoleChange={setRoleFilter}
+          statusFilter={statusFilter}
+          onStatusChange={setStatusFilter}
+          dateFilter={dateFilter}
+          onDateChange={setDateFilter}
+        />
 
         {/* Users Table */}
         <Card>

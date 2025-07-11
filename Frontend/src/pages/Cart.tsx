@@ -6,7 +6,7 @@ import { Link } from 'react-router-dom';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import { AuthContext } from '@/contexts/AuthContext';
-import { useCart } from '@/hooks/useCart';
+import  useCart  from '@/hooks/useCart';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { APP_CONSTANTS, ROUTES } from '@/constants/app';
 import { CartQuantityControls } from '@/components/cart/CartQuantityControls';

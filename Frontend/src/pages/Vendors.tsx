@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
+import { VendorFilters } from '@/components/filters/VendorFilters';
 import { Search, Plus, Trash2 } from 'lucide-react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useForm } from 'react-hook-form';
@@ -29,6 +30,8 @@ const Vendors = () => {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [searchTerm, setSearchTerm] = useState('');
+  const [dateFilter, setDateFilter] = useState('all');
+  const [statusFilter, setStatusFilter] = useState('all');
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
 
   const form = useForm<CreateVendorData>({
@@ -100,11 +103,41 @@ const Vendors = () => {
     return userRole === 'seller';
   });
 
-  // Filter vendors based on search term
-  const filteredVendors = vendors.filter((vendor: any) =>
-    vendor.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    vendor.email.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  // Filter vendors based on search term and filters
+  const filteredVendors = vendors.filter((vendor: any) => {
+    const matchesSearch = vendor.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         vendor.email.toLowerCase().includes(searchTerm.toLowerCase());
+    
+    const matchesDate = dateFilter === 'all' || (() => {
+      const vendorDate = new Date(vendor.createdAt);
+      const now = new Date();
+      switch (dateFilter) {
+        case 'today':
+          return vendorDate.toDateString() === now.toDateString();
+        case 'week':
+          const weekAgo = new Date(now);
+          weekAgo.setDate(now.getDate() - 7);
+          return vendorDate >= weekAgo;
+        case 'month':
+          const monthAgo = new Date(now);
+          monthAgo.setMonth(now.getMonth() - 1);
+          return vendorDate >= monthAgo;
+        case 'year':
+          const yearAgo = new Date(now);
+          yearAgo.setFullYear(now.getFullYear() - 1);
+          return vendorDate >= yearAgo;
+        default:
+          return true;
+      }
+    })();
+    
+    const matchesStatus = statusFilter === 'all' || 
+                         (statusFilter === 'active' && vendor.isActive) ||
+                         (statusFilter === 'pending' && vendor.sellerStatus === 'PENDING') ||
+                         (statusFilter === 'blocked' && !vendor.isActive);
+    
+    return matchesSearch && matchesDate && matchesStatus;
+  });
 
   console.log('All users:', allUsers.length, 'Vendors found:', vendors.length, 'Filtered:', filteredVendors.length);
 
@@ -246,17 +279,17 @@ const Vendors = () => {
           </Dialog>
         </div>
 
+        {/* Filters */}
+        <VendorFilters
+          searchTerm={searchTerm}
+          onSearchChange={setSearchTerm}
+          dateFilter={dateFilter}
+          onDateChange={setDateFilter}
+          statusFilter={statusFilter}
+          onStatusChange={setStatusFilter}
+        />
+
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {/* Search */}
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
-            <Input 
-              placeholder={t('vendors.search_vendors')} 
-              className="pl-10 bg-gray-50 border-gray-200"
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-            />
-          </div>
 
           {/* Total Vendors Card */}
           <Card>

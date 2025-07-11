@@ -11,9 +11,9 @@ const HeroSection = () => {
       <div className="container mx-auto px-4">
         <div className="flex flex-col md:flex-row items-center justify-between">
           <div className="md:w-1/2 mb-8 md:mb-0 animate-slide-in-left">
-            <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-12 leading-tight">
+            <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-12 leading-tight">
               {t('hero.title')}
-            </h2>
+            </h1>
             <p className="text-lg text-gray-600 mb-10">
               {t('hero.description')}
             </p>

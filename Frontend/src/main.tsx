@@ -38,6 +38,7 @@ import NotFound from './pages/NotFound';
 import CommunityChat from './pages/CommunityChat';
 import ProductStore from './pages/ProductStore';
 import OrderPreview from './pages/OrderPreview';
+import UnfinishedOrders from './pages/UnfinishedOrders';
 import { SellerBlocked } from './components/seller/SellerBlocked';
 import { SellerGuard } from './components/guards/SellerGuard';
 
@@ -99,6 +100,7 @@ const App = () => {
               <Route path="/vendors" element={<SellerGuard><Vendors /></SellerGuard>} />
               <Route path="/analytics" element={<SellerGuard><Analytics /></SellerGuard>} />
               <Route path="/reports" element={<SellerGuard><Reports /></SellerGuard>} />
+              <Route path="/unfinished-orders" element={<SellerGuard><UnfinishedOrders /></SellerGuard>} />
 
               {/* Protected Seller Route */}
               <Route

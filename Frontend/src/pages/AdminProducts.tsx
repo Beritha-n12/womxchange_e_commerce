@@ -3,6 +3,8 @@ import { DashboardLayout } from '@/components/layout/DashboardLayout';
 import { ProductTable } from '@/components/admin/ProductTable';
 import { ProductForm } from '@/components/admin/ProductForm';
 import { SellerBlocked } from '@/components/seller/SellerBlocked';
+import { AdminProductFilters } from '@/components/filters/AdminProductFilters';
+import { SellerProductFilters } from '@/components/filters/SellerProductFilters';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Plus, Search } from 'lucide-react';
@@ -25,6 +27,9 @@ const AdminProducts = () => {
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingProduct, setEditingProduct] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
+  const [categoryFilter, setCategoryFilter] = useState('all');
+  const [dateFilter, setDateFilter] = useState('all');
+  const [stockFilter, setStockFilter] = useState('all');
 
   const [previewImage, setPreviewImage] = useState<string | null>(null);
   const [uploadedImageUrl, setUploadedImageUrl] = useState<string>('');
@@ -57,10 +62,20 @@ const AdminProducts = () => {
     }
   );
 
-  const filteredProducts = products.filter(product =>
-    product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    product.category?.name.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const filteredProducts = products.filter(product => {
+    const matchesSearch = product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         product.description?.toLowerCase().includes(searchTerm.toLowerCase());
+    
+    const matchesCategory = categoryFilter === 'all' || 
+                           product.categoryId.toString() === categoryFilter;
+    
+    const matchesStock = stockFilter === 'all' ||
+                        (stockFilter === 'in-stock' && product.stock > 0) ||
+                        (stockFilter === 'low-stock' && product.stock > 0 && product.stock < 10) ||
+                        (stockFilter === 'out-of-stock' && product.stock === 0);
+    
+    return matchesSearch && matchesCategory && matchesStock;
+  });
 
   const handleCreateProduct = async (data) => {
     try {
@@ -157,15 +172,32 @@ const AdminProducts = () => {
           </Button>
         </div>
 
-        <div className="relative max-w-md">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
-          <Input
-            placeholder={t('products.search_placeholder')}
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="pl-10 bg-gray-50 border-gray-200"
+        {/* Filters */}
+        {isSeller ? (
+          <SellerProductFilters
+            searchTerm={searchTerm}
+            onSearchChange={setSearchTerm}
+            categoryFilter={categoryFilter}
+            onCategoryChange={setCategoryFilter}
+            dateFilter={dateFilter}
+            onDateChange={setDateFilter}
+            stockFilter={stockFilter}
+            onStockChange={setStockFilter}
+            categories={categories}
           />
-        </div>
+        ) : (
+          <AdminProductFilters
+            searchTerm={searchTerm}
+            onSearchChange={setSearchTerm}
+            categoryFilter={categoryFilter}
+            onCategoryChange={setCategoryFilter}
+            dateFilter={dateFilter}
+            onDateChange={setDateFilter}
+            stockFilter={stockFilter}
+            onStockChange={setStockFilter}
+            categories={categories}
+          />
+        )}
 
         <ProductTable
           products={filteredProducts}

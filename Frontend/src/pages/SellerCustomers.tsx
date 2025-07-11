@@ -5,6 +5,7 @@ import { AuthContext } from '../contexts/AuthContext';
 import { DashboardLayout } from '@/components/layout/DashboardLayout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
+import { CustomerFilters } from '@/components/filters/CustomerFilters';
 import { Search, ShoppingBag, Users, Calendar } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
 import api from '@/api/api';
@@ -27,6 +28,9 @@ const SellerCustomers = () => {
   const { user } = useContext(AuthContext);
   const navigate = useNavigate();
   const { t } = useLanguage();
+  const [searchTerm, setSearchTerm] = React.useState('');
+  const [dateFilter, setDateFilter] = React.useState('all');
+  const [orderCountFilter, setOrderCountFilter] = React.useState('all');
 
   useEffect(() => {
     console.log('👥 SellerCustomers: useEffect - user:', user);
@@ -93,14 +97,15 @@ const SellerCustomers = () => {
           </div>
         </div>
 
-        {/* Search */}
-        <div className="relative max-w-md">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
-          <Input 
-            placeholder="Search customers..." 
-            className="pl-10 bg-gray-50 border-gray-200" 
-          />
-        </div>
+        {/* Filters */}
+        <CustomerFilters
+          searchTerm={searchTerm}
+          onSearchChange={setSearchTerm}
+          dateFilter={dateFilter}
+          onDateChange={setDateFilter}
+          orderCountFilter={orderCountFilter}
+          onOrderCountChange={setOrderCountFilter}
+        />
 
         {/* Customer Stats */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">

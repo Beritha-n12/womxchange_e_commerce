@@ -53,8 +53,8 @@ const Login = () => {
           console.log('✅ Redirecting admin to admin dashboard');
           navigate('/dashboard');
         } else {
-          console.log('✅ Redirecting buyer to home page');
-          navigate('/');
+          console.log('✅ Redirecting buyer to products page');
+          navigate('/products');
         }
       } catch (error) {
         console.error('❌ Error in login success handler:', error);

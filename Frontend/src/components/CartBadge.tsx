@@ -3,7 +3,7 @@ import React from 'react';
 import { ShoppingCart } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Link } from 'react-router-dom';
-import { useCart } from '@/hooks/useCart';
+import  useCart  from '@/hooks/useCart';
 
 const CartBadge = () => {
   const { cartItemsCount, isLoading } = useCart();

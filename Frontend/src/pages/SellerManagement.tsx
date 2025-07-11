@@ -57,6 +57,7 @@ const SellerManagement = () => {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [searchTerm, setSearchTerm] = useState('');
+  const [statusFilter, setStatusFilter] = useState<string>('all');
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [selectedSeller, setSelectedSeller] = useState<Seller | null>(null);
   const [isPermissionsModalOpen, setIsPermissionsModalOpen] = useState(false);
@@ -110,11 +111,19 @@ const SellerManagement = () => {
   });
 
   const sellers: Seller[] = sellersData?.data || [];
-  const filteredSellers = sellers.filter((s) =>
-    [s.name, s.email, s.businessName].some((str) =>
+  const filteredSellers = sellers.filter((s) => {
+    const matchesSearch = [s.name, s.email, s.businessName].some((str) =>
       str?.toLowerCase().includes(searchTerm.toLowerCase())
-    )
-  );
+    );
+    
+    const matchesStatus = statusFilter === 'all' ||
+      (statusFilter === 'active' && s.sellerStatus === 'ACTIVE' && s.isActive) ||
+      (statusFilter === 'pending' && s.sellerStatus === 'PENDING') ||
+      (statusFilter === 'suspended' && s.sellerStatus === 'SUSPENDED') ||
+      (statusFilter === 'inactive' && (s.sellerStatus === 'INACTIVE' || !s.isActive));
+    
+    return matchesSearch && matchesStatus;
+  });
 
   const handleStatusUpdate = (id: number, newStatus: any) =>
     updateSellerStatusMutation.mutate({ sellerId: id, status: newStatus, isActive: newStatus === 'ACTIVE' });
@@ -243,31 +252,27 @@ const SellerManagement = () => {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-          {['Total Sellers', 'Active', 'Pending', 'Suspended'].map((title, idx) => (
-            <Card key={title}>
+          {[
+            { title: 'Total Sellers', status: 'all', count: counts.total, color: 'text-blue-600' },
+            { title: 'Active', status: 'active', count: counts.active, color: 'text-green-600' },
+            { title: 'Pending', status: 'pending', count: counts.pending, color: 'text-yellow-600' },
+            { title: 'Suspended', status: 'suspended', count: counts.suspended, color: 'text-red-600' }
+          ].map((item) => (
+            <Card 
+              key={item.title} 
+              className={`cursor-pointer transition-all hover:shadow-md ${statusFilter === item.status ? 'ring-2 ring-purple-500 shadow-md' : ''}`}
+              onClick={() => setStatusFilter(item.status)}
+            >
               <CardHeader className="pb-2">
-                <CardTitle className="text-sm font-medium text-gray-600">{title}</CardTitle>
+                <CardTitle className="text-sm font-medium text-gray-600">{item.title}</CardTitle>
               </CardHeader>
               <CardContent>
-                <p
-                  className={`text-2xl font-bold ${
-                    title === 'Active'
-                      ? 'text-green-600'
-                      : title === 'Pending'
-                      ? 'text-yellow-600'
-                      : title === 'Suspended'
-                      ? 'text-red-600'
-                      : ''
-                  }`}
-                >
-                  {idx === 0
-                    ? counts.total
-                    : idx === 1
-                    ? counts.active
-                    : idx === 2
-                    ? counts.pending
-                    : counts.suspended}
+                <p className={`text-2xl font-bold ${item.color}`}>
+                  {item.count}
                 </p>
+                {statusFilter === item.status && (
+                  <div className="text-xs text-purple-600 mt-1">Active Filter</div>
+                )}
               </CardContent>
             </Card>
           ))}

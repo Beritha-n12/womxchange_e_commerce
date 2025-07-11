@@ -11,7 +11,8 @@ import { getAllUsers } from '@/api/users';
 import { registerUser } from '@/api/auth';
 import { createOrder } from '@/api/orders';
 import { getProducts } from '@/api/products';
-import { ArrowLeft, ArrowRight, User, UserPlus, Package, Plus, Minus } from 'lucide-react';
+import { ArrowLeft, ArrowRight, User, UserPlus, Package, Plus, Minus, Search } from 'lucide-react';
+import { SearchableSelect } from '@/components/SearchableSelect';
 
 interface OrderItem {
   productId: number;
@@ -32,6 +33,8 @@ export const ThreeStepOrderCreation: React.FC<ThreeStepOrderCreationProps> = ({
   const [currentStep, setCurrentStep] = useState(1);
   const [selectedUserId, setSelectedUserId] = useState<number | null>(null);
   const [isCreatingNewUser, setIsCreatingNewUser] = useState(false);
+  const [userSearchTerm, setUserSearchTerm] = useState('');
+  const [productSearchTerm, setProductSearchTerm] = useState('');
   const [newUserData, setNewUserData] = useState({
     name: '',
     email: '',
@@ -115,21 +118,23 @@ export const ThreeStepOrderCreation: React.FC<ThreeStepOrderCreationProps> = ({
     setCurrentStep(1);
     setSelectedUserId(null);
     setIsCreatingNewUser(false);
-    setNewUserData({
-      name: '',
-      email: '',
-      password: '',
-      phone: '',
-      address: ''
-    });
-    setOrderData({
-      shippingAddress: '',
-      paymentMethod: 'MTN',
-      items: [],
-      totalPrice: 0,
-      deliveryFee: 1200,
-      discountAmount: 0
-    });
+      setNewUserData({
+        name: '',
+        email: '',
+        password: '',
+        phone: '',
+        address: ''
+      });
+      setOrderData({
+        shippingAddress: '',
+        paymentMethod: 'MTN',
+        items: [],
+        totalPrice: 0,
+        deliveryFee: 1200,
+        discountAmount: 0
+      });
+      setUserSearchTerm('');
+      setProductSearchTerm('');
   };
 
   useEffect(() => {
@@ -291,6 +296,7 @@ export const ThreeStepOrderCreation: React.FC<ThreeStepOrderCreationProps> = ({
       {!isCreatingNewUser && (
         <div className="space-y-2">
           <Label htmlFor="user-select">Select User</Label>
+          
           {usersLoading ? (
             <div className="flex items-center justify-center p-4">
               <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-purple-500"></div>
@@ -300,24 +306,17 @@ export const ThreeStepOrderCreation: React.FC<ThreeStepOrderCreationProps> = ({
               Error loading users. Please try again.
             </div>
           ) : (
-            <Select value={selectedUserId?.toString() || ""} onValueChange={(value) => setSelectedUserId(parseInt(value))}>
-              <SelectTrigger>
-                <SelectValue placeholder="Choose a user" />
-              </SelectTrigger>
-              <SelectContent>
-                {Array.isArray(users?.data) ? users.data.map((user: any) => (
-                  <SelectItem key={user.id} value={user.id.toString()}>
-                    {user.name} ({user.email})
-                  </SelectItem>
-                )) : Array.isArray(users) ? users.map((user: any) => (
-                  <SelectItem key={user.id} value={user.id.toString()}>
-                    {user.name} ({user.email})
-                  </SelectItem>
-                )) : (
-                  <SelectItem value="no-users" disabled>No users available</SelectItem>
-                )}
-              </SelectContent>
-            </Select>
+            <SearchableSelect
+              label=""
+              placeholder="Search by name, email, or phone..."
+              items={Array.isArray(users?.data) ? users.data : Array.isArray(users) ? users : []}
+              selectedItem={selectedUserId ? (Array.isArray(users?.data) ? users.data : Array.isArray(users) ? users : []).find((u: any) => u.id === selectedUserId) : null}
+              onSelect={(user) => setSelectedUserId(user.id)}
+              onClear={() => setSelectedUserId(null)}
+              displayField="name"
+              searchFields={['name', 'email', 'phone']}
+              className="w-full"
+            />
           )}
         </div>
       )}
@@ -467,50 +466,59 @@ export const ThreeStepOrderCreation: React.FC<ThreeStepOrderCreationProps> = ({
                 </Button>
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label>Product</Label>
-                  <Select
-                    value={item.productId.toString()}
-                    onValueChange={(value) => handleItemChange(index, 'productId', parseInt(value))}
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select product" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {products.map((product: any) => (
-                        <SelectItem key={product.id} value={product.id.toString()}>
-                          {product.name} - {product.price?.toLocaleString()} Rwf
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+              <div className="space-y-4">
+                {/* Simplified Product Selection */}
+                 <div className="space-y-2">
+                   <SearchableSelect
+                     label="Select Product"
+                     placeholder="Search by name, category, or SKU..."
+                     items={products}
+                     selectedItem={item.productId ? products.find((p: any) => p.id === item.productId) : null}
+                     onSelect={(product) => handleItemChange(index, 'productId', product.id)}
+                     onClear={() => handleItemChange(index, 'productId', 0)}
+                     displayField="name"
+                     searchFields={['name', 'category.name', 'sku']}
+                     imageField="coverImage"
+                     className="w-full"
+                   />
+                 </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label>Quantity</Label>
+                    <Input
+                      type="number"
+                      min="1"
+                      value={item.quantity}
+                      onChange={(e) => handleItemChange(index, 'quantity', parseInt(e.target.value) || 1)}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Custom Price (Optional)</Label>
+                    <Input
+                      type="number"
+                      min="0"
+                      value={item.price}
+                      onChange={(e) => handleItemChange(index, 'price', parseFloat(e.target.value) || 0)}
+                      placeholder="Override default price"
+                    />
+                  </div>
                 </div>
 
-                <div className="space-y-2">
-                  <Label>Quantity</Label>
-                  <Input
-                    type="number"
-                    min="1"
-                    value={item.quantity}
-                    onChange={(e) => handleItemChange(index, 'quantity', parseInt(e.target.value) || 1)}
-                  />
-                </div>
+                {item.productName && (
+                  <div className="bg-gray-50 p-3 rounded">
+                    <p className="text-sm">
+                      <strong>Selected:</strong> {item.productName}
+                    </p>
+                    <p className="text-sm">
+                      <strong>Unit Price:</strong> {item.price?.toLocaleString()} Rwf
+                    </p>
+                    <p className="text-sm">
+                      <strong>Total:</strong> {(item.price * item.quantity).toLocaleString()} Rwf
+                    </p>
+                  </div>
+                )}
               </div>
-
-              {item.productName && (
-                <div className="bg-gray-50 p-3 rounded">
-                  <p className="text-sm">
-                    <strong>Selected:</strong> {item.productName}
-                  </p>
-                  <p className="text-sm">
-                    <strong>Unit Price:</strong> {item.price?.toLocaleString()} Rwf
-                  </p>
-                  <p className="text-sm">
-                    <strong>Total:</strong> {(item.price * item.quantity).toLocaleString()} Rwf
-                  </p>
-                </div>
-              )}
             </div>
           ))}
 
@@ -521,48 +529,48 @@ export const ThreeStepOrderCreation: React.FC<ThreeStepOrderCreationProps> = ({
               <p className="text-sm text-gray-500">Click "Add Item" to start building the order</p>
             </div>
           )}
-        </div>
 
-        <div className="bg-gray-50 p-4 rounded-lg">
-          <h4 className="font-semibold mb-2">Order Preview:</h4>
-          <p className="text-sm mb-2">
-            <strong>Payment Method:</strong> {orderData.paymentMethod === 'PAY_ON_DELIVERY' ? 'Pay on Delivery' : 'MTN Mobile Money'}
-          </p>
-          <p className="text-sm mb-2">
-            <strong>Items:</strong> {orderData.items.length}
-          </p>
-          <div className="text-sm space-y-1 mb-2">
-            <div className="flex justify-between">
-              <span><strong>Items Subtotal:</strong></span>
-              <span>{orderData.items.filter(item => item.productId > 0 && item.quantity > 0)
-                .reduce((sum, item) => sum + (item.price * item.quantity), 0)
-                .toLocaleString()} Rwf</span>
+          <div className="bg-gray-50 p-4 rounded-lg">
+            <h4 className="font-semibold mb-2">Order Preview:</h4>
+            <p className="text-sm mb-2">
+              <strong>Payment Method:</strong> {orderData.paymentMethod === 'PAY_ON_DELIVERY' ? 'Pay on Delivery' : 'MTN Mobile Money'}
+            </p>
+            <p className="text-sm mb-2">
+              <strong>Items:</strong> {orderData.items.length}
+            </p>
+            <div className="text-sm space-y-1 mb-2">
+              <div className="flex justify-between">
+                <span><strong>Items Subtotal:</strong></span>
+                <span>{orderData.items.filter(item => item.productId > 0 && item.quantity > 0)
+                  .reduce((sum, item) => sum + (item.price * item.quantity), 0)
+                  .toLocaleString()} Rwf</span>
+              </div>
+              <div className="flex justify-between">
+                <span><strong>Delivery Fee:</strong></span>
+                <span>{orderData.deliveryFee.toLocaleString()} Rwf</span>
+              </div>
+              {orderData.discountAmount > 0 && (
+                <div className="flex justify-between text-green-600">
+                  <span><strong>Discount:</strong></span>
+                  <span>-{orderData.discountAmount.toLocaleString()} Rwf</span>
+                </div>
+              )}
+              <div className="flex justify-between border-t pt-1 font-bold">
+                <span><strong>Total Amount:</strong></span>
+                <span>{orderData.totalPrice.toLocaleString()} Rwf</span>
+              </div>
             </div>
-            <div className="flex justify-between">
-              <span><strong>Delivery Fee:</strong></span>
-              <span>{orderData.deliveryFee.toLocaleString()} Rwf</span>
-            </div>
-            {orderData.discountAmount > 0 && (
-              <div className="flex justify-between text-green-600">
-                <span><strong>Discount:</strong></span>
-                <span>-{orderData.discountAmount.toLocaleString()} Rwf</span>
+            <p className="text-sm mb-2">
+              <strong>Shipping Address:</strong> {orderData.shippingAddress || 'Not provided'}
+            </p>
+            {orderData.paymentMethod === 'MTN' && (
+              <div className="mt-2 p-2 bg-blue-50 border border-blue-200 rounded">
+                <p className="text-sm text-blue-600">
+                  <strong>MoMo Payment Code:</strong> 0784720884
+                </p>
               </div>
             )}
-            <div className="flex justify-between border-t pt-1 font-bold">
-              <span><strong>Total Amount:</strong></span>
-              <span>{orderData.totalPrice.toLocaleString()} Rwf</span>
-            </div>
           </div>
-          <p className="text-sm mb-2">
-            <strong>Shipping Address:</strong> {orderData.shippingAddress || 'Not provided'}
-          </p>
-          {orderData.paymentMethod === 'MTN' && (
-            <div className="mt-2 p-2 bg-blue-50 border border-blue-200 rounded">
-              <p className="text-sm text-blue-600">
-                <strong>MoMo Payment Code:</strong> 0784720884
-              </p>
-            </div>
-          )}
         </div>
       </div>
     </div>
@@ -631,3 +639,5 @@ export const ThreeStepOrderCreation: React.FC<ThreeStepOrderCreationProps> = ({
     </Dialog>
   );
 };
+
+export default ThreeStepOrderCreation;

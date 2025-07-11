@@ -9,7 +9,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { ShoppingBag, Search, Star, Filter, ArrowLeft, Plus, Minus } from 'lucide-react';
-import { useCart } from '@/hooks/useCart';
+import  useCart  from '@/hooks/useCart';
 
 const ProductStore = () => {
   const [searchParams] = useSearchParams();

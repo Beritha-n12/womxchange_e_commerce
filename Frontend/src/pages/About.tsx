@@ -14,9 +14,9 @@ const AboutUs = () => {
       <main className="flex-grow">
         {/* About Us Title */}
         <section className="py-16 text-center">
-          <h2 className="text-4xl font-normal text-gray-800 tracking-wider">
+          <h1 className="text-4xl font-normal text-gray-800 tracking-wider">
             About Us
-          </h2>
+          </h1>
         </section>
 
         {/* Our Story Section */}
@@ -32,7 +32,7 @@ const AboutUs = () => {
               />
             </div>
             <div className="w-full md:w-2/3 text-center md:text-left">
-              <h3 className="text-3xl font-semibold mb-4 text-gray-800">Our Story</h3>
+              <h2 className="text-3xl font-semibold mb-4 text-gray-800">Our Story</h2>
               <p className="text-gray-700 leading-relaxed text-lg">
                 Founded in the heart of Kigali, <span className="font-semibold text-purple-600">wXc</span>, WomXchange was born from a simple but powerful
                 idea: to create an online marketplace where Rwandan women would showcase, sell, and grow their

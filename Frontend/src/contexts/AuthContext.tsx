@@ -1,5 +1,4 @@
-
-import React, { createContext, useState, useEffect, ReactNode } from 'react';
+import React, { createContext, useState, useEffect, useCallback, ReactNode } from 'react';
 import { UserResponse } from '../api/auth';
 import api from '../api/api';
 import { isTokenExpired } from '../utils/tokenUtils';
@@ -110,7 +109,14 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
             user: response.data.user,
             isActive: response.data.user.isActive,
             sellerStatus: response.data.user.sellerStatus,
-            sellerPermissions: response.data.user.sellerPermissions
+            sellerPermissions: response.data.user.sellerPermissions,
+            phone: '',
+            address: '',
+            businessName: '',
+            businessDescription: '',
+            businessLocation: '',
+            businessCategory: '',
+            businessWebsite: ''
           };
           
           console.log('🔄 AuthContext: Setting verified user data:', {
@@ -186,20 +192,53 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     }
   };
 
-  const logout = () => {
-    console.log('🚪 AuthContext: Logging out user');
-    
-    // Clear all auth data
-    localStorage.removeItem('user');
-    localStorage.removeItem('token');
-    localStorage.removeItem('anonymous_cart_id'); // Also clear anonymous cart
-    delete api.defaults.headers.common['Authorization'];
-    setUser(null);
-    
-    // Redirect to login page
-    console.log('🔄 AuthContext: Redirecting to login page');
-    window.location.href = '/login';
-  };
+  const logout = useCallback(async () => {
+    try {
+      // Before logging out, check if user has items in cart and save as abandoned
+      const cartResponse = await api.get('/orders/cart');
+      const cartData = cartResponse?.data?.data;
+      
+      if (cartData?.items && cartData.items.length > 0) {
+        console.log('🛒 User logging out with items in cart, saving as abandoned...');
+        
+        const totalAmount = cartData.items.reduce((total: number, item: any) => {
+          return total + (item.product.price * item.quantity);
+        }, 0);
+
+        try {
+          await api.post('/orders/abandoned-cart', {
+            userId: user?.id || null,
+            userName: user?.name || 'Unknown User',
+            userEmail: user?.email || 'No email',
+            cartItems: cartData.items,
+            totalAmount: totalAmount,
+            sessionId: `logout_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
+          });
+          console.log('✅ Abandoned cart saved on logout');
+        } catch (abandonedCartError) {
+          console.error('❌ Failed to save abandoned cart on logout:', abandonedCartError);
+        }
+      }
+
+      // Now proceed with logout
+      await api.post('/auth/logout');
+      localStorage.removeItem('token');
+      setUser(null);
+      setLoading(false);
+      
+      // Clear any anonymous cart data
+      localStorage.removeItem('anonymous_cart_id');
+      
+      console.log('✅ User logged out successfully');
+    } catch (error) {
+      console.error('❌ Logout error:', error);
+      // Force logout even if API call fails
+      localStorage.removeItem('token');
+      localStorage.removeItem('anonymous_cart_id');
+      setUser(null);
+      setLoading(false);
+    }
+  }, [user]);
 
   // Debug log for context value
   console.log('🔄 AuthContext: Context value:', {

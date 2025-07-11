@@ -1,4 +1,5 @@
 import nodemailer from 'nodemailer';
+import { logFailedAction } from '../controllers/failedActionsController.js';
 
 const transport = nodemailer.createTransport({
   service: 'gmail',
@@ -65,6 +66,24 @@ export const sendWelcomeEmail = async (userData) => {
     console.log('✅ Welcome email sent to:', email);
   } catch (error) {
     console.error('❌ Error sending welcome email:', error);
+    
+    // Log failed email action
+    await logFailedAction(
+      'EMAIL',
+      null,
+      email,
+      `Failed to send welcome email: ${error.message}`,
+      {
+        subject: 'Welcome to Our E-Commerce Platform!',
+        emailType: 'welcome',
+        recipient: email
+      },
+      null,
+      null,
+      error.code,
+      error.stack
+    );
+    
     throw error;
   }
 };

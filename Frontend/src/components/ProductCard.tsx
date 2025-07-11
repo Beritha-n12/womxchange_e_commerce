@@ -1,8 +1,10 @@
 import React, { useState, useContext } from 'react';
-import { Star, ShoppingCart, MessageSquare, Plus, User } from 'lucide-react';
+import { Star, ShoppingCart, MessageSquare, Plus, User, CheckCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
 import { Link } from 'react-router-dom';
-import { useCart } from '@/hooks/useCart';
+import  useCart  from '@/hooks/useCart';
+import { useCartStatus } from '@/hooks/useCartStatus';
 import { useToast } from '@/hooks/use-toast';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { AuthContext } from '@/contexts/AuthContext';
@@ -56,6 +58,11 @@ const ProductCard = ({
   const user = auth?.user;
   const queryClient = useQueryClient();
   const { addToCart, isAddingToCart, refetchCart } = useCart();
+  const { isInCart } = useCartStatus();
+  
+  console.log('🔍 ProductCard - product id:', id, 'title:', title);
+  const productInCart = isInCart(parseInt(id));
+  console.log('🔍 ProductCard - productInCart:', productInCart);
   
   const [reviewRating, setReviewRating] = useState(5);
   const [reviewComment, setReviewComment] = useState('');
@@ -116,7 +123,13 @@ const ProductCard = ({
       }
       
       await addToCart({ productId, quantity: 1 });
-      setTimeout(() => refetchCart(), 500);
+      
+      // Invalidate both cart queries to refresh the UI
+      queryClient.invalidateQueries({ queryKey: ['cart'] });
+      setTimeout(() => {
+        refetchCart();
+        queryClient.invalidateQueries({ queryKey: ['cart'] });
+      }, 500);
       
     } catch (err: unknown) {
       let errorMessage = t('cart.failed_to_add') || "Failed to add to cart";
@@ -176,22 +189,50 @@ const ProductCard = ({
 
   return (
     <Link to={`/products/${id}`} className="block">
-      <div className="bg-white rounded-xl shadow-md hover:shadow-lg transition-all duration-300 group hover:scale-105">
+      <div className="bg-white rounded-xl shadow-md hover:shadow-lg transition-all duration-300 group hover:scale-105 relative">
+        {/* Cart Status Badge - Always visible when in cart */}
+        {isInCart(parseInt(id)) && (
+          <div className="absolute top-2 left-2 z-10">
+            <Badge className="bg-green-500 text-white text-xs flex items-center space-x-1 animate-fade-in">
+              <CheckCircle className="w-3 h-3" />
+              <span>In Cart</span>
+            </Badge>
+          </div>
+        )}
+        
         <div className="relative overflow-hidden rounded-t-xl">
-          <img 
-            src={getPublicImageUrl(image)} 
-            alt={title}
-            className="w-full h-48 object-cover group-hover:scale-110 transition-transform duration-300"
-            onError={(e) => {
-              e.currentTarget.src = '/placeholder.svg';
-            }}
-          />
+          <div className="w-full h-48 bg-gray-100 flex items-center justify-center">
+            <img 
+              src={getPublicImageUrl(image)} 
+              alt={title}
+              className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
+              onError={(e) => {
+                e.currentTarget.src = '/placeholder.svg';
+              }}
+            />
+          </div>
+          
+          {/* Floating Cart Icon */}
           <div className="absolute top-3 right-3 bg-white/90 backdrop-blur-sm rounded-full p-2 opacity-0 group-hover:opacity-100 transition-opacity">
-            <ShoppingCart className="w-4 h-4 text-purple-500" />
+            <ShoppingCart className={`w-4 h-4 ${isInCart(parseInt(id)) ? 'text-green-500' : 'text-purple-500'}`} />
+          </div>
+          
+          {/* Product Title Overlay */}
+          <div className="absolute bottom-3 left-3 bg-black/70 text-white px-2 py-1 rounded text-xs">
+            {title}
           </div>
         </div>
         <div className="p-4">
-          <h3 className="font-semibold text-gray-900 mb-2 text-sm line-clamp-2">{title}</h3>
+          {/* <div className="aspect-square w-full mb-3 bg-gray-100 rounded-lg overflow-hidden">
+            <img 
+              src={getPublicImageUrl(image)} 
+              alt={title}
+              className="w-full h-full object-cover"
+              onError={(e) => {
+                e.currentTarget.src = '/placeholder.svg';
+              }}
+            />
+          </div> */}
           
           {seller && (
             <div className="flex items-center mb-2 text-xs text-gray-600">
@@ -236,16 +277,24 @@ const ProductCard = ({
               )}
             </div>
           </div>
+          
+          {seller && (
+            <div className="text-xs text-gray-600 mb-2">
+              Sold by: <span className="font-medium">{seller.businessName || seller.name}</span>
+            </div>
+          )}
 
           <div className="flex items-center space-x-2">
             <Button 
               size="sm" 
-              className="flex-1 bg-purple-500 hover:bg-purple-600 text-white"
+              className={`flex-1 ${isInCart(parseInt(id)) ? 'bg-green-500 hover:bg-green-600' : 'bg-purple-500 hover:bg-purple-600'} text-white`}
               onClick={handleAddToCart}
               disabled={isAddingToCart}
             >
               {isAddingToCart ? (
                 <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+              ) : isInCart(parseInt(id)) ? (
+                '✓ Added to Cart'
               ) : (
                 t('cart.add_to_cart') || 'Add to Cart'
               )}
@@ -270,7 +319,7 @@ const ProductCard = ({
                     setShowReviewDialog(true);
                   }}
                 >
-                  <Plus className="w-4 h-4" />
+                  <Plus className="w-4 h-4"  />
                 </Button>
               </DialogTrigger>
               <DialogContent className="sm:max-w-md" onClick={(e) => e.stopPropagation()}>

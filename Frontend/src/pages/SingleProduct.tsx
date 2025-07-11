@@ -1,13 +1,16 @@
+
 import React, { useState, useEffect, useContext } from 'react';
 import { useParams } from 'react-router-dom';
-import { Star, Heart, ShoppingCart, Plus, Minus } from 'lucide-react';
+import { Star, Heart, ShoppingCart, Plus, Minus, CheckCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import ProductReviews from '@/components/ProductReviews';
 import RelatedProducts from '@/components/RelatedProducts';
 import { getProductById, Product } from '@/api/products';
-import { useCart } from '@/hooks/useCart';
+import  useCart  from '@/hooks/useCart';
+import { useCartStatus } from '@/hooks/useCartStatus';
 import { AuthContext } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
 
@@ -16,6 +19,7 @@ const SingleProduct = () => {
   const { toast } = useToast();
   const { user } = useContext(AuthContext);
   const { addToCart, isAddingToCart } = useCart();
+  const { isInCart, getCartItemQuantity } = useCartStatus();
   const [product, setProduct] = useState<Product | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string>('');
@@ -107,9 +111,11 @@ const SingleProduct = () => {
   }
 
   const productImages = product.coverImage ? [product.coverImage] : [];
+  const productInCart = isInCart(product.id);
+  const cartQuantity = getCartItemQuantity(product.id);
 
   return (
-    <div className="min-h-screen  bg-white">
+    <div className="min-h-screen bg-white">
       <Header />
       <div className="container mx-auto px-4 py-8">
         <div className="text-sm text-gray-500 mb-6">
@@ -118,18 +124,36 @@ const SingleProduct = () => {
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 mb-12">
           <div className="space-y-4">
-            <div className="aspect-square bg-gray-100 rounded-lg overflow-hidden">
+            <div className="aspect-square bg-gray-100 rounded-lg overflow-hidden relative">
               <img
                 src={productImages[selectedImage] || '/placeholder.svg'}
                 alt={product.name}
                 className="w-full h-full object-cover"
                 onError={(e) => (e.currentTarget.src = '/placeholder.svg')}
               />
+              {/* Cart indicator on product image */}
+              {productInCart && (
+                <div className="absolute top-4 right-4">
+                  <Badge className="bg-green-500 text-white flex items-center space-x-1">
+                    <CheckCircle className="w-3 h-3" />
+                    <span>In Cart ({cartQuantity})</span>
+                  </Badge>
+                </div>
+              )}
             </div>
           </div>
 
           <div className="space-y-6">
-            <h1 className="text-3xl font-bold text-gray-900 mb-2">{product.name}</h1>
+            <div className="flex items-start justify-between">
+              <h1 className="text-3xl font-bold text-gray-900 mb-2">{product.name}</h1>
+              {productInCart && (
+                <Badge variant="secondary" className="bg-green-100 text-green-800">
+                  <CheckCircle className="w-3 h-3 mr-1" />
+                  Added to Cart
+                </Badge>
+              )}
+            </div>
+            
             <div className="flex items-center gap-2 mb-4">
               <div className="flex items-center">
                 {[...Array(5)].map((_, i) => (
@@ -201,12 +225,25 @@ const SingleProduct = () => {
                   </button>
                 </div>
                 <Button
-                  className="flex-1 bg-purple-500 hover:bg-purple-600 text-white"
+                  className={`flex-1 text-white ${
+                    productInCart 
+                      ? 'bg-green-500 hover:bg-green-600' 
+                      : 'bg-purple-500 hover:bg-purple-600'
+                  }`}
                   onClick={handleAddToCart}
                   disabled={product.stock === 0 || isAddingToCart}
                 >
-                  <ShoppingCart className="w-4 h-4 mr-2" />
-                  {isAddingToCart ? 'Adding...' : 'Add to Cart'}
+                  {productInCart ? (
+                    <>
+                      <CheckCircle className="w-4 h-4 mr-2" />
+                      {isAddingToCart ? 'Adding...' : 'Add More to Cart'}
+                    </>
+                  ) : (
+                    <>
+                      <ShoppingCart className="w-4 h-4 mr-2" />
+                      {isAddingToCart ? 'Adding...' : 'Add to Cart'}
+                    </>
+                  )}
                 </Button>
                
               </div>

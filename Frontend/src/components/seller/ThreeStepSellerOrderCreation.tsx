@@ -11,7 +11,8 @@ import { useToast } from '@/hooks/use-toast';
 import { getSellerCustomers, getSellerProducts } from '@/api/sellers';
 import { createOrder } from '@/api/orders';
 import { AuthContext } from '@/contexts/AuthContext';
-import { ArrowLeft, ArrowRight, User, UserPlus, Package, Plus, Minus, CheckCircle, Mail } from 'lucide-react';
+import { ArrowLeft, ArrowRight, User, UserPlus, Package, Plus, Minus, CheckCircle, Mail, Search } from 'lucide-react';
+import { SearchableSelect } from '@/components/SearchableSelect';
 
 interface OrderItem {
   productId: number;
@@ -58,6 +59,8 @@ export const ThreeStepSellerOrderCreation: React.FC<ThreeStepSellerOrderCreation
   const [currentStep, setCurrentStep] = useState(1);
   const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(null);
   const [isCreatingNewCustomer, setIsCreatingNewCustomer] = useState(false);
+  const [customerSearchTerm, setCustomerSearchTerm] = useState('');
+  const [productSearchTerm, setProductSearchTerm] = useState('');
   const [newCustomerData, setNewCustomerData] = useState({
     customerName: '',
     customerEmail: '',
@@ -125,12 +128,14 @@ export const ThreeStepSellerOrderCreation: React.FC<ThreeStepSellerOrderCreation
       customerPhone: '',
       shippingAddress: ''
     });
-    setOrderData({
-      shippingAddress: '',
-      paymentMethod: 'PAY_ON_DELIVERY',
-      items: [],
-      totalPrice: 0
-    });
+      setOrderData({
+        shippingAddress: '',
+        paymentMethod: 'PAY_ON_DELIVERY',
+        items: [],
+        totalPrice: 0
+      });
+      setCustomerSearchTerm('');
+      setProductSearchTerm('');
   };
 
   useEffect(() => {
@@ -292,33 +297,23 @@ export const ThreeStepSellerOrderCreation: React.FC<ThreeStepSellerOrderCreation
       {!isCreatingNewCustomer && (
         <div className="space-y-2">
           <Label htmlFor="customer-select">Select Customer</Label>
+          
           {customersLoading ? (
             <div className="flex items-center justify-center p-4">
               <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-purple-500"></div>
             </div>
           ) : (
-            <Select 
-              value={selectedCustomer?.id.toString() || ""} 
-              onValueChange={(value) => {
-                const customer = customers.find((c: any) => c.id === parseInt(value));
-                setSelectedCustomer(customer || null);
-              }}
-            >
-              <SelectTrigger>
-                <SelectValue placeholder="Choose a customer" />
-              </SelectTrigger>
-              <SelectContent>
-                {customers.length > 0 ? customers.map((customer: any) => (
-                  <SelectItem key={customer.id} value={customer.id.toString()}>
-                    {customer.name} ({customer.email})
-                  </SelectItem>
-                )) : (
-                  <SelectItem value="no-customers" disabled>
-                    No customers found. Create orders to build your customer base.
-                  </SelectItem>
-                )}
-              </SelectContent>
-            </Select>
+            <SearchableSelect
+              label=""
+              placeholder="Search by name, email, or phone..."
+              items={customers}
+              selectedItem={selectedCustomer}
+              onSelect={(customer) => setSelectedCustomer(customer)}
+              onClear={() => setSelectedCustomer(null)}
+              displayField="name"
+              searchFields={['name', 'email', 'phone']}
+              className="w-full"
+            />
           )}
         </div>
       )}
@@ -416,81 +411,81 @@ export const ThreeStepSellerOrderCreation: React.FC<ThreeStepSellerOrderCreation
           </Button>
         </div>
 
-        {orderData.items.map((item, index) => (
-          <div key={index} className="border p-4 rounded-lg space-y-4">
-            <div className="flex items-center justify-between">
-              <h4 className="font-medium">Product {index + 1}</h4>
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                onClick={() => handleRemoveItem(index)}
-              >
-                <Minus className="w-4 h-4" />
-              </Button>
-            </div>
+{orderData.items.map((item, index) => (
+  <div key={index}>
+    <div className="border p-4 rounded-lg space-y-4">
+      <div className="flex items-center justify-between">
+        <h4 className="font-medium">Product {index + 1}</h4>
+        <Button
+          type="button"
+          variant="outline"
+          size="sm"
+          onClick={() => handleRemoveItem(index)}
+        >
+          <Minus className="w-4 h-4" />
+        </Button>
+      </div>
 
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label>Product</Label>
-                <Select
-                  value={item.productId.toString()}
-                  onValueChange={(value) => handleItemChange(index, 'productId', parseInt(value))}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select your product" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {products.map((product: any) => (
-                      <SelectItem key={product.id} value={product.id.toString()}>
-                        {product.name} - {product.price?.toLocaleString()} Rwf (Stock: {product.stock})
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
+      <div className="space-y-4">
+        {/* Product selection */}
+         <SearchableSelect
+           label="Select Product"
+           placeholder="Search by name, category, or SKU..."
+           items={products}
+           selectedItem={item.productId ? products.find((p: any) => p.id === item.productId) : null}
+           onSelect={(product) => handleItemChange(index, 'productId', product.id)}
+           onClear={() => handleItemChange(index, 'productId', 0)}
+           displayField="name"
+           searchFields={['name', 'category', 'sku']}
+           imageField="coverImage"
+           className="w-full"
+         />
 
-              <div className="space-y-2">
-                <Label>Quantity</Label>
-                <Input
-                  type="number"
-                  min="1"
-                  value={item.quantity}
-                  onChange={(e) => handleItemChange(index, 'quantity', parseInt(e.target.value) || 1)}
-                />
-              </div>
-            </div>
-
-            <div className="space-y-2">
-              <Label>Custom Price (Optional)</Label>
-              <Input
-                type="number"
-                min="0"
-                value={item.price}
-                onChange={(e) => handleItemChange(index, 'price', parseFloat(e.target.value) || 0)}
-                placeholder="Override default price"
-              />
-            </div>
-
-            {item.productName && (
-              <div className="bg-gray-50 p-3 rounded flex items-center space-x-3">
-                {item.productImage && (
-                  <img
-                    src={item.productImage}
-                    alt={item.productName}
-                    className="w-12 h-12 object-cover rounded"
-                  />
-                )}
-                <div className="flex-1">
-                  <p className="text-sm font-medium">{item.productName}</p>
-                  <p className="text-sm text-gray-600">
-                    Qty: {item.quantity} × {item.price?.toLocaleString()} Rwf = {(item.price * item.quantity).toLocaleString()} Rwf
-                  </p>
-                </div>
-              </div>
-            )}
+        <div className="grid grid-cols-2 gap-4">
+          <div className="space-y-2">
+            <Label>Quantity</Label>
+            <Input
+              type="number"
+              min="1"
+              value={item.quantity}
+              onChange={(e) => handleItemChange(index, 'quantity', parseInt(e.target.value) || 1)}
+            />
           </div>
-        ))}
+          <div className="space-y-2">
+            <Label>Custom Price (Optional)</Label>
+            <Input
+              type="number"
+              min="0"
+              value={item.price}
+              onChange={(e) => handleItemChange(index, 'price', parseFloat(e.target.value) || 0)}
+              placeholder="Override default price"
+            />
+          </div>
+        </div>
+      </div>
+    </div>
+
+    {/* ⛔ This part was causing the error */}
+    {item.productName && (
+      <div className="bg-gray-50 p-3 rounded flex items-center space-x-3 mt-2">
+        {item.productImage && (
+          <img
+            src={item.productImage}
+            alt={item.productName}
+            className="w-12 h-12 object-cover rounded"
+          />
+        )}
+        <div className="flex-1">
+          <p className="text-sm font-medium">{item.productName}</p>
+          <p className="text-sm text-gray-600">
+            Qty: {item.quantity} × {item.price?.toLocaleString()} Rwf = {(item.price * item.quantity).toLocaleString()} Rwf
+          </p>
+        </div>
+      </div>
+    )}
+  </div>
+))}
+
 
         {orderData.items.length === 0 && (
           <div className="text-center py-8 border-2 border-dashed border-gray-300 rounded-lg">

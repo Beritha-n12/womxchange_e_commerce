@@ -33,7 +33,7 @@ const CategorySection = () => {
       description: "Beauty and personal care items",
       bgColor: "bg-pink-100",
       textColor: "text-pink-800",
-      image: "https://assets.vogue.com/photos/61e9c43c8aa98afba69ec2e8/master/w_2560%2Cc_limit/00_story.jpg"
+      image: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRsSjz2b_EapATbEqNfwcng5ZBJt7Fs-2EUBQ&s"
     },
     {
       id: 2,
@@ -41,7 +41,7 @@ const CategorySection = () => {
       description: "Fashion and apparel",
       bgColor: "bg-yellow-100",
       textColor: "text-yellow-800",
-      image: "/Hero01.jpg"
+      image: "https://images.hindustantimes.com/img/2022/12/22/550x309/istockphoto-1279108197-170667a_1671687926903_1671687937504_1671687937504.jpg"
     },
     {
       id: 3,
@@ -49,7 +49,7 @@ const CategorySection = () => {
       description: "Local Rwandan products",
       bgColor: "bg-purple-100",
       textColor: "text-purple-800",
-      image: "https://images.hindustantimes.com/img/2022/12/22/550x309/istockphoto-1279108197-170667a_1671687926903_1671687937504_1671687937504.jpg"
+      image: "/cosmetic.jpg"
     },
     {
       id: 4,
@@ -104,7 +104,7 @@ const CategorySection = () => {
             {displayCategories.slice(0, 6).map((category, index) => {
               const defaultCat = defaultCategories[index] || defaultCategories[0];
               return (
-                <Link to={`/products?category=${categories[0]?.id || ''}`}>
+                <Link key={category.id} to={`/products?category=${category.id}`} className="group block">
                   <div className={`${defaultCat.bgColor} rounded-2xl p-6 h-48 flex flex-col justify-between transition-all duration-300 group-hover:scale-105 group-hover:shadow-lg relative overflow-hidden`}>
                     {/* Background image overlay */}
                     <div 

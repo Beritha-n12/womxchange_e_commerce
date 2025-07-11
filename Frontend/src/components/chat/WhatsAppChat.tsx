@@ -133,13 +133,19 @@ const WhatsAppChat: React.FC<WhatsAppChatProps> = ({ currentUser }) => {
   const handleAudioReady = (audioData: AudioData) => {
     console.log('Audio ready:', audioData);
     
+    // Validate audio data before sending
+    if (!audioData || !audioData.file || !audioData.url) {
+      console.error('Invalid audio data received');
+      return;
+    }
+    
     const messageData: CreateMessageData = {
       messageType: 'AUDIO',
       attachments: [{
-        fileName: audioData.file.name,
+        fileName: audioData.file.name || 'audio_message.wav',
         fileUrl: audioData.url,
         fileType: 'AUDIO',
-        fileSize: audioData.file.size,
+        fileSize: audioData.file.size || 0,
       }],
     };
 
@@ -179,7 +185,7 @@ const WhatsAppChat: React.FC<WhatsAppChatProps> = ({ currentUser }) => {
   }
 
   return (
-    <Card className="flex flex-col h-[calc(100vh-200px)] bg-gray-50">
+    <Card className="flex flex-col h-[calc(100vh-80px)] bg-gray-50">
       {/* Chat Header - WhatsApp Style */}
       <CardHeader className="bg-purple-600 text-white p-4 rounded-t-lg">
         <CardTitle className="flex items-center space-x-3">

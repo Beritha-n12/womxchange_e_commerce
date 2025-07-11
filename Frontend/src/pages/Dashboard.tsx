@@ -238,11 +238,11 @@ const Dashboard = () => {
       #{order.id}
     </Link>
   </td>
-  <td className="px-4 py-3 text-sm">
-    <Link to={`/orders/${order.id}`} className="text-blue-600 hover:underline">
-      {order.user?.name || 'Unknown'}
-    </Link>
-  </td>
+                   <td className="px-4 py-3 text-sm">
+                     <Link to={`/orders/${order.id}`} className="text-blue-600 hover:underline">
+                       {order.user?.name || order.customerName || order.displayName || 'Guest User'}
+                     </Link>
+                   </td>
   <td className="px-4 py-3 text-sm font-medium">
     <Link to={`/orders/${order.id}`} className="text-blue-600 hover:underline">
       {order.totalPrice.toLocaleString()} Rwf
@@ -270,11 +270,17 @@ const Dashboard = () => {
       </span>
     </Link>
   </td>
-  <td className="px-4 py-3 text-sm">
-    <Link to={`/orders/${order.id}`} className="text-blue-600 hover:underline">
-      {new Date(order.createdAt).toLocaleDateString()}
-    </Link>
-  </td>
+                   <td className="px-4 py-3 text-sm">
+                     <Link to={`/orders/${order.id}`} className="text-blue-600 hover:underline">
+                       {new Date(order.createdAt).toLocaleDateString('en-US', { 
+                         year: 'numeric', 
+                         month: 'short', 
+                         day: 'numeric',
+                         hour: '2-digit',
+                         minute: '2-digit'
+                       })}
+                     </Link>
+                   </td>
                     </tr>
 
                     ))

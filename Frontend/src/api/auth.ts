@@ -13,6 +13,13 @@ export interface LoginData {
 }
 
 export interface UserResponse {
+  businessLocation: string;
+  businessCategory: string;
+  businessWebsite: string;
+  phone: string;
+  address: string;
+  businessName: string;
+  businessDescription: string;
   id: number;
   name: string;
   email: string;

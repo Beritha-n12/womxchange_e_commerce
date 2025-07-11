@@ -8,6 +8,11 @@ export interface ProfileUpdateData {
   address?: string;
   bio?: string;
   company?: string;
+  businessName?: string;
+  businessDescription?: string;
+  businessLocation?: string;
+  businessCategory?: string;
+  businessWebsite?: string;
 }
 
 export const updateProfile = async (data: ProfileUpdateData) => {

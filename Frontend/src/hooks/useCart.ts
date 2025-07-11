@@ -5,7 +5,7 @@ import { getCart, addToCart, removeFromCart, Cart as CartType } from '@/api/orde
 import { AuthContext } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
 
-export const useCart = () => {
+const useCart = () => {
   const { user, loading: authLoading } = useContext(AuthContext);
   const { toast } = useToast();
   const queryClient = useQueryClient();
@@ -165,6 +165,20 @@ export const useCart = () => {
     },
     onError: (error: any) => {
       console.error('❌ Add to cart error:', error);
+      
+      // Check for stock-related errors
+      if (error.response?.status === 400) {
+        const errorData = error.response.data;
+        if (errorData.message?.includes('stock') || errorData.message?.includes('quantity')) {
+          toast({
+            title: "Insufficient Stock",
+            description: errorData.message || 'The requested quantity exceeds available stock',
+            variant: "destructive",
+          });
+          return;
+        }
+      }
+      
       toast({
         title: "Error",
         description: error.response?.data?.message || "Failed to add item to cart",
@@ -235,6 +249,7 @@ export const useCart = () => {
 
   return {
     cart,
+    cartItems: Array.isArray(cart?.items) ? cart.items : [],
     cartItemsCount,
     isLoading: isLoading || authLoading,
     error,
@@ -245,3 +260,5 @@ export const useCart = () => {
     refetchCart: refetch,
   };
 };
+
+export default useCart;

@@ -8,7 +8,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Plus, Edit, Trash2, Package } from 'lucide-react';
+import { Plus, Edit, Trash2, Package, Search } from 'lucide-react';
 import { getCategories, createCategory, updateCategory, deleteCategory } from '@/api/categories';
 import { useToast } from '@/hooks/use-toast';
 
@@ -19,6 +19,7 @@ const AdminCategories = () => {
   const [isEditOpen, setIsEditOpen] = useState(false);
   const [editingCategory, setEditingCategory] = useState(null);
   const [formData, setFormData] = useState({ name: '', description: '' });
+  const [searchTerm, setSearchTerm] = useState('');
 
   const { data: categoriesData, isLoading } = useQuery({
     queryKey: ['categories'],
@@ -85,6 +86,10 @@ const AdminCategories = () => {
   });
 
   const categories = categoriesData?.data || [];
+  const filteredCategories = categories.filter(category =>
+    category.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    category.description?.toLowerCase().includes(searchTerm.toLowerCase())
+  );
 
   const handleCreate = (e: React.FormEvent) => {
     e.preventDefault();
@@ -126,9 +131,9 @@ const AdminCategories = () => {
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-3">
             <Package className="w-8 h-8 text-purple-600" />
-            <h2 className="text-3xl font-bold bg-gradient-to-r text-purple-600  bg-clip-text">
+            <h1 className="text-3xl font-bold bg-gradient-to-r text-purple-600  bg-clip-text">
               Category Management
-            </h2>
+            </h1>
           </div>
           <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
             <DialogTrigger asChild>
@@ -166,15 +171,40 @@ const AdminCategories = () => {
           </Dialog>
         </div>
 
+        {/* Search Bar */}
+        <div className="flex items-center space-x-4 mb-6">
+          <div className="relative flex-1 max-w-md">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+            <Input
+              placeholder="Search categories by name or description..."
+              className="pl-10"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+            />
+          </div>
+          {searchTerm && (
+            <Button variant="outline" onClick={() => setSearchTerm('')}>
+              Clear
+            </Button>
+          )}
+        </div>
+
         <Card>
           <CardHeader>
-            <CardTitle>Categories ({categories.length})</CardTitle>
+            <CardTitle>Categories ({filteredCategories.length})</CardTitle>
           </CardHeader>
           <CardContent>
-            {categories.length === 0 ? (
+            {filteredCategories.length === 0 ? (
               <div className="text-center py-8">
                 <Package className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-                <p className="text-gray-600">No categories found</p>
+                <p className="text-gray-600">
+                  {categories.length === 0 ? 'No categories found' : 'No categories match your search'}
+                </p>
+                {searchTerm && (
+                  <p className="text-sm text-gray-500 mt-2">
+                    Try adjusting your search term
+                  </p>
+                )}
               </div>
             ) : (
               <Table>
@@ -186,7 +216,7 @@ const AdminCategories = () => {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {categories.map((category: any) => (
+                  {filteredCategories.map((category: any) => (
                     <TableRow key={category.id}>
                       <TableCell className="font-medium">{category.name}</TableCell>
                       <TableCell>{category.description}</TableCell>

@@ -1,5 +1,6 @@
+
 import React, { useContext, useState } from 'react';
-import { Bell, Moon, LogOut, User, Settings, Home } from 'lucide-react';
+import { Bell, Moon, LogOut, User, Settings, Home, Menu } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -19,7 +20,11 @@ import {
 } from '@/components/ui/dropdown-menu';
 import ChatBadge from '../ChatBadge';
 
-export const DashboardHeader: React.FC = () => {
+interface DashboardHeaderProps {
+  onMobileMenuToggle?: () => void;
+}
+
+export const DashboardHeader: React.FC<DashboardHeaderProps> = ({ onMobileMenuToggle }) => {
   const { user, logout } = useContext(AuthContext);
   const { t } = useLanguage();
   const { toast } = useToast();
@@ -67,25 +72,38 @@ export const DashboardHeader: React.FC = () => {
   if (!user) return null;
 
   return (
-    <header className="bg-white border-b border-gray-200 px-6 py-4">
+    <header className="bg-white border-b border-gray-200 px-4 sm:px-6 py-3 sm:py-4">
       <div className="flex items-center justify-between">
-        <div className="flex items-center space-x-4">
+        <div className="flex items-center space-x-2 sm:space-x-4">
+          {/* Mobile menu button - only show on lg screens and below */}
+          {onMobileMenuToggle && (
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={onMobileMenuToggle}
+              className="lg:hidden"
+            >
+              <Menu className="w-5 h-5" />
+            </Button>
+          )}
+          
           <Link to="/">
-            <Button variant="ghost" className="text-purple-600 hover:text-purple-700">
-              <Home className="w-4 h-4 mr-2" />
-              {t('nav.home')}
+            <Button variant="ghost" className="text-purple-600 hover:text-purple-700 text-sm sm:text-base">
+              <Home className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
+              <span className="hidden sm:inline">{t('nav.home')}</span>
             </Button>
           </Link>
           {(user.role === 'admin' || user.role === 'seller') && (
             <Link to="/dashboard">
-              <Button variant="ghost" className="text-purple-600 hover:text-purple-700">
-                {t('nav.dashboard')}
+              <Button variant="ghost" className="text-purple-600 hover:text-purple-700 text-sm sm:text-base">
+                <span className="hidden sm:inline">{t('nav.dashboard')}</span>
+                <span className="sm:hidden">Dashboard</span>
               </Button>
             </Link>
           )}
         </div>
         
-        <div className="flex items-center space-x-4">
+        <div className="flex items-center space-x-2 sm:space-x-4">
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="ghost" size="icon" className="relative">
@@ -148,21 +166,21 @@ export const DashboardHeader: React.FC = () => {
                 </div>
               )}
             </DropdownMenuContent>
-             <div className=" text-center">
-                  <ChatBadge  className="w-6 h-6 mx-auto mb-2 text-gray-400" 
-                  />
-                  </div>
           </DropdownMenu>
+
+          <div className="text-center">
+            <ChatBadge className="w-6 h-6 mx-auto mb-2 text-gray-400" />
+          </div>
 
           <LanguageSwitcher variant="dashboard" />
 
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="ghost" className="flex items-center space-x-2">
-                <div className="w-8 h-8 bg-purple-400 rounded-full flex items-center justify-center text-white font-medium">
+                <div className="w-6 h-6 sm:w-8 sm:h-8 bg-purple-400 rounded-full flex items-center justify-center text-white font-medium text-xs sm:text-sm">
                   {user.name.charAt(0).toUpperCase()}
                 </div>
-                <span className="text-sm font-medium">{user.name}</span>
+                <span className="text-xs sm:text-sm font-medium hidden md:inline">{user.name}</span>
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="bg-white border border-gray-200 shadow-lg z-50">
@@ -186,5 +204,5 @@ export const DashboardHeader: React.FC = () => {
         </div>
       </div>
     </header>
-  );
+  );
 };

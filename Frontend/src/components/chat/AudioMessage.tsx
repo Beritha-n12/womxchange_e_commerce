@@ -37,18 +37,19 @@ const AudioMessage: React.FC<AudioMessageProps> = ({ audioUrl, duration = 0, isC
   };
 
   const formatTime = (seconds: number) => {
+    if (!seconds || !isFinite(seconds) || isNaN(seconds)) return "0:00";
     const mins = Math.floor(seconds / 60);
     const secs = Math.floor(seconds % 60);
     return `${mins}:${secs.toString().padStart(2, '0')}`;
   };
 
-  const progressPercentage = duration > 0 ? (currentTime / duration) * 100 : 0;
+  const progressPercentage = duration > 0 && isFinite(duration) ? (currentTime / duration) * 100 : 0;
 
   return (
     <div 
       className={`flex items-center space-x-3 p-3 rounded-lg max-w-xs ${
         isCurrentUser 
-          ? 'bg-purple-500 text-white ml-auto' 
+          ? 'bg-purple-100 text-purple-900 ml-auto' 
           : 'bg-white border border-gray-200'
       }`}
     >
@@ -78,11 +79,13 @@ const AudioMessage: React.FC<AudioMessageProps> = ({ audioUrl, duration = 0, isC
           />
         </div>
         
-        <div className={`text-xs ${
-          isCurrentUser ? 'text-purple-100' : 'text-gray-500'
-        }`}>
-          {formatTime(currentTime)} / {formatTime(duration)}
-        </div>
+        {(duration > 0 && isFinite(duration)) && (
+          <div className={`text-xs ${
+            isCurrentUser ? 'text-purple-600' : 'text-gray-500'
+          }`}>
+            {formatTime(currentTime)} / {formatTime(duration)}
+          </div>
+        )}
       </div>
 
       <div className={`text-xs ${

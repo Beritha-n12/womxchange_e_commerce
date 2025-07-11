@@ -42,12 +42,29 @@ export const ProductTable: React.FC<ProductTableProps> = ({ products, onEdit, on
               {products.length > 0 ? products.map((product) => (
                 <tr key={product.id} className="hover:bg-gray-50">
                   <td className="px-4 py-3">
-                    <Link 
-                      to={`/products/${product.id}`}
-                      className="text-blue-600 hover:text-blue-800 font-medium"
-                    >
-                      {product.name}
-                    </Link>
+                    <div className="flex items-center space-x-3">
+                      <div className="w-12 h-12 bg-gray-100 rounded-lg overflow-hidden flex-shrink-0">
+                        <img 
+                          src={product.coverImage || '/placeholder.svg'} 
+                          alt={product.name}
+                          className="w-full h-full object-cover"
+                          onError={(e) => {
+                            e.currentTarget.src = '/placeholder.svg';
+                          }}
+                        />
+                      </div>
+                      <div>
+                        <Link 
+                          to={`/products/${product.id}`}
+                          className="text-blue-600 hover:text-blue-800 font-medium"
+                        >
+                          {product.name}
+                        </Link>
+                        <div className="text-sm text-gray-500 truncate max-w-xs">
+                          {product.description || 'No description'}
+                        </div>
+                      </div>
+                    </div>
                   </td>
                   <td className="px-4 py-3">{product.category?.name || 'N/A'}</td>
                   <td className="px-4 py-3">{product.price.toLocaleString()} Rwf</td>

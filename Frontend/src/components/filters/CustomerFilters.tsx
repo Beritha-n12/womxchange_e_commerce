@@ -1,0 +1,106 @@
+import React from 'react';
+import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Search } from 'lucide-react';
+
+interface CustomerFiltersProps {
+  searchTerm: string;
+  onSearchChange: (value: string) => void;
+  dateFilter: string;
+  onDateChange: (value: string) => void;
+  orderCountFilter: string;
+  onOrderCountChange: (value: string) => void;
+}
+
+export const CustomerFilters: React.FC<CustomerFiltersProps> = ({
+  searchTerm,
+  onSearchChange,
+  dateFilter,
+  onDateChange,
+  orderCountFilter,
+  onOrderCountChange
+}) => {
+  return (
+    <div className="space-y-4">
+      {/* Search Input */}
+      <div className="relative">
+        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+        <Input
+          placeholder="Search customers by name or email..."
+          className="pl-10"
+          value={searchTerm}
+          onChange={(e) => onSearchChange(e.target.value)}
+        />
+      </div>
+
+      {/* Filter Row */}
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
+        {/* Registration Date Filter */}
+        <div className="space-y-1">
+          <label className="text-sm font-medium text-gray-700">Registration Date</label>
+          <Select value={dateFilter} onValueChange={onDateChange}>
+            <SelectTrigger>
+              <SelectValue placeholder="All Dates" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Dates</SelectItem>
+              <SelectItem value="today">Today</SelectItem>
+              <SelectItem value="week">This Week</SelectItem>
+              <SelectItem value="month">This Month</SelectItem>
+              <SelectItem value="year">This Year</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+
+        {/* Order Count Filter */}
+        <div className="space-y-1">
+          <label className="text-sm font-medium text-gray-700">Number of Orders</label>
+          <Select value={orderCountFilter} onValueChange={onOrderCountChange}>
+            <SelectTrigger>
+              <SelectValue placeholder="All Orders" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Orders</SelectItem>
+              <SelectItem value="0">No Orders</SelectItem>
+              <SelectItem value="1-5">1-5 Orders</SelectItem>
+              <SelectItem value="6-20">6-20 Orders</SelectItem>
+              <SelectItem value="20+">20+ Orders</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+
+        {/* Activity Status */}
+        <div className="space-y-1">
+          <label className="text-sm font-medium text-gray-700">Activity</label>
+          <Select value="" onValueChange={() => {}}>
+            <SelectTrigger>
+              <SelectValue placeholder="All Activity" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Activity</SelectItem>
+              <SelectItem value="active">Recently Active</SelectItem>
+              <SelectItem value="inactive">Inactive</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+
+        {/* Clear Filters */}
+        <div className="space-y-1">
+          <label className="text-sm font-medium text-gray-700">&nbsp;</label>
+          <Button 
+            variant="outline" 
+            className="w-full"
+            onClick={() => {
+              onSearchChange('');
+              onDateChange('all');
+              onOrderCountChange('all');
+            }}
+          >
+            Clear All
+          </Button>
+        </div>
+      </div>
+    </div>
+  );
+};

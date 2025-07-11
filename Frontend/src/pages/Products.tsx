@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useSearchParams, Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
@@ -11,19 +12,25 @@ import { Badge } from '@/components/ui/badge';
 import { Pagination, PaginationContent, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from '@/components/ui/pagination';
 import { getProducts } from '@/api/products';
 import { getCategories } from '@/api/categories';
-import { Search, Filter, Star, ShoppingCart, ChevronLeft, ChevronRight } from 'lucide-react';
+import { ProductFilters } from '@/components/filters/ProductFilters';
+import { Search, Filter, Star, ShoppingCart, ChevronLeft, ChevronRight, User, CheckCircle } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
-import { useCart } from '@/hooks/useCart';
+import  useCart  from '@/hooks/useCart';
+import { useCartStatus } from '@/hooks/useCartStatus';
 
 const Products = () => {
   const { t } = useLanguage();
   const { addToCart } = useCart();
+  const { isInCart, getCartItemQuantity } = useCartStatus();
   const [searchParams, setSearchParams] = useSearchParams();
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string>('');
   const [selectedSeller, setSelectedSeller] = useState<string>('');
   const [sortBy, setSortBy] = useState('name');
   const [currentPage, setCurrentPage] = useState(1);
+  const [categoryFilter, setCategoryFilter] = useState('all');
+  const [dateFilter, setDateFilter] = useState('all');
+  const [priceFilter, setPriceFilter] = useState({ min: 0, max: Infinity });
   const itemsPerPage = 8;
 
   // Get filters from URL parameters
@@ -56,18 +63,41 @@ const Products = () => {
   const products = productsData?.data || [];
   const categories = categoriesData?.data || [];
 
-  // Filter and sort products based on current filters
+  // Enhanced filter logic with price and date filtering
   const filteredProducts = products.filter(product => {
     const matchesSearch = product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          product.description?.toLowerCase().includes(searchTerm.toLowerCase());
     
-    const matchesCategory = !selectedCategory || 
-                           product.categoryId.toString() === selectedCategory;
+    const matchesCategory = categoryFilter === 'all' || 
+                           product.categoryId.toString() === categoryFilter;
     
     const matchesSeller = !selectedSeller ||
                          product.createdById?.toString() === selectedSeller;
     
-    return matchesSearch && matchesCategory && matchesSeller;
+    // Date filter logic
+    const productDate = new Date(product.createdAt);
+    const now = new Date();
+    let matchesDate = dateFilter === 'all' ||
+      (dateFilter === 'today' && productDate.toDateString() === now.toDateString()) ||
+      (dateFilter === 'week' && productDate >= new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000)) ||
+      (dateFilter === 'month' && productDate >= new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000));
+    
+    // Handle custom date range
+    if (dateFilter.startsWith('custom-')) {
+      const [, startDate, endDate] = dateFilter.split('-');
+      if (startDate && endDate) {
+        const start = new Date(startDate);
+        const end = new Date(endDate);
+        end.setHours(23, 59, 59, 999); // Include full end date
+        matchesDate = productDate >= start && productDate <= end;
+      }
+    }
+    
+    // Price filter logic
+    const matchesPrice = priceFilter.min === 0 && priceFilter.max === Infinity ||
+                        (product.price >= priceFilter.min && product.price <= priceFilter.max);
+    
+    return matchesSearch && matchesCategory && matchesSeller && matchesDate && matchesPrice;
   }).sort((a, b) => {
     switch (sortBy) {
       case 'price-low':
@@ -155,57 +185,28 @@ const Products = () => {
         </div>
 
         {/* Filters */}
-        <div className="mb-8 space-y-4 lg:space-y-0 lg:flex lg:items-center lg:justify-between lg:space-x-4">
-          {/* Search */}
-          <div className="relative flex-1 max-w-md">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
-            <Input
-              placeholder="Search products..."
-              value={searchTerm}
-              onChange={(e) => handleSearchChange(e.target.value)}
-              className="pl-10 bg-gray-50 border-gray-200"
-            />
-          </div>
-
-          <div className="flex space-x-4">
-            {/* Category Filter */}
-            <Select
-              value={selectedCategory}
-              onValueChange={(value) => handleCategoryChange(value)}
-            >
-              <SelectTrigger className="w-48 bg-gray-50 border-gray-200">
-                <Filter className="w-4 h-4 mr-2" />
-                <SelectValue placeholder="All Categories" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Categories</SelectItem>
-                {categories
-                  .filter((category) => category?.id && category?.name)
-                  .map((category) => (
-                    <SelectItem
-                      key={category.id}
-                      value={category.id.toString()}
-                    >
-                      {category.name}
-                    </SelectItem>
-                  ))}
-              </SelectContent>
-            </Select>
-
-            {/* Sort */}
-            <Select value={sortBy} onValueChange={handleSortChange}>
-              <SelectTrigger className="w-48 bg-gray-50 border-gray-200">
-                <SelectValue placeholder="Sort by" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="name">Name (A-Z)</SelectItem>
-                <SelectItem value="price-low">Price (Low to High)</SelectItem>
-                <SelectItem value="price-high">Price (High to Low)</SelectItem>
-                <SelectItem value="rating">Highest Rated</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-        </div>
+        <ProductFilters
+          searchTerm={searchTerm}
+          onSearchChange={handleSearchChange}
+          categoryFilter={categoryFilter}
+          onCategoryChange={(value) => {
+            setCategoryFilter(value);
+            if (value === 'all') {
+              setSelectedCategory('');
+            } else {
+              setSelectedCategory(value);
+            }
+            setCurrentPage(1);
+          }}
+          dateFilter={dateFilter}
+          onDateChange={setDateFilter}
+          categories={categories}
+          priceFilter={priceFilter}
+          onPriceChange={(min, max) => {
+            setPriceFilter({ min, max });
+            setCurrentPage(1);
+          }}
+        />
 
         {/* Active Filters */}
         {(selectedCategory || searchTerm) && (
@@ -270,67 +271,95 @@ const Products = () => {
         ) : (
           <>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-              {paginatedProducts.map((product) => (
-                <Card key={product.id} className="group hover:shadow-lg transition-shadow duration-200">
-                  <Link to={`/products/${product.id}`}>
-                    <div className="aspect-square overflow-hidden rounded-t-lg">
-                      <img
-                        src={product.coverImage}
-                        alt={product.name}
-                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-200"
-                      />
-                    </div>
-                  </Link>
-                  <CardHeader className="p-4">
-                    <Link to={`/products/${product.id}`}>
-                      <CardTitle className="text-lg font-semibold text-gray-900 hover:text-purple-600 transition-colors line-clamp-2">
-                        {product.name}
-                      </CardTitle>
-                    </Link>
-                    {product.averageRating > 0 && (
-                      <div className="flex items-center space-x-1">
-                        <div className="flex">
-                          {[...Array(5)].map((_, i) => (
-                            <Star
-                              key={i}
-                              className={`w-4 h-4 ${
-                                i < Math.floor(product.averageRating)
-                                  ? 'text-yellow-400 fill-current'
-                                  : 'text-gray-300'
-                              }`}
-                            />
-                          ))}
-                        </div>
-                        <span className="text-sm text-gray-600">
-                          ({product.numReviews})
-                        </span>
+              {paginatedProducts.map((product) => {
+                const productInCart = isInCart(product.id);
+                const cartQuantity = getCartItemQuantity(product.id);
+                
+                return (
+                  <Card key={product.id} className="group hover:shadow-lg transition-shadow duration-200 relative">
+                    {/* Cart indicator badge */}
+                    {productInCart && (
+                      <div className="absolute top-2 right-2 z-10">
+                        <Badge className="bg-green-500 text-white text-xs">
+                          <CheckCircle className="w-3 h-3 mr-1" />
+                          {cartQuantity}
+                        </Badge>
                       </div>
                     )}
-                  </CardHeader>
-                  <CardContent className="p-4 pt-0">
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <p className="text-2xl font-bold text-purple-600">
-                          {product.price.toLocaleString()} Rwf
-                        </p>
-                        {product.stock > 0 ? (
-                          <p className="text-sm text-green-600">In Stock ({product.stock})</p>
-                        ) : (
-                          <p className="text-sm text-red-600">Out of Stock</p>
-                        )}
+                    
+                    <Link to={`/products/${product.id}`}>
+                      <div className="aspect-square overflow-hidden rounded-t-lg">
+                        <img
+                          src={product.coverImage}
+                          alt={product.name}
+                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-200"
+                        />
                       </div>
-                      <Button
-                        size="sm"
-                        onClick={() => handleAddToCart(product.id)}
-                        disabled={product.stock === 0}
-                        className="bg-purple-600 hover:bg-purple-700"
-                      >
-                        <ShoppingCart className="w-4 h-4" />
-                      </Button>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
+                    </Link>
+                    <CardHeader className="p-4">
+                      <Link to={`/products/${product.id}`}>
+                        <CardTitle className="text-lg font-semibold text-gray-900 hover:text-purple-600 transition-colors line-clamp-2">
+                          {product.name}
+                        </CardTitle>
+                      </Link>
+                      {product.averageRating > 0 && (
+                        <div className="flex items-center space-x-1">
+                          <div className="flex">
+                            {[...Array(5)].map((_, i) => (
+                              <Star
+                                key={i}
+                                className={`w-4 h-4 ${
+                                  i < Math.floor(product.averageRating)
+                                    ? 'text-yellow-400 fill-current'
+                                    : 'text-gray-300'
+                                }`}
+                              />
+                            ))}
+                          </div>
+                          <span className="text-sm text-gray-600">
+                            ({product.numReviews})
+                          </span>
+                        </div>
+                      )}
+                    </CardHeader>
+                    <CardContent className="p-4 pt-0">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <p className="text-2xl font-bold text-purple-600">
+                            {product.price.toLocaleString()} Rwf
+                          </p>
+                          {product.createdBy && (
+                            <div className="flex items-center text-xs text-gray-600 mb-1">
+                              <User className="w-3 h-3 mr-1" />
+                              <span>Sold by: {product.createdBy.businessName || product.createdBy.name}</span>
+                            </div>
+                          )}
+                          {product.stock > 0 ? (
+                            <p className="text-sm text-green-600">In Stock ({product.stock})</p>
+                          ) : (
+                            <p className="text-sm text-red-600">Out of Stock</p>
+                          )}
+                        </div>
+                        <Button
+                          size="sm"
+                          onClick={() => handleAddToCart(product.id)}
+                          disabled={product.stock === 0}
+                          className={productInCart 
+                            ? "bg-green-600 hover:bg-green-700" 
+                            : "bg-purple-600 hover:bg-purple-700"
+                          }
+                        >
+                          {productInCart ? (
+                            <CheckCircle className="w-4 h-4" />
+                          ) : (
+                            <ShoppingCart className="w-4 h-4" />
+                          )}
+                        </Button>
+                      </div>
+                    </CardContent>
+                  </Card>
+                );
+              })}
             </div>
 
             {/* Pagination */}
@@ -401,4 +430,4 @@ const Products = () => {
   );
 };
 
-export default Products;
+export default Products;

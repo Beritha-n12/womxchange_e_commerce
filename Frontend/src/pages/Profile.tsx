@@ -1,274 +1,280 @@
 
-import React, { useContext, useState, useEffect } from 'react';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { AuthContext } from '@/contexts/AuthContext';
+import React, { useContext, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { AuthContext } from '../contexts/AuthContext';
 import { DashboardLayout } from '@/components/layout/DashboardLayout';
+import { BuyerLayout } from '@/components/layout/BuyerLayout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { User, Mail, Phone, MapPin, Building, FileText } from 'lucide-react';
-import { getUserProfile, updateProfile } from '@/api/profile';
-import { toast } from 'sonner';
+import { updateProfile } from '@/api/profile';
+import { useToast } from '@/hooks/use-toast';
+import { User, Mail, Phone, MapPin, Building } from 'lucide-react';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
+
 
 const Profile = () => {
   const { user, updateUser } = useContext(AuthContext);
+  const navigate = useNavigate();
+  const { toast } = useToast();
   const queryClient = useQueryClient();
-  const [isEditing, setIsEditing] = useState(false);
+  
   const [formData, setFormData] = useState({
-    name: '',
-    email: '',
-    phone: '',
-    address: '',
-    bio: '',
-    company: '',
-  });
-
-  const { data: profileData, isLoading, error } = useQuery({
-    queryKey: ['user-profile'],
-    queryFn: getUserProfile,
-    enabled: !!user,
+    name: user?.name || '',
+    email: user?.email || '',
+    phone: user?.phone || '',
+    address: user?.address || '',
+    businessName: user?.businessName || '',
+    businessDescription: user?.businessDescription || '',
+    businessLocation: user?.businessLocation || '',
+    businessCategory: user?.businessCategory || '',
+    businessWebsite: user?.businessWebsite || '',
   });
 
   const updateProfileMutation = useMutation({
     mutationFn: updateProfile,
     onSuccess: (data) => {
-      console.log('Profile update successful:', data);
-      
-      // Update the query cache immediately
-      queryClient.setQueryData(['user-profile'], data);
-      
-      // Update the auth context with new user data
-      updateUser({ ...user, ...data });
-      
-      // Set editing to false immediately
-      setIsEditing(false);
-      
-      // Show success toast
-      toast.success('Profile updated successfully!');
-      
-      // Invalidate and refetch to ensure consistency
-      queryClient.invalidateQueries({ queryKey: ['user-profile'] });
+      updateUser(data.data);
+      queryClient.invalidateQueries({ queryKey: ['profile'] });
+      toast({
+        title: "Success",
+        description: "Profile updated successfully",
+      });
     },
     onError: (error: any) => {
-      console.error('Profile update error:', error);
-      toast.error(error.response?.data?.message || "Failed to update profile");
-    }
+      toast({
+        title: "Error",
+        description: error.response?.data?.message || "Failed to update profile",
+        variant: "destructive",
+      });
+    },
   });
 
-  useEffect(() => {
-    if (profileData) {
-      console.log('Setting form data from profile:', profileData);
-      setFormData({
-        name: profileData.name || '',
-        email: profileData.email || '',
-        phone: profileData.phone || '',
-        address: profileData.address || '',
-        bio: profileData.bio || '',
-        company: profileData.company || '',
-      });
-    }
-  }, [profileData]);
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({
+      ...prev,
+      [name]: value
+    }));
+  };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    console.log('Submitting profile update:', formData);
     updateProfileMutation.mutate(formData);
   };
 
-  const handleCancel = () => {
-    if (profileData) {
-      setFormData({
-        name: profileData.name || '',
-        email: profileData.email || '',
-        phone: profileData.phone || '',
-        address: profileData.address || '',
-        bio: profileData.bio || '',
-        company: profileData.company || '',
-      });
-    }
-    setIsEditing(false);
-  };
-
-  if (isLoading) {
-    return (
-      <DashboardLayout currentPage="profile">
-        <div className="flex items-center justify-center min-h-[400px]">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-500"></div>
-        </div>
-      </DashboardLayout>
-    );
+  if (!user) {
+    navigate('/login');
+    return null;
   }
 
-  if (error) {
-    console.error('Profile loading error:', error);
-    return (
-      <DashboardLayout currentPage="profile">
-        <div className="flex items-center justify-center min-h-[400px]">
-          <div className="text-center">
-            <p className="text-red-600 mb-4">Failed to load profile</p>
-            <Button onClick={() => queryClient.invalidateQueries({ queryKey: ['user-profile'] })}>
-              Retry
-            </Button>
+  const profileContent = (
+    <div className="space-y-6">
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center space-x-2">
+            <User className="w-5 h-5" />
+            <span>Personal Information</span>
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <Label htmlFor="name">Full Name</Label>
+                <Input
+                  id="name"
+                  name="name"
+                  value={formData.name}
+                  onChange={handleInputChange}
+                  className="mt-1"
+                />
+              </div>
+              <div>
+                <Label htmlFor="email">Email</Label>
+                <Input
+                  id="email"
+                  name="email"
+                  type="email"
+                  value={formData.email}
+                  onChange={handleInputChange}
+                  className="mt-1"
+                />
+              </div>
+              <div>
+                <Label htmlFor="phone">Phone</Label>
+                <Input
+                  id="phone"
+                  name="phone"
+                  value={formData.phone}
+                  onChange={handleInputChange}
+                  className="mt-1"
+                />
+              </div>
+              <div>
+                <Label htmlFor="address">Address</Label>
+                <Input
+                  id="address"
+                  name="address"
+                  value={formData.address}
+                  onChange={handleInputChange}
+                  className="mt-1"
+                />
+              </div>
+            </div>
+
+            {(user.role && ['seller', 'admin', 'buyer'].includes(user.role.toLowerCase())) && (
+              <div className="border-t pt-6 mt-6">
+                <h3 className="text-lg font-semibold mb-4 flex items-center space-x-2">
+                  <Building className="w-5 h-5" />
+                  <span>Business Information</span>
+                </h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <Label htmlFor="businessName">Business Name</Label>
+                    <Input
+                      id="businessName"
+                      name="businessName"
+                      value={formData.businessName}
+                      onChange={handleInputChange}
+                      className="mt-1"
+                      placeholder="Enter your business name"
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="businessCategory">Business Category</Label>
+                    <Input
+                      id="businessCategory"
+                      name="businessCategory"
+                      value={formData.businessCategory}
+                      onChange={handleInputChange}
+                      className="mt-1"
+                      placeholder="e.g., Retail, Services, Manufacturing"
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="businessLocation">Business Location</Label>
+                    <Input
+                      id="businessLocation"
+                      name="businessLocation"
+                      value={formData.businessLocation}
+                      onChange={handleInputChange}
+                      className="mt-1"
+                      placeholder="City, District, Province"
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="businessWebsite">Business Website</Label>
+                    <Input
+                      id="businessWebsite"
+                      name="businessWebsite"
+                      type="url"
+                      value={formData.businessWebsite}
+                      onChange={handleInputChange}
+                      className="mt-1"
+                      placeholder="https://www.yourbusiness.com"
+                    />
+                  </div>
+                  <div className="md:col-span-2">
+                    <Label htmlFor="businessDescription">Business Description</Label>
+                    <Textarea
+                      id="businessDescription"
+                      name="businessDescription"
+                      value={formData.businessDescription}
+                      onChange={handleInputChange}
+                      className="mt-1"
+                      rows={3}
+                      placeholder="Describe your business, products, or services"
+                    />
+                  </div>
+                </div>
+              </div>
+            )}
+
+            <div className="flex justify-end">
+              <Button 
+                type="submit" 
+                disabled={updateProfileMutation.isPending}
+                className="bg-purple-600 hover:bg-purple-700"
+              >
+                {updateProfileMutation.isPending ? 'Updating...' : 'Update Profile'}
+              </Button>
+            </div>
+          </form>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>Account Details</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-3">
+            <div className="flex items-center space-x-3">
+              <User className="w-4 h-4 text-gray-500" />
+              <span className="text-sm text-gray-600">Role:</span>
+              <span className="text-sm font-medium capitalize">{user.role}</span>
+            </div>
+            <div className="flex items-center space-x-3">
+              <Mail className="w-4 h-4 text-gray-500" />
+              <span className="text-sm text-gray-600">Email:</span>
+              <span className="text-sm">{user.email}</span>
+            </div>
+            {user.phone && (
+              <div className="flex items-center space-x-3">
+                <Phone className="w-4 h-4 text-gray-500" />
+                <span className="text-sm text-gray-600">Phone:</span>
+                <span className="text-sm">{user.phone}</span>
+              </div>
+            )}
+            {user.address && (
+              <div className="flex items-center space-x-3">
+                <MapPin className="w-4 h-4 text-gray-500" />
+                <span className="text-sm text-gray-600">Address:</span>
+                <span className="text-sm">{user.address}</span>
+              </div>
+            )}
+            {user.businessName && (
+              <div className="flex items-center space-x-3">
+                <Building className="w-4 h-4 text-gray-500" />
+                <span className="text-sm text-gray-600">Business:</span>
+                <span className="text-sm">{user.businessName}</span>
+              </div>
+            )}
+            {user.businessCategory && (
+              <div className="flex items-center space-x-3">
+                <span className="w-4 h-4 text-gray-500">📋</span>
+                <span className="text-sm text-gray-600">Category:</span>
+                <span className="text-sm">{user.businessCategory}</span>
+              </div>
+            )}
+            {user.businessLocation && (
+              <div className="flex items-center space-x-3">
+                <span className="w-4 h-4 text-gray-500">📍</span>
+                <span className="text-sm text-gray-600">Location:</span>
+                <span className="text-sm">{user.businessLocation}</span>
+              </div>
+            )}
           </div>
-        </div>
-      </DashboardLayout>
+        </CardContent>
+      </Card>
+    </div>
+  );
+
+  // Use different layouts based on user role
+  if (user.role === 'buyer'||'BUYER') {
+    return (
+      <BuyerLayout title="My Profile">
+        {profileContent}
+      </BuyerLayout>
     );
   }
 
   return (
     <DashboardLayout currentPage="profile">
-      <div className="max-w-4xl mx-auto space-y-6">
-        <div className="flex items-center space-x-3">
-          <User className="w-8 h-8 text-purple-600" />
-          <h1 className="text-3xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
-            Profile Settings
-          </h1>
-        </div>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between">
-            <CardTitle>Personal Information</CardTitle>
-            {!isEditing ? (
-              <Button onClick={() => setIsEditing(true)} variant="outline">
-                Edit Profile
-              </Button>
-            ) : (
-              <div className="space-x-2">
-                <Button onClick={handleCancel} variant="outline" disabled={updateProfileMutation.isPending}>
-                  Cancel
-                </Button>
-                <Button 
-                  onClick={handleSubmit}
-                  disabled={updateProfileMutation.isPending}
-                  className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white"
-                >
-                  {updateProfileMutation.isPending ? 'Saving...' : 'Save Changes'}
-                </Button>
-              </div>
-            )}
-          </CardHeader>
-          <CardContent>
-            <form onSubmit={handleSubmit} className="space-y-6">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div className="space-y-2">
-                  <label className="flex items-center space-x-2 text-sm font-medium">
-                    <User className="w-4 h-4" />
-                    <span>Full Name</span>
-                  </label>
-                  {isEditing ? (
-                    <Input
-                      value={formData.name}
-                      onChange={(e) => setFormData({...formData, name: e.target.value})}
-                      required
-                    />
-                  ) : (
-                    <p className="text-gray-700 p-2 bg-gray-50 rounded">{profileData?.name || 'Not provided'}</p>
-                  )}
-                </div>
-
-                <div className="space-y-2">
-                  <label className="flex items-center space-x-2 text-sm font-medium">
-                    <Mail className="w-4 h-4" />
-                    <span>Email Address</span>
-                  </label>
-                  {isEditing ? (
-                    <Input
-                      type="email"
-                      value={formData.email}
-                      onChange={(e) => setFormData({...formData, email: e.target.value})}
-                      required
-                    />
-                  ) : (
-                    <p className="text-gray-700 p-2 bg-gray-50 rounded">{profileData?.email || 'Not provided'}</p>
-                  )}
-                </div>
-
-                <div className="space-y-2">
-                  <label className="flex items-center space-x-2 text-sm font-medium">
-                    <Phone className="w-4 h-4" />
-                    <span>Phone Number</span>
-                  </label>
-                  {isEditing ? (
-                    <Input
-                      value={formData.phone}
-                      onChange={(e) => setFormData({...formData, phone: e.target.value})}
-                    />
-                  ) : (
-                    <p className="text-gray-700 p-2 bg-gray-50 rounded">{profileData?.phone || 'Not provided'}</p>
-                  )}
-                </div>
-
-                <div className="space-y-2">
-                  <label className="flex items-center space-x-2 text-sm font-medium">
-                    <Building className="w-4 h-4" />
-                    <span>Company</span>
-                  </label>
-                  {isEditing ? (
-                    <Input
-                      value={formData.company}
-                      onChange={(e) => setFormData({...formData, company: e.target.value})}
-                    />
-                  ) : (
-                    <p className="text-gray-700 p-2 bg-gray-50 rounded">{profileData?.company || 'Not provided'}</p>
-                  )}
-                </div>
-              </div>
-
-              <div className="space-y-2">
-                <label className="flex items-center space-x-2 text-sm font-medium">
-                  <MapPin className="w-4 h-4" />
-                  <span>Address</span>
-                </label>
-                {isEditing ? (
-                  <Input
-                    value={formData.address}
-                    onChange={(e) => setFormData({...formData, address: e.target.value})}
-                  />
-                ) : (
-                  <p className="text-gray-700 p-2 bg-gray-50 rounded">{profileData?.address || 'Not provided'}</p>
-                )}
-              </div>
-
-              <div className="space-y-2">
-                <label className="flex items-center space-x-2 text-sm font-medium">
-                  <FileText className="w-4 h-4" />
-                  <span>Bio</span>
-                </label>
-                {isEditing ? (
-                  <Textarea
-                    value={formData.bio}
-                    onChange={(e) => setFormData({...formData, bio: e.target.value})}
-                    rows={4}
-                  />
-                ) : (
-                  <p className="text-gray-700 p-2 bg-gray-50 rounded min-h-[100px]">{profileData?.bio || 'Not provided'}</p>
-                )}
-              </div>
-            </form>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle>Account Information</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div>
-                <label className="text-sm font-medium text-gray-600">Account Role</label>
-                <p className="text-lg font-semibold capitalize">{user?.role?.toLowerCase()}</p>
-              </div>
-              <div>
-                <label className="text-sm font-medium text-gray-600">Member Since</label>
-                <p className="text-lg font-semibold">
-                  {profileData?.createdAt ? new Date(profileData.createdAt).toLocaleDateString() : 'Unknown'}
-                </p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
+      {profileContent}
     </DashboardLayout>
   );
 };

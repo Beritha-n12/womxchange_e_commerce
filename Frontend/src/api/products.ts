@@ -10,6 +10,7 @@ export interface Product {
   coverImage: string;
   categoryId: number;
   createdById: number;
+  createdAt?: string;
   colors?: string[];
   sizes?: string[];
   averageRating?: number;
@@ -18,6 +19,11 @@ export interface Product {
     id: number;
     name: string;
     description: string;
+  };
+  createdBy?: {
+    id: number;
+    name: string;
+    businessName?: string;
   };
 }
 
