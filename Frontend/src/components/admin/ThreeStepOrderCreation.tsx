@@ -446,7 +446,7 @@ export const ThreeStepOrderCreation: React.FC<ThreeStepOrderCreationProps> = ({
         <div className="space-y-4">
           <div className="flex items-center justify-between">
             <Label>Order Items *</Label>
-            <Button type="button" onClick={handleAddItem} size="sm">
+            <Button type="button" onClick={handleAddItem} size="sm" className="bg-purple-700">
               <Plus className="w-4 h-4 mr-2" />
               Add Item
             </Button>
@@ -461,6 +461,7 @@ export const ThreeStepOrderCreation: React.FC<ThreeStepOrderCreationProps> = ({
                   variant="outline"
                   size="sm"
                   onClick={() => handleRemoveItem(index)}
+                  className="bg-purple-700"
                 >
                   <Minus className="w-4 h-4" />
                 </Button>
@@ -621,14 +622,16 @@ export const ThreeStepOrderCreation: React.FC<ThreeStepOrderCreationProps> = ({
               <Button
                 onClick={handleNext}
                 disabled={createUserMutation.isPending}
+                className="bg-purple-700"
               >
                 {createUserMutation.isPending ? 'Creating...' : 'Next'}
-                <ArrowRight className="w-4 h-4 ml-2" />
+                <ArrowRight className="w-4 h-4 ml-2 " />
               </Button>
             ) : (
               <Button
                 onClick={handleCreateOrder}
                 disabled={createOrderMutation.isPending}
+                className="bg-purple-700"
               >
                 {createOrderMutation.isPending ? 'Creating Order...' : 'Create Order'}
               </Button>

@@ -223,16 +223,7 @@ const ProductCard = ({
           </div>
         </div>
         <div className="p-4">
-          {/* <div className="aspect-square w-full mb-3 bg-gray-100 rounded-lg overflow-hidden">
-            <img 
-              src={getPublicImageUrl(image)} 
-              alt={title}
-              className="w-full h-full object-cover"
-              onError={(e) => {
-                e.currentTarget.src = '/placeholder.svg';
-              }}
-            />
-          </div> */}
+ 
           
           {seller && (
             <div className="flex items-center mb-2 text-xs text-gray-600">
@@ -280,7 +271,7 @@ const ProductCard = ({
           
           {seller && (
             <div className="text-xs text-gray-600 mb-2">
-              By: <span className="font-medium">{seller.businessName || seller.name}</span>
+               {/* by: <span className="font-medium">{seller.businessName || seller.name}</span> */}
             </div>
           )}
 

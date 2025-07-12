@@ -39,7 +39,7 @@ const managementItems = [
   { label: 'Products', path: '/admin-products', roles: ['admin', 'seller'] },
   { label: 'Categories', path: '/admin-categories', roles: ['admin', 'seller'] },
   { label: 'Orders', path: '/orders', roles: ['admin', 'seller'] },
-  { label: 'Unfinished Orders', path: '/unfinished-orders', roles: ['admin'] },
+  { label: 'Track issue', path: '/unfinished-orders', roles: ['admin'] },
   { label: 'Reports', path: '/reports', roles: ['admin', 'seller'] },
 ];
 

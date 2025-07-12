@@ -331,7 +331,7 @@ const Products = () => {
                           {product.createdBy && (
                             <div className="flex items-center text-xs text-gray-600 mb-1">
                               <User className="w-3 h-3 mr-1" />
-                              <span>Sold by: {product.createdBy.businessName || product.createdBy.name}</span>
+                              <span> By: {product.createdBy.businessName || product.createdBy.name}</span>
                             </div>
                           )}
                           {product.stock > 0 ? (
