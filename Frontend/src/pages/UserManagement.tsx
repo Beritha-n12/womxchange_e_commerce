@@ -229,7 +229,7 @@ const UserManagement = () => {
       <div className="space-y-6">
         <div className="flex justify-between items-center">
           <h1 className="text-2xl font-bold text-gray-900">User Management</h1>
-          <Button onClick={() => setIsCreateModalOpen(true)} className="bg-purple-600 hover:bg-purple-700">
+          <Button onClick={() => setIsCreateModalOpen(true)} className="bg-purple-700 hover:bg-purple-700">
             <Plus className="w-4 h-4 mr-2" />
             Create User
           </Button>
