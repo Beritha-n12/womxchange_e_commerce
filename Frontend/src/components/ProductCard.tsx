@@ -280,7 +280,7 @@ const ProductCard = ({
           
           {seller && (
             <div className="text-xs text-gray-600 mb-2">
-              Sold by: <span className="font-medium">{seller.businessName || seller.name}</span>
+              By: <span className="font-medium">{seller.businessName || seller.name}</span>
             </div>
           )}
 

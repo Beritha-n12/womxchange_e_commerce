@@ -7,11 +7,11 @@ const HeroSection = () => {
   const { t } = useLanguage();
 
   return (
-    <section className="bg-gradient-to-r from-purple-50 to-purple-100 py-24 min-h-[800px] flex items-center">
+    <section className="bg-gradient-to-r from-purple-50 to-purple-100 lg:py-24 md:py-10 sm:py-0 min-h-[800px] flex items-center">
       <div className="container mx-auto px-4">
         <div className="flex flex-col md:flex-row items-center justify-between">
           <div className="md:w-1/2 mb-8 md:mb-0 animate-slide-in-left">
-            <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-12 leading-tight">
+            <h1 className="text-4xl md:text-5xl  font-bold text-gray-900 mb-12 leading-tight">
               {t('hero.title')}
             </h1>
             <p className="text-lg text-gray-600 mb-10">

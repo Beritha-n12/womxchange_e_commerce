@@ -4,6 +4,7 @@ import generateToken from '../utils/generateToken.js';
 import bcrypt from 'bcryptjs';
 import { notify } from '../utils/notify.js';
 import { sendWelcomeEmail } from '../utils/emailService.js';
+import { logFailedAction } from './failedActionsController.js';
 // Register User
 export const registerUser = asyncHandler(async (req, res) => {
   const { name, email, password, role } = req.body;
@@ -103,6 +104,18 @@ export const authUser = asyncHandler(async (req, res) => {
 
     if (!user) {
       console.log('❌ LOGIN FAILED: User not found');
+      
+      // Log failed login attempt
+      await logFailedAction(
+        'LOGIN',
+        null,
+        email,
+        'User not found with provided email',
+        { email, attemptType: 'invalid_email' },
+        req.ip,
+        req.get('User-Agent')
+      );
+      
       res.status(401);
       throw new Error('Invalid email or password');
     }
@@ -116,6 +129,18 @@ export const authUser = asyncHandler(async (req, res) => {
 
     if (!passwordMatch) {
       console.log('❌ LOGIN FAILED: Invalid password');
+      
+      // Log failed login attempt
+      await logFailedAction(
+        'LOGIN',
+        user.id,
+        user.email,
+        'Invalid password provided',
+        { email: user.email, attemptType: 'invalid_password' },
+        req.ip,
+        req.get('User-Agent')
+      );
+      
       res.status(401);
       throw new Error('Invalid email or password');
     }

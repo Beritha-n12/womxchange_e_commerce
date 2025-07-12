@@ -76,6 +76,7 @@ model User {
   cart           Cart?
   notifications  Notification[]
   chatMessages   ChatMessage[]
+  failedActions  FailedAction[]
 
   @@map("users")
 }
@@ -267,6 +268,22 @@ model Notification {
   @@map("notifications")
 }
 
+model AbandonedCart {
+  id          Int      @id @default(autoincrement())
+  userId      Int?
+  userName    String   @db.VarChar(255)
+  userEmail   String   @db.VarChar(255)
+  cartItems   String   @db.Text  // JSON string of cart items
+  totalAmount Decimal  @db.Decimal(10, 2)
+  sessionId   String   @unique @db.VarChar(100)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([userId])
+  @@index([createdAt])
+  @@map("abandoned_carts")
+}
+
 model ChatMessage {
   id          Int          @id @default(autoincrement())
   message     String?      @db.Text
@@ -300,4 +317,37 @@ model ChatAttachment {
 
   @@index([messageId])
   @@map("chat_attachments")
+}
+
+enum FailureType {
+  LOGIN
+  EMAIL
+  CART
+  CHAT
+  ORDER
+  PAYMENT
+  VENDOR
+}
+
+model FailedAction {
+  id          Int         @id @default(autoincrement())
+  type        FailureType
+  userId      Int?
+  user        User?       @relation(fields: [userId], references: [id], onDelete: SetNull)
+  email       String?     @db.VarChar(255)
+  reason      String      @db.Text
+  metadata    Json?       // Store additional context data
+  attemptTime DateTime    @default(now())
+  resolved    Boolean     @default(false)
+  resolvedAt  DateTime?
+  ipAddress   String?     @db.VarChar(45)
+  userAgent   String?     @db.Text
+  errorCode   String?     @db.VarChar(100)
+  stackTrace  String?     @db.Text
+  
+  @@index([type])
+  @@index([userId])
+  @@index([attemptTime])
+  @@index([resolved])
+  @@map("failed_actions")
 }

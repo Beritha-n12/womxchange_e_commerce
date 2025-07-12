@@ -1,8 +1,10 @@
+
 import asyncHandler from 'express-async-handler';
 import prisma from '../prismaClient.js';
 import { notify } from '../utils/notify.js';
 import { sendOrderConfirmationEmail, sendAdminOrderNotification, sendOrderStatusUpdateEmail, sendPaymentConfirmationEmail, sendDeliveryStatusUpdateEmail, sendOrderCancellationEmail, sendSellerOrderConfirmationEmail, sendSellerOrderNotificationEmail } from '../utils/emailService.js';
 import { checkSellerPermission } from '../middleware/permissionMiddleware.js';
+import { logFailedAction } from './failedActionsController.js';
 
 // Global constants
 const APP_CONSTANTS = {
@@ -77,12 +79,6 @@ export const addToCart = asyncHandler(async (req, res) => {
   const { productId, quantity, cartId } = req.body;
   
   console.log(' addToCart called with:', { productId, quantity, cartId, hasUser: !!req.user, userId: req.user?.id });
-  
-  const product = await prisma.product.findUnique({ where: { id: productId } });
-  if (!product) {
-    res.status(404);
-    throw new Error('Product not found');
-  }
 
   let cart;
   
@@ -122,21 +118,58 @@ if (!req.user || !req.user.id) {
     }
   }
 
+  // Check product stock before adding to cart
+  const product = await prisma.product.findUnique({
+    where: { id: productId },
+    select: { id: true, name: true, stock: true }
+  });
+
+  if (!product) {
+    res.status(404);
+    throw new Error('Product not found');
+  }
+
   const existingItem = await prisma.cartItem.findFirst({
     where: { cartId: cart.id, productId }
   });
 
+  const currentCartQuantity = existingItem ? existingItem.quantity : 0;
+  const newTotalQuantity = currentCartQuantity + quantity;
+
+  // Validate stock availability
+  if (newTotalQuantity > product.stock) {
+    // Log failed cart operation
+    await logFailedAction(
+      'CART',
+      req.user?.id,
+      req.user?.email,
+      `Insufficient stock: Tried to add ${newTotalQuantity} units but only ${product.stock} available`,
+      {
+        productId,
+        productName: product.name,
+        requestedQuantity: newTotalQuantity,
+        availableStock: product.stock,
+        operation: 'add_to_cart'
+      },
+      req.ip,
+      req.get('User-Agent')
+    );
+    
+    res.status(400);
+    throw new Error(`Insufficient stock. Only ${product.stock} units available, but you're trying to add ${newTotalQuantity} units to cart.`);
+  }
+
   if (existingItem) {
     await prisma.cartItem.update({
       where: { id: existingItem.id },
-      data: { quantity: existingItem.quantity + quantity }
+      data: { quantity: newTotalQuantity }
     });
-    console.log(' Updated existing cart item quantity');
+    console.log(' Updated existing cart item quantity with stock validation');
   } else {
     await prisma.cartItem.create({
       data: { cartId: cart.id, productId, quantity }
     });
-    console.log(' Created new cart item');
+    console.log(' Created new cart item with stock validation');
   }
 
   const updatedCart = await prisma.cart.findUnique({
@@ -889,6 +922,287 @@ export const deleteOrder = asyncHandler(async (req, res) => {
 });
 
 // Update Order Status (Admin/Seller) - FIXED EMAIL NOTIFICATIONS AND PERMISSION CHECKING
+// Get Unfinished Orders (Admin only) - NEW ENDPOINT
+// Save Abandoned Cart Session
+export const saveAbandonedCart = asyncHandler(async (req, res) => {
+  const { userId, userName, userEmail, cartItems, totalAmount } = req.body;
+  
+  console.log('🛒 Saving abandoned cart for user:', userId);
+  
+  try {
+    // Save abandoned cart session to database
+    const abandonedCart = await prisma.abandonedCart.create({
+      data: {
+        userId: userId,
+        userName: userName || 'Unknown',
+        userEmail: userEmail || 'No email',
+        cartItems: JSON.stringify(cartItems),
+        totalAmount: totalAmount || 0,
+        sessionId: `cart_${userId}_${Date.now()}`,
+        createdAt: new Date(),
+        updatedAt: new Date()
+      }
+    });
+    
+    console.log('✅ Abandoned cart saved:', abandonedCart.id);
+    res.json({ success: true, abandonedCartId: abandonedCart.id });
+  } catch (error) {
+    console.error('❌ Error saving abandoned cart:', error);
+    res.status(500).json({ error: 'Failed to save abandoned cart' });
+  }
+});
+
+export const getUnfinishedOrders = asyncHandler(async (req, res) => {
+  console.log('🔍 Getting comprehensive unfinished orders for user role:', req.user?.role);
+
+  // Only admin can access unfinished orders
+  if (req.user.role.toLowerCase() !== 'admin') {
+    res.status(403);
+    throw new Error('Only admins can access unfinished orders');
+  }
+
+  try {
+    // 1. Get incomplete orders (various pending states)
+    const incompleteOrders = await prisma.order.findMany({
+      where: {
+        OR: [
+          { status: 'PENDING' },
+          { isPaid: false, status: { not: 'CANCELLED' } },
+          { isDelivered: false, isPaid: true, status: { not: 'CANCELLED' } }
+        ]
+      },
+      include: {
+        user: { select: { id: true, name: true, email: true, createdAt: true } },
+        items: { 
+          include: { 
+            product: {
+              select: { id: true, name: true, price: true }
+            }
+          } 
+        }
+      },
+      orderBy: { createdAt: 'desc' }
+    });
+
+    // 2. Get abandoned orders (cancelled or old pending orders)
+    const abandonedOrders = await prisma.order.findMany({
+      where: {
+        OR: [
+          { status: 'CANCELLED' },
+          { isCancelled: true },
+          { 
+            status: 'PENDING',
+            createdAt: {
+              lt: new Date(Date.now() - 24 * 60 * 60 * 1000) // Older than 24 hours
+            }
+          }
+        ]
+      },
+      include: {
+        user: { select: { id: true, name: true, email: true } },
+        items: { 
+          include: { 
+            product: {
+              select: { id: true, name: true, price: true }
+            }
+          } 
+        }
+      },
+      orderBy: { createdAt: 'desc' }
+    });
+
+    // 3. Get abandoned cart sessions
+    let abandonedCarts = [];
+    try {
+      abandonedCarts = await prisma.abandonedCart.findMany({
+        orderBy: { createdAt: 'desc' },
+        take: 100 // Limit to recent 100
+      });
+    } catch (error) {
+      console.log('⚠️ Abandoned cart table might not exist yet, skipping...');
+    }
+
+    // 4. Simulate error orders (orders that failed - using valid status values)
+    const errorOrders = await prisma.order.findMany({
+      where: {
+        OR: [
+          { 
+            AND: [
+              { isPaid: false },
+              { status: 'PENDING' },
+              { 
+                createdAt: {
+                  lt: new Date(Date.now() - 2 * 60 * 60 * 1000) // 2 hours old and still pending
+                }
+              }
+            ]
+          },
+          {
+            AND: [
+              { status: 'PROCESSING' },
+              { 
+                createdAt: {
+                  lt: new Date(Date.now() - 4 * 60 * 60 * 1000) // 4 hours in processing
+                }
+              }
+            ]
+          }
+        ]
+      },
+      include: {
+        user: { select: { id: true, name: true, email: true } },
+        items: { 
+          include: { 
+            product: {
+              select: { id: true, name: true, price: true }
+            }
+          } 
+        }
+      },
+      orderBy: { createdAt: 'desc' }
+    });
+
+    // 5. Transform incomplete orders
+    const transformedIncompleteOrders = incompleteOrders
+      .filter(order => !abandonedOrders.find(ao => ao.id === order.id) && 
+                      !errorOrders.find(eo => eo.id === order.id))
+      .map(order => {
+        const customerName = order.user?.name || order.customerName || 'Unknown Customer';
+        const customerEmail = order.user?.email || order.customerEmail || 'No email';
+        
+        return {
+          id: order.id,
+          userName: customerName,
+          userEmail: customerEmail,
+          dateStarted: order.createdAt,
+          status: 'incomplete',
+          productsInvolved: order.items.length,
+          totalAmount: Number(order.totalPrice),
+          lastActivity: order.updatedAt,
+          sessionId: `ord_${order.id}`,
+          orderNumber: order.orderNumber,
+          paymentStatus: order.isPaid ? 'paid' : 'pending',
+          deliveryStatus: order.isDelivered ? 'delivered' : 'pending'
+        };
+      });
+
+    // 6. Transform abandoned orders
+    const transformedAbandonedOrders = abandonedOrders.map(order => {
+      const customerName = order.user?.name || order.customerName || 'Unknown Customer';
+      const customerEmail = order.user?.email || order.customerEmail || 'No email';
+      
+      return {
+        id: order.id,
+        userName: customerName,
+        userEmail: customerEmail,
+        dateStarted: order.createdAt,
+        status: 'abandoned',
+        productsInvolved: order.items.length,
+        totalAmount: Number(order.totalPrice),
+        lastActivity: order.updatedAt,
+        sessionId: `ord_${order.id}`,
+        orderNumber: order.orderNumber,
+        paymentStatus: order.isCancelled ? 'cancelled' : 'abandoned',
+        deliveryStatus: order.isCancelled ? 'cancelled' : 'abandoned'
+      };
+    });
+
+    // 7. Transform abandoned carts
+    const transformedAbandonedCarts = abandonedCarts.map(cart => {
+      let cartItems = [];
+      try {
+        cartItems = JSON.parse(cart.cartItems || '[]');
+      } catch (e) {
+        cartItems = [];
+      }
+      
+      return {
+        id: `abandoned_${cart.id}`,
+        userName: cart.userName,
+        userEmail: cart.userEmail,
+        dateStarted: cart.createdAt,
+        status: 'abandoned',
+        productsInvolved: cartItems.length,
+        totalAmount: Number(cart.totalAmount),
+        lastActivity: cart.updatedAt,
+        sessionId: cart.sessionId,
+        orderNumber: `CART_${cart.id}`,
+        paymentStatus: 'abandoned',
+        deliveryStatus: 'abandoned'
+      };
+    });
+
+    // 8. Transform error orders (using valid statuses)
+    const transformedErrorOrders = errorOrders.map(order => {
+      const customerName = order.user?.name || order.customerName || 'Unknown Customer';
+      const customerEmail = order.user?.email || order.customerEmail || 'No email';
+      
+      return {
+        id: order.id,
+        userName: customerName,
+        userEmail: customerEmail,
+        dateStarted: order.createdAt,
+        status: 'error',
+        productsInvolved: order.items.length,
+        totalAmount: Number(order.totalPrice),
+        lastActivity: order.updatedAt,
+        sessionId: `ord_${order.id}`,
+        orderNumber: order.orderNumber,
+        paymentStatus: 'error',
+        deliveryStatus: 'error'
+      };
+    });
+
+    // 9. Simulate timeout orders (very old pending orders)
+    const timeoutOrders = incompleteOrders
+      .filter(order => {
+        const timeDiff = Date.now() - new Date(order.createdAt).getTime();
+        return timeDiff > 6 * 60 * 60 * 1000; // 6 hours old
+      })
+      .map(order => {
+        const customerName = order.user?.name || order.customerName || 'Unknown Customer';
+        const customerEmail = order.user?.email || order.customerEmail || 'No email';
+        
+        return {
+          id: `timeout_${order.id}`,
+          userName: customerName,
+          userEmail: customerEmail,
+          dateStarted: order.createdAt,
+          status: 'timeout',
+          productsInvolved: order.items.length,
+          totalAmount: Number(order.totalPrice),
+          lastActivity: order.updatedAt,
+          sessionId: `timeout_ord_${order.id}`,
+          orderNumber: `TIMEOUT_${order.orderNumber}`,
+          paymentStatus: 'timeout',
+          deliveryStatus: 'timeout'
+        };
+      });
+
+    // 10. Combine all unfinished orders
+    const allUnfinishedOrders = [
+      ...transformedIncompleteOrders,
+      ...transformedAbandonedOrders,
+      ...transformedAbandonedCarts,
+      ...transformedErrorOrders,
+      ...timeoutOrders
+    ].sort((a, b) => new Date(b.dateStarted).getTime() - new Date(a.dateStarted).getTime());
+
+    console.log('✅ Comprehensive unfinished orders found:', {
+      total: allUnfinishedOrders.length,
+      incomplete: transformedIncompleteOrders.length,
+      abandoned: transformedAbandonedOrders.length + transformedAbandonedCarts.length,
+      error: transformedErrorOrders.length,
+      timeout: timeoutOrders.length
+    });
+
+    res.json(allUnfinishedOrders);
+  } catch (error) {
+    console.error('❌ Error in getUnfinishedOrders:', error);
+    throw error;
+  }
+});
+
 export const updateOrderStatus = asyncHandler(async (req, res) => {
   const orderId = parseInt(req.params.id);
   const { isPaid, isDelivered, status, isCancelled } = req.body;
@@ -1096,7 +1410,7 @@ export const updateOrderStatus = asyncHandler(async (req, res) => {
           totalPrice: updatedOrder.totalPrice,
           items: updatedOrder.items,
           shippingAddress: updatedOrder.shippingAddress,
-          paymentCode: updatedOrder.paymentCode || '0784720884'
+          paymentCode: updatedOrder.paymentCode || '0784720984'
         });
         console.log('✅ Payment confirmation email sent successfully to:', customerEmail);
       }

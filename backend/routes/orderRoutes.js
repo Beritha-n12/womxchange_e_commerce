@@ -10,6 +10,8 @@ import {
   createOrder,
   getUserOrders,
   getAllOrders,
+  getUnfinishedOrders,
+  saveAbandonedCart,
   updateOrderStatus,
   updateOrder,
   deleteOrder,
@@ -40,6 +42,10 @@ orderRouter.post('/create', protect, authorizeRoles('admin', 'seller'), checkSel
 
 // Admin routes
 orderRouter.get('/all', protect, authorizeRoles('admin', 'seller'), getAllOrders);
+orderRouter.get('/unfinished', protect, authorizeRoles('admin'), getUnfinishedOrders);
+
+// Abandoned cart route
+orderRouter.post('/abandoned-cart', protect, saveAbandonedCart);
 
 // Individual order operations
 orderRouter.route('/:id')
