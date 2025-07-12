@@ -384,6 +384,8 @@ vercel --prod
 
 4. Vercel CLI: For local and production deployments
 
+# Link to the deployed Version of the app: https://womxchangerwanda.vercel.app/ 
+
 ## Author
 Beritha Niyotwagira
 nberitha12@gmail.com
