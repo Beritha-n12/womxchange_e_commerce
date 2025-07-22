@@ -12,7 +12,10 @@ import {
   logoutUser, 
   getUserProfile, 
   updateUserProfile,
-  verifyUserExists
+  verifyUserExists,
+  forgotPassword,
+  verifyResetCode,
+  resetPassword
 } from '../controllers/authController.js';
 import { submitSellerRequest } from '../controllers/sellerController.js';
 import { protect, authorizeRoles } from '../middleware/authMiddleware.js';
@@ -23,6 +26,9 @@ const router = express.Router();
 router.post('/register', registerUser);
 router.post('/login', authUser);
 router.post('/verify-user', verifyUserExists);
+router.post('/forgot-password', forgotPassword);
+router.post('/verify-reset-code', verifyResetCode);
+router.post('/reset-password', resetPassword);
 router.post('/seller-request', submitSellerRequest);
 router.post('/logout', logoutUser);
 

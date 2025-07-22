@@ -229,6 +229,9 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       // Clear any anonymous cart data
       localStorage.removeItem('anonymous_cart_id');
       
+      // Redirect to homepage
+      window.location.href = '/';
+      
       console.log('✅ User logged out successfully');
     } catch (error) {
       console.error('❌ Logout error:', error);
