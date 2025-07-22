@@ -48,6 +48,7 @@ export interface Order {
 export interface PlaceOrderData { 
   shippingAddress: string;
   paymentMethod: string;
+  customerPhone: string;
 }
 
 export interface PlaceAnonymousOrderData {
