@@ -37,6 +37,7 @@ import {
   retryFailedChatOperation
 } from '@/api/failedActions';
 import { useToast } from '@/hooks/use-toast';
+import OrderDetailsModal from '@/components/OrderDetailsModal';
 
 const FailedActionsSystem = () => {
   const { user } = useContext(AuthContext);
@@ -44,6 +45,7 @@ const FailedActionsSystem = () => {
   const queryClient = useQueryClient();
   const [searchTerm, setSearchTerm] = useState('');
   const [activeTab, setActiveTab] = useState('orders');
+  const [selectedOrder, setSelectedOrder] = useState<any>(null);
 
   // Fetch unfinished orders
   const { data: unfinishedOrdersData, isLoading: ordersLoading, refetch: refetchOrders } = useQuery({
@@ -245,7 +247,11 @@ const FailedActionsSystem = () => {
                       </p>
                     </div>
                   </div>
-                  <Button size="sm" variant="outline">
+                  <Button 
+                    size="sm" 
+                    variant="outline"
+                    onClick={() => setSelectedOrder(order)}
+                  >
                     <Eye className="w-4 h-4 mr-1" />
                     View
                   </Button>
@@ -451,6 +457,12 @@ const FailedActionsSystem = () => {
           </TabsContent>
         </Tabs>
       </div>
+      
+      <OrderDetailsModal
+        order={selectedOrder}
+        isOpen={!!selectedOrder}
+        onClose={() => setSelectedOrder(null)}
+      />
     </DashboardLayout>
   );
 };

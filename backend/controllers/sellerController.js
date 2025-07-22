@@ -182,9 +182,10 @@ export const updateSellerStatus = asyncHandler(async (req, res) => {
     await sendSellerStatusEmail({
       email: updatedSeller.email,
       name: updatedSeller.name,
+      businessName: updatedSeller.businessName,
       status: updatedSeller.sellerStatus,
       permissions: updatedSeller.sellerPermissions ? JSON.parse(updatedSeller.sellerPermissions) : null
-    });
+    }, updatedSeller.sellerStatus);
   } catch (emailError) {
     console.error('Error sending seller status email:', emailError);
     // Don't fail if email fails
