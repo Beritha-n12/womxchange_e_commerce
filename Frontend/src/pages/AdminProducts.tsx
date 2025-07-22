@@ -3,6 +3,7 @@ import { DashboardLayout } from '@/components/layout/DashboardLayout';
 import { ProductTable } from '@/components/admin/ProductTable';
 import { ProductForm } from '@/components/admin/ProductForm';
 import { SellerBlocked } from '@/components/seller/SellerBlocked';
+import { AdminOnlyGuard } from '@/components/guards/AdminOnlyGuard';
 import { AdminProductFilters } from '@/components/filters/AdminProductFilters';
 import { SellerProductFilters } from '@/components/filters/SellerProductFilters';
 import { Button } from '@/components/ui/button';
@@ -159,9 +160,12 @@ const AdminProducts = () => {
     setPreviewImage(url);
   };
 
-  return (
-    <DashboardLayout currentPage="products">
-      <div className="space-y-6">
+  // 🛡 Admin-only product creation popup
+  if (!isSeller) {
+    return (
+      <AdminOnlyGuard>
+        <DashboardLayout currentPage="products">
+          <div className="space-y-6">
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
           <h1 className="text-2xl font-bold text-gray-900">
             {isSeller ? 'My Products' : t('products.title')}
@@ -233,6 +237,67 @@ const AdminProducts = () => {
                     </label>
                     <FileUpload onFileSelect={handleFileSelect} />
                   </div> */}
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        )}
+      </div>
+    </DashboardLayout>
+      </AdminOnlyGuard>
+    );
+  }
+
+  // 🔐 Seller view (restricted functionality)
+  return (
+    <DashboardLayout currentPage="products">
+      <div className="space-y-6">
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+          <h1 className="text-2xl font-bold text-gray-900">My Products</h1>
+          <Button onClick={() => setIsFormOpen(true)} className="bg-blue-600 hover:bg-blue-700">
+            <Plus className="w-4 h-4 mr-2" />
+            {t('products.add_product')}
+          </Button>
+        </div>
+
+        <SellerProductFilters
+          searchTerm={searchTerm}
+          onSearchChange={setSearchTerm}
+          categoryFilter={categoryFilter}
+          onCategoryChange={setCategoryFilter}
+          dateFilter={dateFilter}
+          onDateChange={setDateFilter}
+          stockFilter={stockFilter}
+          onStockChange={setStockFilter}
+          categories={categories}
+        />
+
+        <ProductTable
+          products={filteredProducts}
+          onEdit={handleEditProduct}
+          onDelete={handleDeleteProduct}
+          userRole={userRole}
+        />
+
+        {isFormOpen && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+            <Card className="w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+              <CardHeader>
+                <CardTitle>
+                  {editingProduct ? t('products.edit_product') : t('products.add_product')}
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  <ProductForm
+                    editingProduct={editingProduct}
+                    categories={categories}
+                    onUrlChange={handleUrlChange}
+                    onSubmit={editingProduct ? handleUpdateProduct : handleCreateProduct}
+                    onCancel={handleCloseForm}
+                    previewImage={previewImage}
+                    isLoading={createProductMutation.isPending || updateProductMutation.isPending}
+                  />
                 </div>
               </CardContent>
             </Card>

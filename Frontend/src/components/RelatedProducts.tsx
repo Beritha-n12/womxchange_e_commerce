@@ -57,6 +57,8 @@ const RelatedProducts = ({ categoryId, currentProductId }: RelatedProductsProps)
             title={product.name}
             price={`${product.price.toLocaleString()} Rwf`}
             rating={5}
+            stock={product.stock || 0}
+            availableStock={product.availableStock || 0}
           />
         ))}
       </div>

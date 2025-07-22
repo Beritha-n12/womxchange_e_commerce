@@ -25,6 +25,8 @@ interface ProductCardProps {
   rating?: number;
   numReviews?: number;
   averageRating?: number;
+  stock?: number;
+  availableStock?: number;
   seller?: {
     name: string;
     businessName?: string;
@@ -50,6 +52,8 @@ const ProductCard = ({
   rating = 0, 
   numReviews = 0,
   averageRating = 0,
+  stock = 0,
+  availableStock = 0,
   seller
 }: ProductCardProps) => {
   const { toast } = useToast();
@@ -188,8 +192,8 @@ const ProductCard = ({
   );
 
   return (
-    <Link to={`/products/${id}`} className="block">
-      <div className="bg-white rounded-xl shadow-md hover:shadow-lg transition-all duration-300 group hover:scale-105 relative">
+    <div className="bg-white rounded-xl shadow-md hover:shadow-lg transition-all duration-300 group hover:scale-105 relative">
+      <Link to={`/products/${id}`} className="block">
         {/* Cart Status Badge - Always visible when in cart */}
         {isInCart(parseInt(id)) && (
           <div className="absolute top-2 left-2 z-10">
@@ -267,6 +271,12 @@ const ProductCard = ({
                 <span className="text-sm text-gray-500 line-through">{originalPrice}</span>
               )}
             </div>
+          </div>
+          
+          {/* Stock and Available Display */}
+          <div className="text-xs text-gray-500 mb-2 space-y-1">
+            <div>In Stock: {stock}</div>
+            <div>Available: {availableStock}</div>
           </div>
           
           {seller && (
@@ -361,8 +371,8 @@ const ProductCard = ({
             </Dialog>
           </div>
         </div>
-      </div>
-    </Link>
+      </Link>
+    </div>
   );
 };
 
