@@ -13,6 +13,7 @@ import  useCart  from '@/hooks/useCart';
 import { useCartStatus } from '@/hooks/useCartStatus';
 import { AuthContext } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
+import { CartQuantityControls } from '@/components/cart/CartQuantityControls';
 
 const SingleProduct = () => {
   const { id } = useParams<{ id: string }>();
@@ -75,8 +76,9 @@ const SingleProduct = () => {
     }
   };
 
-  const increaseQuantity = () => setQuantity(prev => prev + 1);
+  const increaseQuantity = () => setQuantity(prev => Math.min(prev + 1, product?.stock || 999));
   const decreaseQuantity = () => setQuantity(prev => (prev > 1 ? prev - 1 : 1));
+  const handleQuantityChange = (newQuantity: number) => setQuantity(newQuantity);
 
   if (loading) {
     return (
@@ -214,16 +216,15 @@ const SingleProduct = () => {
             </div>
 
             <div className="space-y-4">
-              <div className="flex items-center gap-4">
-                <div className="flex items-center border rounded-md">
-                  <button onClick={decreaseQuantity} className="p-2 hover:bg-gray-100">
-                    <Minus className="w-4 h-4" />
-                  </button>
-                  <span className="px-4 py-2 border-x">{quantity}</span>
-                  <button onClick={increaseQuantity} className="p-2 hover:bg-gray-100">
-                    <Plus className="w-4 h-4" />
-                  </button>
-                </div>
+               <div className="flex items-center gap-4">
+                 <CartQuantityControls
+                   quantity={quantity}
+                   onIncrease={increaseQuantity}
+                   onDecrease={decreaseQuantity}
+                   onQuantityChange={handleQuantityChange}
+                   maxStock={product.stock}
+                   isLoading={isAddingToCart}
+                 />
                 <Button
                   className={`flex-1 text-white ${
                     productInCart 

@@ -42,6 +42,8 @@ const ProductSection = ({ title, products }: ProductSectionProps) => {
               rating={product.averageRating || 0}
               numReviews={product.numReviews || 0}
               averageRating={product.averageRating || 0}
+              stock={product.stock || 0}
+              availableStock={product.availableStock || 0}
               seller={product.createdBy}
             />
           ))}

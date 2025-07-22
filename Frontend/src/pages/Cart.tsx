@@ -67,6 +67,15 @@ const Cart = () => {
     }
   };
 
+  const handleQuantityChange = (productId: number, newQuantity: number) => {
+    // Remove the product first
+    removeFromCart(productId);
+    // Then add it back with the new quantity
+    setTimeout(() => {
+      addToCart({ productId, quantity: newQuantity });
+    }, 100);
+  };
+
   return (
     <div className="min-h-screen bg-white">
       <Header />
@@ -101,12 +110,14 @@ const Cart = () => {
                     
                     {/* Quantity Controls */}
                     <div className="mt-2">
-                      <CartQuantityControls
-                        quantity={item.quantity}
-                        onIncrease={() => handleQuantityIncrease(item.productId)}
-                        onDecrease={() => handleQuantityDecrease(item.productId, item.quantity)}
-                        isLoading={isAddingToCart || isRemovingFromCart}
-                      />
+                       <CartQuantityControls
+                         quantity={item.quantity}
+                         onIncrease={() => handleQuantityIncrease(item.productId)}
+                         onDecrease={() => handleQuantityDecrease(item.productId, item.quantity)}
+                         onQuantityChange={(newQuantity) => handleQuantityChange(item.productId, newQuantity)}
+                         maxStock={item.product.stock || 999}
+                         isLoading={isAddingToCart || isRemovingFromCart}
+                       />
                     </div>
                   </div>
                   

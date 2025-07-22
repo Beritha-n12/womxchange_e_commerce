@@ -34,6 +34,8 @@ const Checkout = () => {
     firstName: '',
     lastName: '',
     email: '',
+    phone: '',
+    countryCode: '+250',
     location: '',
     streetLine: '',
     city: '',
@@ -120,7 +122,8 @@ const Checkout = () => {
       try {
         const orderResponse = await placeOrder({
           shippingAddress,
-          paymentMethod
+          paymentMethod,
+          customerPhone: formData.countryCode + formData.phone
         });
         
         const orderId = orderResponse.data.id;
@@ -254,11 +257,36 @@ const Checkout = () => {
                     value={formData.email}
                     onChange={(e) => handleInputChange('email', e.target.value)}
                   />
+                  <div className="flex gap-2">
+                    <select 
+                      value={formData.countryCode}
+                      onChange={(e) => handleInputChange('countryCode', e.target.value)}
+                      className="w-20 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500"
+                    >
+                      <option value="+250">🇷🇼 +250</option>
+                      <option value="+256">🇺🇬 +256</option>
+                      <option value="+254">🇰🇪 +254</option>
+                      <option value="+255">🇹🇿 +255</option>
+                      <option value="+1">🇺🇸 +1</option>
+                      <option value="+44">🇬🇧 +44</option>
+                    </select>
+                    <Input 
+                      placeholder="Phone Number" 
+                      type="tel"
+                      value={formData.phone}
+                      onChange={(e) => handleInputChange('phone', e.target.value)}
+                      className="flex-1"
+                    />
+                  </div>
+                </div>
+                
+                <div className="grid grid-cols-2 gap-4 mb-4">
                   <Input 
                     placeholder="Location *" 
                     value={formData.location}
                     onChange={(e) => handleInputChange('location', e.target.value)}
                   />
+                  <div></div>
                 </div>
                 
                 <Input 
