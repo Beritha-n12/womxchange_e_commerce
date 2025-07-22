@@ -331,19 +331,18 @@ const Products = () => {
                           {product.createdBy && (
                             <div className="flex items-center text-xs text-gray-600 mb-1">
                               <User className="w-3 h-3 mr-1" />
-                              <span> By: {product.createdBy.businessName || product.createdBy.name}</span>
+                              <span> by: {product.createdBy.businessName || product.createdBy.name}</span>
                             </div>
                           )}
-                          {product.stock > 0 ? (
-                            <p className="text-sm text-green-600">In Stock ({product.stock})</p>
-                          ) : (
-                            <p className="text-sm text-red-600">Out of Stock</p>
-                          )}
+                          <div className="text-xs text-gray-500 space-y-1">
+                            <div>In Stock: {product.stock}</div>
+                            <div>Available: {product.availableStock || 0}</div>
+                          </div>
                         </div>
                         <Button
                           size="sm"
                           onClick={() => handleAddToCart(product.id)}
-                          disabled={product.stock === 0}
+                          disabled={(product.availableStock || 0) === 0}
                           className={productInCart 
                             ? "bg-green-600 hover:bg-green-700" 
                             : "bg-purple-600 hover:bg-purple-700"
