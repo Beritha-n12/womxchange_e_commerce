@@ -87,6 +87,7 @@ model Product {
   description    String?    @db.Text
   price          Decimal    @db.Decimal(10, 2)
   stock          Int        @default(0)
+  availableStock Int        @default(0)
   category       Category   @relation(fields: [categoryId], references: [id], onDelete: Restrict)
   coverImage     String?    
   categoryId     Int
@@ -192,6 +193,7 @@ model Order {
   orderNumber         String     @unique @db.VarChar(50)
   customerName        String?
   customerEmail       String?
+  customerPhone       String?    @db.VarChar(20)  // ✅ Add this line
   billingAddress      Json?
   shippingAddress     Json
   discountAmount      Decimal? 
@@ -225,6 +227,7 @@ model Order {
   @@index([createdAt])
   @@map("orders")
 }
+
 
 model OrderItem {
   id        Int      @id @default(autoincrement())
