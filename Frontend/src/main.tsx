@@ -17,6 +17,8 @@ import OrderComplete from './pages/OrderComplete';
 import Orders from './pages/Orders';
 import Login from './pages/Login';
 import Register from './pages/Register';
+import ForgotPassword from './pages/ForgotPassword';
+import ResetPassword from './pages/ResetPassword';
 import Profile from './pages/Profile';
 import Settings from './pages/Settings';
 import Dashboard from './pages/Dashboard';
@@ -41,6 +43,7 @@ import OrderPreview from './pages/OrderPreview';
 import UnfinishedOrders from './pages/UnfinishedOrders';
 import { SellerBlocked } from './components/seller/SellerBlocked';
 import { SellerGuard } from './components/guards/SellerGuard';
+import SessionGuard from './components/SessionGuard';
 
 import './index.css';
 import process from 'process';
@@ -60,7 +63,8 @@ const App = () => {
       <AuthProvider>
         <LanguageProvider>
           <BrowserRouter>
-            <Routes>
+            <SessionGuard>
+              <Routes>
               {/* Public Routes */}
               <Route path="/" element={ <Index />} />
               <Route path="/products" element={<Products />} />
@@ -78,6 +82,8 @@ const App = () => {
               {/* Auth Routes */}
               <Route path="/login" element={<Login />} />
               <Route path="/register" element={<Register />} />
+              <Route path="/forgot-password" element={<ForgotPassword />} />
+              <Route path="/reset-password/:userId" element={<ResetPassword />} />
               <Route path="/seller-request" element={<SellerRequest />} />
 
               {/* Protected Routes */}
@@ -119,6 +125,7 @@ const App = () => {
               <Route path="*" element={<NotFound />} />
             </Routes>
             <Toaster />
+            </SessionGuard>
           </BrowserRouter>
         </LanguageProvider>
       </AuthProvider>

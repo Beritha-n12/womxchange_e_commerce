@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -13,6 +13,8 @@ interface OrderFiltersProps {
   onDateChange: (value: string) => void;
   userFilter: string;
   onUserChange: (value: string) => void;
+  customDateRange?: { startDate: string; endDate: string };
+  onCustomDateRangeChange?: (range: { startDate: string; endDate: string }) => void;
 }
 
 export const OrderFilters: React.FC<OrderFiltersProps> = ({
@@ -23,8 +25,11 @@ export const OrderFilters: React.FC<OrderFiltersProps> = ({
   dateFilter,
   onDateChange,
   userFilter,
-  onUserChange
+  onUserChange,
+  customDateRange,
+  onCustomDateRangeChange
 }) => {
+  const [showCustomDateRange, setShowCustomDateRange] = useState(false);
   return (
     <div className="space-y-4">
       {/* Search Input */}
@@ -62,7 +67,10 @@ export const OrderFilters: React.FC<OrderFiltersProps> = ({
         {/* Date Filter */}
         <div className="space-y-1">
           <label className="text-sm font-medium text-gray-700">Date</label>
-          <Select value={dateFilter} onValueChange={onDateChange}>
+          <Select value={dateFilter} onValueChange={(value) => {
+            onDateChange(value);
+            setShowCustomDateRange(value === 'custom');
+          }}>
             <SelectTrigger>
               <SelectValue placeholder="All Dates" />
             </SelectTrigger>
@@ -73,6 +81,7 @@ export const OrderFilters: React.FC<OrderFiltersProps> = ({
               <SelectItem value="week">This Week</SelectItem>
               <SelectItem value="month">This Month</SelectItem>
               <SelectItem value="year">This Year</SelectItem>
+              <SelectItem value="custom">Custom Range</SelectItem>
             </SelectContent>
           </Select>
         </div>
@@ -103,12 +112,44 @@ export const OrderFilters: React.FC<OrderFiltersProps> = ({
               onStatusChange('all');
               onDateChange('all');
               onUserChange('all');
+              setShowCustomDateRange(false);
+              if (onCustomDateRangeChange) {
+                onCustomDateRangeChange({ startDate: '', endDate: '' });
+              }
             }}
           >
             Clear All
           </Button>
         </div>
       </div>
+
+      {/* Custom Date Range */}
+      {showCustomDateRange && (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-3 p-4 bg-gray-50 rounded-lg">
+          <div className="space-y-1">
+            <label className="text-sm font-medium text-gray-700">Start Date</label>
+            <Input
+              type="date"
+              value={customDateRange?.startDate || ''}
+              onChange={(e) => onCustomDateRangeChange?.({ 
+                startDate: e.target.value, 
+                endDate: customDateRange?.endDate || '' 
+              })}
+            />
+          </div>
+          <div className="space-y-1">
+            <label className="text-sm font-medium text-gray-700">End Date</label>
+            <Input
+              type="date"
+              value={customDateRange?.endDate || ''}
+              onChange={(e) => onCustomDateRangeChange?.({ 
+                startDate: customDateRange?.startDate || '', 
+                endDate: e.target.value 
+              })}
+            />
+          </div>
+        </div>
+      )}
     </div>
   );
 };

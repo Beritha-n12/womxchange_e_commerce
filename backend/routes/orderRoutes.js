@@ -16,7 +16,8 @@ import {
   updateOrder,
   deleteOrder,
   confirmOrderPayment,
-  getOrderById
+  getOrderById,
+  deleteUnfinishedOrder
 } from '../controllers/orderController.js';
 import { protect, authorizeRoles, optionalProtect } from '../middleware/authMiddleware.js';
 import { checkSellerPermission } from '../middleware/permissionMiddleware.js';
@@ -43,6 +44,7 @@ orderRouter.post('/create', protect, authorizeRoles('admin', 'seller'), checkSel
 // Admin routes
 orderRouter.get('/all', protect, authorizeRoles('admin', 'seller'), getAllOrders);
 orderRouter.get('/unfinished', protect, authorizeRoles('admin'), getUnfinishedOrders);
+orderRouter.delete('/unfinished/:orderId', protect, authorizeRoles('admin'), deleteUnfinishedOrder);
 
 // Abandoned cart route
 orderRouter.post('/abandoned-cart', protect, saveAbandonedCart);

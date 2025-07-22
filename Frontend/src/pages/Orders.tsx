@@ -31,6 +31,10 @@ const Orders = () => {
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [paymentFilter, setPaymentFilter] = useState<string>('all');
   const [selectedDate, setSelectedDate] = useState<string>('');
+  const [customDateRange, setCustomDateRange] = useState<{ startDate: string; endDate: string }>({ 
+    startDate: '', 
+    endDate: '' 
+  });
   
   // Get seller permissions for permission-based button visibility
   const sellerPermissions = useSellerPermissions();
@@ -122,19 +126,32 @@ const Orders = () => {
         (paymentFilter === 'paid' && order.isPaid) ||
         (paymentFilter === 'unpaid' && !order.isPaid);
 
-      // Date filter with quick options
+      // Date filter with quick options and custom range
       const orderDate = new Date(order.createdAt);
       const today = new Date();
-      const matchesDate = selectedDate === '' || 
-        (selectedDate === 'today' && orderDate.toDateString() === today.toDateString()) ||
-        (selectedDate === '7days' && orderDate >= new Date(today.getTime() - 7 * 24 * 60 * 60 * 1000)) ||
-        (selectedDate === '30days' && orderDate >= new Date(today.getTime() - 30 * 24 * 60 * 60 * 1000)) ||
-        (selectedDate !== 'today' && selectedDate !== '7days' && selectedDate !== '30days' && selectedDate !== 'custom' && 
-         orderDate.toISOString().split('T')[0] === selectedDate);
+      let matchesDate = true;
+      
+      if (selectedDate === 'custom' && (customDateRange.startDate || customDateRange.endDate)) {
+        const orderDateStr = orderDate.toISOString().split('T')[0];
+        if (customDateRange.startDate && customDateRange.endDate) {
+          matchesDate = orderDateStr >= customDateRange.startDate && orderDateStr <= customDateRange.endDate;
+        } else if (customDateRange.startDate) {
+          matchesDate = orderDateStr >= customDateRange.startDate;
+        } else if (customDateRange.endDate) {
+          matchesDate = orderDateStr <= customDateRange.endDate;
+        }
+      } else if (selectedDate && selectedDate !== '' && selectedDate !== 'all') {
+        matchesDate = 
+          (selectedDate === 'today' && orderDate.toDateString() === today.toDateString()) ||
+          (selectedDate === '7days' && orderDate >= new Date(today.getTime() - 7 * 24 * 60 * 60 * 1000)) ||
+          (selectedDate === '30days' && orderDate >= new Date(today.getTime() - 30 * 24 * 60 * 60 * 1000)) ||
+          (selectedDate !== 'today' && selectedDate !== '7days' && selectedDate !== '30days' && selectedDate !== 'custom' && 
+           orderDate.toISOString().split('T')[0] === selectedDate);
+      }
 
       return matchesSearch && matchesStatus && matchesPayment && matchesDate;
     });
-  }, [orders, searchTerm, statusFilter, paymentFilter, selectedDate]);
+  }, [orders, searchTerm, statusFilter, paymentFilter, selectedDate, customDateRange]);
 
   const handleConfirmPayment = (orderId: number) => {
     confirmPaymentMutation.mutate(orderId);
@@ -261,14 +278,24 @@ const Orders = () => {
                     <SelectItem value="custom">Custom date</SelectItem>
                   </SelectContent>
                 </Select>
-                {selectedDate === 'custom' && (
-                  <Input
-                    type="date"
-                    onChange={(e) => setSelectedDate(e.target.value)}
-                    placeholder="Select specific date"
-                    className="w-full mt-2"
-                  />
-                )}
+                 {selectedDate === 'custom' && (
+                   <div className="grid grid-cols-2 gap-2 mt-2">
+                     <Input
+                       type="date"
+                       value={customDateRange.startDate}
+                       onChange={(e) => setCustomDateRange({ ...customDateRange, startDate: e.target.value })}
+                       placeholder="Start date"
+                       className="w-full"
+                     />
+                     <Input
+                       type="date"
+                       value={customDateRange.endDate}
+                       onChange={(e) => setCustomDateRange({ ...customDateRange, endDate: e.target.value })}
+                       placeholder="End date"
+                       className="w-full"
+                     />
+                   </div>
+                 )}
                 {selectedDate && selectedDate !== 'custom' && selectedDate !== '' && (
                   <p className="text-xs text-gray-600">
                     Showing orders from {
@@ -295,6 +322,7 @@ const Orders = () => {
                       setStatusFilter('all');
                       setPaymentFilter('all');
                       setSelectedDate('');
+                      setCustomDateRange({ startDate: '', endDate: '' });
                     }}
                   >
                     Clear Filters

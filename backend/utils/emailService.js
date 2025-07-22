@@ -232,8 +232,14 @@ export const sendSellerStatusEmail = async (sellerData, status) => {
 export const sendOrderConfirmationEmail = async (orderData) => {
   const { customerEmail, customerName, orderNumber, totalPrice, items, shippingAddress, billingAddress, paymentMethod, deliveryFee, discount } = orderData;
   
+  // Check if items exists and is an array
+  if (!items || !Array.isArray(items)) {
+    console.error('❌ Items not found or not an array in order data:', orderData);
+    throw new Error('Order items are required for email confirmation');
+  }
+  
   const itemsList = items.map(item => 
-    `• ${item.product.name} x${item.quantity} - ${(item.price * item.quantity).toLocaleString()} Rwf`
+    `• ${item.product?.name || item.name || 'Unknown Product'} x${item.quantity} - ${(item.price * item.quantity).toLocaleString()} Rwf`
   ).join('\n');
 
   // FIXED: Enhanced payment method display
@@ -660,75 +666,65 @@ export const sendDeliveryStatusUpdateEmail = async ({
   customerEmail,
   customerName,
   orderNumber,
-  productNames,
-  deliveryStatus,
-  updateDateTime,
-  orderViewLink
+  status,
+  items
 }) => {
-  const transport = nodemailer.createTransport({
-    service: 'gmail',
-    auth: {
-      user: 'nberitha12@gmail.com',
-      pass: 'uxwu bprd zjlh bgyt',
-    },
-  });
-
+  // Extract product names from items
+  const productNames = items ? items.map(item => item.product?.name || 'Unknown Product') : [];
+  const statusDisplay = status === 'DELIVERED' ? 'Delivered' : status === 'SHIPPED' ? 'Shipped' : status;
   const mailOptions = {
     from: 'nberitha12@gmail.com',
     to: customerEmail,
-    subject: `Delivery Status Update - Order #${orderNumber}`,
+    subject: `Order Status Update - ${orderNumber}`,
     html: `
-      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #f9f9f9;">
-        <div style="background-color: white; padding: 30px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
-          <div style="text-align: center; margin-bottom: 30px;">
-            <h1 style="color: #7c3aed; margin: 0;">WomXchange Rwanda</h1>
-            <p style="color: #666; margin: 10px 0 0 0;">Delivery Status Update</p>
+      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+        <div style="background: linear-gradient(135deg, #10B981 0%, #059669 100%); padding: 40px 20px; text-align: center; border-radius: 12px 12px 0 0;">
+          <h1 style="color: white; margin: 0; font-size: 28px;">📦 Order Status Update</h1>
+          <p style="color: white; margin: 10px 0 0 0; font-size: 16px; opacity: 0.9;">Your order has been updated</p>
+        </div>
+        
+        <div style="background-color: white; padding: 40px 20px; border-radius: 0 0 12px 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+          <h2 style="color: #374151; margin-top: 0;">Hello ${customerName}!</h2>
+          
+          <p style="color: #6B7280; line-height: 1.6;">
+            Great news! Your order status has been updated to <strong style="color: #10B981;">${statusDisplay}</strong>.
+          </p>
+          
+          <div style="background-color: #ECFDF5; padding: 20px; border-radius: 8px; margin: 30px 0; border-left: 4px solid #10B981;">
+            <h3 style="color: #065F46; margin-top: 0;">Order Details:</h3>
+            <p style="color: #047857; margin: 5px 0;"><strong>Order Number:</strong> ${orderNumber}</p>
+            <p style="color: #047857; margin: 5px 0;"><strong>Status:</strong> ${statusDisplay}</p>
+            ${productNames.length > 0 ? `<p style="color: #047857; margin: 5px 0;"><strong>Items:</strong> ${productNames.join(', ')}</p>` : ''}
           </div>
           
-          <div style="background-color: #f8f9fa; padding: 20px; border-radius: 8px; margin-bottom: 20px;">
-            <h2 style="color: #333; margin: 0 0 15px 0;">Hello ${customerName || 'Valued Customer'},</h2>
-            <p style="color: #666; line-height: 1.6; margin: 0;">
-              Your order delivery status has been updated. Here are the details:
-            </p>
-          </div>
-          
-          <div style="background-color: #fff; border: 1px solid #e5e7eb; border-radius: 8px; overflow: hidden; margin-bottom: 20px;">
-            <div style="background-color: #7c3aed; color: white; padding: 15px; font-weight: bold;">
-              Order Information
-            </div>
-            <div style="padding: 15px;">
-              <p style="margin: 0 0 10px 0;"><strong>Order Number:</strong> ${orderNumber}</p>
-              <p style="margin: 0 0 10px 0;"><strong>Product(s):</strong> ${productNames.join(', ')}</p>
-              <p style="margin: 0 0 10px 0;"><strong>Delivery Status:</strong> 
-                <span style="color: ${deliveryStatus === 'Delivered' ? '#16a34a' : '#dc2626'}; font-weight: bold;">
-                  ${deliveryStatus}
-                </span>
+          ${status === 'DELIVERED' ? `
+            <div style="background-color: #FEF3C7; padding: 20px; border-radius: 8px; margin: 30px 0; border-left: 4px solid #F59E0B;">
+              <h3 style="color: #92400E; margin-top: 0;">🎉 Order Delivered!</h3>
+              <p style="color: #78350F; margin: 0;">
+                Your order has been successfully delivered. We hope you enjoy your purchase!
               </p>
-              <p style="margin: 0;"><strong>Updated:</strong> ${updateDateTime.toLocaleString()}</p>
             </div>
-          </div>
+          ` : status === 'SHIPPED' ? `
+            <div style="background-color: #DBEAFE; padding: 20px; border-radius: 8px; margin: 30px 0; border-left: 4px solid #3B82F6;">
+              <h3 style="color: #1E40AF; margin-top: 0;">🚚 Order Shipped!</h3>
+              <p style="color: #1E3A8A; margin: 0;">
+                Your order is on its way! You should receive it soon.
+              </p>
+            </div>
+          ` : ''}
           
-          <div style="text-align: center; margin: 30px 0;">
-            <a href="${orderViewLink}" style="background-color: #7c3aed; color: white; padding: 12px 30px; text-decoration: none; border-radius: 6px; font-weight: bold; display: inline-block;">
-              View Order Details
-            </a>
-          </div>
+          <p style="color: #6B7280; font-size: 14px; line-height: 1.6;">
+            Thank you for shopping with us! If you have any questions, please contact our support team.
+          </p>
           
-          <div style="background-color: #f8f9fa; padding: 15px; border-radius: 8px; margin-top: 20px;">
-            <p style="color: #666; margin: 0; font-size: 14px; text-align: center;">
-              Thank you for shopping with WomXchange Rwanda!<br>
-              Supporting women entrepreneurs across Rwanda.
-            </p>
-          </div>
-          
-          <div style="text-align: center; margin-top: 20px; padding-top: 20px; border-top: 1px solid #e5e7eb;">
-            <p style="color: #999; font-size: 12px; margin: 0;">
-              © 2024 WomXchange Rwanda. All rights reserved.
+          <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #E5E7EB;">
+            <p style="color: #9CA3AF; font-size: 12px; text-align: center; margin: 0;">
+              This is an automated email. Please do not reply to this email.
             </p>
           </div>
         </div>
       </div>
-    `
+    `,
   };
 
   try {
@@ -736,6 +732,68 @@ export const sendDeliveryStatusUpdateEmail = async ({
     console.log('📧 Delivery status update email sent successfully to:', customerEmail);
   } catch (error) {
     console.error('❌ Error sending delivery status update email:', error);
+    throw error;
+  }
+};
+
+// Send Verification Code Email for Password Reset
+export const sendVerificationCodeEmail = async ({ email, name, verificationCode }) => {
+  const mailOptions = {
+    from: 'nberitha12@gmail.com',
+    to: email,
+    subject: 'Password Reset Verification Code - WomXchange',
+    html: `
+      <div style="max-width: 600px; margin: 0 auto; font-family: Arial, sans-serif;">
+        <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 30px; text-align: center; border-radius: 10px 10px 0 0;">
+          <h1 style="margin: 0; font-size: 28px;">Password Reset Request</h1>
+        </div>
+        
+        <div style="background-color: white; padding: 30px; border-radius: 0 0 10px 10px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);">
+          <div style="text-align: center; margin-bottom: 30px;">
+            <h2 style="color: #4A5568; margin-bottom: 10px;">Hi ${name}! 👋</h2>
+            <p style="color: #666; font-size: 16px;">
+              You requested to reset your password. Use the verification code below:
+            </p>
+          </div>
+          
+          <div style="background-color: #F7FAFC; padding: 30px; border-radius: 8px; text-align: center; margin: 30px 0;">
+            <p style="color: #4A5568; margin-bottom: 10px; font-size: 16px;">Your verification code is:</p>
+            <h1 style="font-size: 48px; color: #667eea; letter-spacing: 8px; margin: 20px 0; font-family: 'Courier New', monospace; background-color: white; padding: 20px; border-radius: 8px; border: 2px dashed #667eea;">
+              ${verificationCode}
+            </h1>
+            <p style="color: #718096; font-size: 14px; margin-top: 15px;">
+              This code will expire in 15 minutes for security.
+            </p>
+          </div>
+          
+          <div style="background-color: #FFF5F5; padding: 20px; border-radius: 8px; border-left: 4px solid #F56565; margin: 20px 0;">
+            <p style="color: #C53030; margin: 0; font-weight: bold;">Security Notice:</p>
+            <p style="color: #742A2A; margin: 10px 0 0 0; font-size: 14px;">
+              If you didn't request this password reset, please ignore this email or contact support if you have concerns.
+            </p>
+          </div>
+          
+          <div style="text-align: center; margin: 30px 0;">
+            <p style="color: #666; font-size: 14px;">
+              Need help? Contact our support team at <a href="mailto:support@womxchange.rw" style="color: #667eea;">support@womxchange.rw</a>
+            </p>
+          </div>
+          
+          <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #E2E8F0;">
+            <p style="color: #A0AEC0; font-size: 12px; text-align: center; margin: 0;">
+              © 2024 WomXchange Rwanda. Empowering women entrepreneurs.
+            </p>
+          </div>
+        </div>
+      </div>
+    `,
+  };
+
+  try {
+    await transport.sendMail(mailOptions);
+    console.log('✅ Verification code email sent to:', email);
+  } catch (error) {
+    console.error('❌ Error sending verification email:', error);
     throw error;
   }
 };
