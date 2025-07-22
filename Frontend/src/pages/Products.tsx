@@ -335,7 +335,7 @@ const Products = () => {
                             </div>
                           )}
                           <div className="text-xs text-gray-500 space-y-1">
-                            <div>In Stock: {product.stock}</div>
+                            {/* <div>In Stock: {product.stock}</div> */}
                             <div>Available: {product.availableStock || 0}</div>
                           </div>
                         </div>

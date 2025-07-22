@@ -52,7 +52,7 @@ const ProductCard = ({
   rating = 0, 
   numReviews = 0,
   averageRating = 0,
-  stock = 0,
+  // stock = 0,
   availableStock = 0,
   seller
 }: ProductCardProps) => {
@@ -275,7 +275,7 @@ const ProductCard = ({
           
           {/* Stock and Available Display */}
           <div className="text-xs text-gray-500 mb-2 space-y-1">
-            <div>In Stock: {stock}</div>
+            {/* <div>In Stock: {stock}</div> */}
             <div>Available: {availableStock}</div>
           </div>
           

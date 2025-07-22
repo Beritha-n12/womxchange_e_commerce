@@ -27,7 +27,8 @@ const SessionGuard: React.FC<SessionGuardProps> = ({ children }) => {
         '/terms',
         '/store',
         '/cart',
-        '/checkout'
+        '/checkout',
+        '/seller-request'
       ];
 
       const isPublicRoute = publicRoutes.some(route => 
