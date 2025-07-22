@@ -50,14 +50,14 @@ const LanguageSwitcher: React.FC<LanguageSwitcherProps> = ({
       </DropdownMenuTrigger>
       <DropdownMenuContent 
         align="end" 
-        className="bg-white border border-gray-200 shadow-lg z-50"
+        className="bg-background border border-border shadow-lg z-50"
       >
         {languages.map((lang) => (
           <DropdownMenuItem
             key={lang.code}
             onClick={() => setLanguage(lang.code)}
-            className={`cursor-pointer hover:bg-gray-100 ${
-              language === lang.code ? 'bg-purple-50 text-purple-600' : ''
+            className={`cursor-pointer hover:bg-accent ${
+              language === lang.code ? 'bg-primary/10 text-primary' : ''
             }`}
           >
             <div className="flex items-center space-x-2">
