@@ -23,13 +23,15 @@ WomXchange Rwanda is Multilingual a free and easy-to-use online platform designe
 
 - All users
 
+- Tracking issues accross application
+
 - Orders 
 
 2. Seller Dashboard:
 
 - Add, update, and manage product listings.
 
-- Track and manage orders (pending, Delivered, cancelled), But managed by admin in the first place
+- Track and manage Their orders (pending, Delivered, cancelled), But managed by admin in the first place.
 
 - View sales performance and trends.
 
