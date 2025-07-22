@@ -3,7 +3,7 @@ import prisma from '../prismaClient.js';
 import generateToken from '../utils/generateToken.js';
 import bcrypt from 'bcryptjs';
 import { notify } from '../utils/notify.js';
-import { sendWelcomeEmail } from '../utils/emailService.js';
+import { sendWelcomeEmail, sendVerificationCodeEmail } from '../utils/emailService.js';
 import { logFailedAction } from './failedActionsController.js';
 // Register User
 export const registerUser = asyncHandler(async (req, res) => {
@@ -518,6 +518,226 @@ export const verifyUserExists = asyncHandler(async (req, res) => {
       isActive: user.isActive
     }
   });
+});
+
+// Forgot Password - Check if user exists
+export const forgotPassword = asyncHandler(async (req, res) => {
+  const { email } = req.body;
+
+  console.log('🔍 FORGOT PASSWORD REQUEST:', { email });
+
+  try {
+    const user = await prisma.user.findUnique({ 
+      where: { email },
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        isActive: true
+      }
+    });
+
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: 'No account found with this email address'
+      });
+    }
+
+    if (!user.isActive) {
+      return res.status(400).json({
+        success: false,
+        message: 'Account is deactivated. Please contact support.'
+      });
+    }
+
+    // Generate a 6-digit verification code
+    const verificationCode = Math.floor(100000 + Math.random() * 900000).toString();
+    
+    // Store verification code temporarily (implement proper storage in production)
+    console.log(`Verification code for ${email}: ${verificationCode}`);
+    
+    // Send email with verification code
+    try {
+      await sendVerificationCodeEmail({
+        email: user.email,
+        name: user.name,
+        verificationCode: verificationCode
+      });
+      console.log('✅ Verification code email sent successfully');
+    } catch (emailError) {
+      console.error('❌ Error sending verification email:', emailError);
+      return res.status(500).json({
+        success: false,
+        message: 'Failed to send verification email. Please try again.'
+      });
+    }
+    
+    res.json({
+      success: true,
+      message: 'Verification code sent to your email.',
+      user: {
+        id: user.id,
+        name: user.name,
+        email: user.email
+      }
+    });
+  } catch (error) {
+    console.error('❌ FORGOT PASSWORD ERROR:', error);
+    
+    await logFailedAction({
+      type: 'LOGIN',
+      userId: null,
+      email: email,
+      reason: `Forgot password error: ${error.message}`,
+      metadata: { action: 'forgot_password' },
+      ipAddress: req.ip,
+      userAgent: req.get('User-Agent')
+    });
+
+    res.status(500).json({
+      success: false,
+      message: 'Server error. Please try again later.'
+    });
+  }
+});
+
+// Verify Reset Code
+export const verifyResetCode = asyncHandler(async (req, res) => {
+  const { email, code } = req.body;
+
+  console.log('🔍 VERIFY RESET CODE REQUEST:', { email, code });
+
+  try {
+    // In a real application, you would verify the code from database
+    // For now, we'll accept the code if it's a 6-digit number
+    if (!code || code.length !== 6 || isNaN(parseInt(code))) {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid verification code format'
+      });
+    }
+
+    // Check if user exists
+    const user = await prisma.user.findUnique({ 
+      where: { email },
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        isActive: true
+      }
+    });
+
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: 'No account found with this email address'
+      });
+    }
+
+    // For demo purposes, accept any 6-digit code
+    // In production, verify against stored code and check expiration
+    console.log('✅ VERIFICATION CODE ACCEPTED:', { email, code });
+
+    res.json({
+      success: true,
+      message: 'Verification code verified successfully.',
+      user: {
+        id: user.id,
+        name: user.name,
+        email: user.email
+      }
+    });
+  } catch (error) {
+    console.error('❌ VERIFY RESET CODE ERROR:', error);
+    
+    await logFailedAction({
+      type: 'LOGIN',
+      userId: null,
+      email: email,
+      reason: `Verify reset code error: ${error.message}`,
+      metadata: { action: 'verify_reset_code' },
+      ipAddress: req.ip,
+      userAgent: req.get('User-Agent')
+    });
+
+    res.status(500).json({
+      success: false,
+      message: 'Server error. Please try again later.'
+    });
+  }
+});
+
+// Reset Password - Set new password
+export const resetPassword = asyncHandler(async (req, res) => {
+  const { email, newPassword, userId } = req.body;
+
+  console.log('🔍 RESET PASSWORD REQUEST:', { email });
+
+  try {
+    // Support both email and userId for backward compatibility
+    const whereClause = userId ? { id: parseInt(userId) } : { email };
+    
+    const user = await prisma.user.findUnique({ 
+      where: whereClause,
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        isActive: true
+      }
+    });
+
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: 'No account found with this email address'
+      });
+    }
+
+    if (!user.isActive) {
+      return res.status(400).json({
+        success: false,
+        message: 'Account is deactivated. Please contact support.'
+      });
+    }
+
+    // Hash the new password
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
+
+    // Update user password
+    await prisma.user.update({
+      where: whereClause,
+      data: {
+        password: hashedPassword
+      }
+    });
+
+    console.log('✅ PASSWORD RESET SUCCESS:', { email });
+
+    res.json({
+      success: true,
+      message: 'Password reset successfully. You can now login with your new password.'
+    });
+  } catch (error) {
+    console.error('❌ RESET PASSWORD ERROR:', error);
+    
+    await logFailedAction({
+      type: 'LOGIN',
+      userId: null,
+      email: email,
+      reason: `Reset password error: ${error.message}`,
+      metadata: { action: 'reset_password' },
+      ipAddress: req.ip,
+      userAgent: req.get('User-Agent')
+    });
+
+    res.status(500).json({
+      success: false,
+      message: 'Server error. Please try again later.'
+    });
+  }
 });
 
 // Logout User

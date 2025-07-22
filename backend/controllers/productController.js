@@ -73,6 +73,7 @@ export const createProduct = asyncHandler(async (req, res) => {
         description: description ? String(description) : null,
         price: parseFloat(price),
         stock: parseInt(stock),
+        availableStock: parseInt(stock), // Initially same as stock
         categoryId: parseInt(categoryId),
         coverImage: productCoverImage,
         createdById: productOwnerId,
