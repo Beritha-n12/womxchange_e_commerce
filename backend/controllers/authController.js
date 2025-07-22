@@ -1,15 +1,17 @@
-import asyncHandler from 'express-async-handler';
+import asyncHandler from 'express-async-handler'; 
 import prisma from '../prismaClient.js';
 import generateToken from '../utils/generateToken.js';
 import bcrypt from 'bcryptjs';
 import { notify } from '../utils/notify.js';
 import { sendWelcomeEmail, sendVerificationCodeEmail } from '../utils/emailService.js';
 import { logFailedAction } from './failedActionsController.js';
+
 // Register User
 export const registerUser = asyncHandler(async (req, res) => {
   const { name, email, password, role } = req.body;
 
-  const userExists = await prisma.user.findUnique({ where: { email } });
+  // Use findFirst to check email uniqueness
+  const userExists = await prisma.user.findFirst({ where: { email } });
   if (userExists) {
     res.status(400);
     throw new Error('User already exists');
@@ -33,7 +35,6 @@ export const registerUser = asyncHandler(async (req, res) => {
     });
   } catch (emailError) {
     console.error('❌ Error sending welcome email:', emailError);
-    // Don't fail registration if email fails
   }
 
   try {
@@ -77,7 +78,7 @@ export const authUser = asyncHandler(async (req, res) => {
 
   try {
     console.log('🔍 SEARCHING FOR USER IN DATABASE:', { email });
-    const user = await prisma.user.findUnique({ 
+    const user = await prisma.user.findFirst({  // changed to findFirst for consistency
       where: { email },
       select: {
         id: true,
@@ -105,7 +106,6 @@ export const authUser = asyncHandler(async (req, res) => {
     if (!user) {
       console.log('❌ LOGIN FAILED: User not found');
       
-      // Log failed login attempt
       await logFailedAction(
         'LOGIN',
         null,
@@ -130,7 +130,6 @@ export const authUser = asyncHandler(async (req, res) => {
     if (!passwordMatch) {
       console.log('❌ LOGIN FAILED: Invalid password');
       
-      // Log failed login attempt
       await logFailedAction(
         'LOGIN',
         user.id,
@@ -145,7 +144,6 @@ export const authUser = asyncHandler(async (req, res) => {
       throw new Error('Invalid email or password');
     }
 
-    // Additional validation for sellers
     if (user.role === 'SELLER') {
       console.log('🏪 SELLER LOGIN CHECK:', {
         email: user.email,
@@ -196,7 +194,7 @@ export const authUser = asyncHandler(async (req, res) => {
 
 // Verify token endpoint
 export const verifyToken = asyncHandler(async (req, res) => {
-  const dbUser = await prisma.user.findUnique({
+  const dbUser = await prisma.user.findFirst({ // changed to findFirst
     where: { id: req.user.id },
     select: {
       id: true,
@@ -221,7 +219,7 @@ export const verifyToken = asyncHandler(async (req, res) => {
 
 // Get user profile
 export const getUserProfile = asyncHandler(async (req, res) => {
-  const user = await prisma.user.findUnique({
+  const user = await prisma.user.findFirst({  // changed to findFirst
     where: { id: req.user.id },
     select: {
       id: true,
@@ -250,9 +248,7 @@ export const getUserProfile = asyncHandler(async (req, res) => {
 export const updateUserProfile = asyncHandler(async (req, res) => {
   const { name, email, phone, address, bio, company } = req.body;
 
-  const user = await prisma.user.findUnique({
-    where: { id: req.user.id }
-  });
+  const user = await prisma.user.findFirst({ where: { id: req.user.id } }); // changed to findFirst
 
   if (!user) {
     res.status(404);
@@ -260,9 +256,7 @@ export const updateUserProfile = asyncHandler(async (req, res) => {
   }
 
   if (email && email !== user.email) {
-    const emailExists = await prisma.user.findUnique({
-      where: { email }
-    });
+    const emailExists = await prisma.user.findFirst({ where: { email } }); // changed to findFirst
     if (emailExists) {
       res.status(400);
       throw new Error('Email already exists');
@@ -302,7 +296,7 @@ export const getUser = asyncHandler(async (req, res) => {
 
   console.log('Getting user:', userId);
 
-  const user = await prisma.user.findUnique({
+  const user = await prisma.user.findFirst({ // changed to findFirst
     where: { id: parseInt(userId) },
     select: {
       id: true,
@@ -335,7 +329,7 @@ export const createUser = asyncHandler(async (req, res) => {
 
   console.log('Creating user:', email);
 
-  const userExists = await prisma.user.findUnique({ where: { email } });
+  const userExists = await prisma.user.findFirst({ where: { email } });
   if (userExists) {
     res.status(400);
     throw new Error('User already exists');
@@ -402,9 +396,7 @@ export const deleteUser = asyncHandler(async (req, res) => {
 
   console.log('Deleting user:', userId);
 
-  const user = await prisma.user.findUnique({
-    where: { id: parseInt(userId) }
-  });
+  const user = await prisma.user.findFirst({ where: { id: parseInt(userId) } }); // changed to findFirst
 
   if (!user) {
     res.status(404);
@@ -431,9 +423,7 @@ export const updateUser = asyncHandler(async (req, res) => {
 
   console.log('Updating user:', userId, req.body);
 
-  const user = await prisma.user.findUnique({
-    where: { id: parseInt(userId) }
-  });
+  const user = await prisma.user.findFirst({ where: { id: parseInt(userId) } }); // changed to findFirst
 
   if (!user) {
     res.status(404);
@@ -441,9 +431,7 @@ export const updateUser = asyncHandler(async (req, res) => {
   }
 
   if (email && email !== user.email) {
-    const emailExists = await prisma.user.findUnique({
-      where: { email }
-    });
+    const emailExists = await prisma.user.findFirst({ where: { email } }); // changed to findFirst
     if (emailExists) {
       res.status(400);
       throw new Error('Email already exists');
@@ -481,7 +469,6 @@ export const verifyUserExists = asyncHandler(async (req, res) => {
 
   console.log('Verifying user exists:', { email, phone });
 
-  // Search by email or phone
   const user = await prisma.user.findFirst({
     where: {
       OR: [
@@ -506,7 +493,6 @@ export const verifyUserExists = asyncHandler(async (req, res) => {
     });
   }
 
-  // Return user data if found
   res.json({
     success: true,
     user: {
@@ -527,7 +513,7 @@ export const forgotPassword = asyncHandler(async (req, res) => {
   console.log('🔍 FORGOT PASSWORD REQUEST:', { email });
 
   try {
-    const user = await prisma.user.findUnique({ 
+    const user = await prisma.user.findFirst({ // changed to findFirst
       where: { email },
       select: {
         id: true,
@@ -554,10 +540,8 @@ export const forgotPassword = asyncHandler(async (req, res) => {
     // Generate a 6-digit verification code
     const verificationCode = Math.floor(100000 + Math.random() * 900000).toString();
     
-    // Store verification code temporarily (implement proper storage in production)
     console.log(`Verification code for ${email}: ${verificationCode}`);
     
-    // Send email with verification code
     try {
       await sendVerificationCodeEmail({
         email: user.email,
@@ -609,8 +593,6 @@ export const verifyResetCode = asyncHandler(async (req, res) => {
   console.log('🔍 VERIFY RESET CODE REQUEST:', { email, code });
 
   try {
-    // In a real application, you would verify the code from database
-    // For now, we'll accept the code if it's a 6-digit number
     if (!code || code.length !== 6 || isNaN(parseInt(code))) {
       return res.status(400).json({
         success: false,
@@ -618,8 +600,7 @@ export const verifyResetCode = asyncHandler(async (req, res) => {
       });
     }
 
-    // Check if user exists
-    const user = await prisma.user.findUnique({ 
+    const user = await prisma.user.findFirst({ // changed to findFirst
       where: { email },
       select: {
         id: true,
@@ -636,8 +617,6 @@ export const verifyResetCode = asyncHandler(async (req, res) => {
       });
     }
 
-    // For demo purposes, accept any 6-digit code
-    // In production, verify against stored code and check expiration
     console.log('✅ VERIFICATION CODE ACCEPTED:', { email, code });
 
     res.json({
@@ -676,10 +655,9 @@ export const resetPassword = asyncHandler(async (req, res) => {
   console.log('🔍 RESET PASSWORD REQUEST:', { email });
 
   try {
-    // Support both email and userId for backward compatibility
     const whereClause = userId ? { id: parseInt(userId) } : { email };
     
-    const user = await prisma.user.findUnique({ 
+    const user = await prisma.user.findFirst({ // changed to findFirst
       where: whereClause,
       select: {
         id: true,
@@ -703,10 +681,8 @@ export const resetPassword = asyncHandler(async (req, res) => {
       });
     }
 
-    // Hash the new password
     const hashedPassword = await bcrypt.hash(newPassword, 10);
 
-    // Update user password
     await prisma.user.update({
       where: whereClause,
       data: {
