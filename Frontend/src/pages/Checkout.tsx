@@ -387,7 +387,7 @@ const Checkout = () => {
                       <h6>* Beritha Niyotwagira</h6>
                       <div className="text-lg font-bold text-green-600">{paymentCode}</div>
                       <p className="text-sm text-gray-600 mt-1">
-                        Use this number +250784720984 to complete your MoMo payment
+                        Use this number {paymentCode} to complete your MoMo payment
                       </p>
                     </div>
                     {currentOrderId && (
