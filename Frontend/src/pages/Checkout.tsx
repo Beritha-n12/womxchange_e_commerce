@@ -1,3 +1,4 @@
+
 import { useState, useEffect, useContext } from 'react';
 import { ArrowLeft, Shield } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -9,7 +10,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import { AuthContext } from '@/contexts/AuthContext';
-import useCart from '@/hooks/useCart';
+import  useCart  from '@/hooks/useCart';
 import { placeOrder, placeAnonymousOrder } from '@/api/orders';
 import { useToast } from '@/hooks/use-toast';
 import { APP_CONSTANTS, ROUTES } from '@/constants/app';
@@ -27,7 +28,7 @@ const Checkout = () => {
   const [paymentCode, setPaymentCode] = useState('');
   const [currentOrderId, setCurrentOrderId] = useState<number | null>(null);
   const [showGuestModal, setShowGuestModal] = useState(false);
-
+  
   // Form data
   const [formData, setFormData] = useState({
     firstName: '',
@@ -72,7 +73,7 @@ const Checkout = () => {
   // Handle payment method change
   const handlePaymentMethodChange = async (method: string) => {
     setPaymentMethod(method);
-
+    
     if (method === APP_CONSTANTS.PAYMENT_METHODS.MTN) {
       setPaymentCode(APP_CONSTANTS.PAYMENT_CODE);
     } else {
@@ -90,7 +91,7 @@ const Checkout = () => {
       return;
     }
 
-    if (!formData.firstName || !formData.lastName || !formData.location || !formData.streetLine ||
+    if (!formData.firstName || !formData.lastName || !formData.location || !formData.streetLine || 
         !formData.city || !formData.state || !formData.postalCode || !formData.country) {
       toast({
         title: "Error",
@@ -111,7 +112,7 @@ const Checkout = () => {
     }
 
     const billingAddress = `${formData.streetLine}, ${formData.city}, ${formData.state}, ${formData.postalCode}, ${formData.country}`;
-    const shippingAddress = sameAsBilling
+    const shippingAddress = sameAsBilling 
       ? billingAddress
       : formData.shippingAddress || billingAddress;
 
@@ -124,7 +125,7 @@ const Checkout = () => {
           paymentMethod,
           customerPhone: formData.countryCode + formData.phone
         });
-
+        
         const orderId = orderResponse.data.id;
         setCurrentOrderId(orderId);
 
@@ -188,7 +189,7 @@ const Checkout = () => {
   const subtotal = cartItems.reduce((sum, item) => sum + (item.product.price * item.quantity), 0);
   const discount = Math.round(subtotal * APP_CONSTANTS.DISCOUNT_RATE);
   const subtotalAfterDiscount = subtotal - discount;
-
+  
   // Hide delivery fee if Pay on Delivery is selected
   const showDeliveryFee = paymentMethod !== APP_CONSTANTS.PAYMENT_METHODS.PAY_ON_DELIVERY;
   const deliveryFee = showDeliveryFee ? APP_CONSTANTS.DELIVERY_FEE : 0;
@@ -198,7 +199,7 @@ const Checkout = () => {
     customerName: `${formData.firstName} ${formData.lastName}`,
     customerEmail: formData.email,
     billingAddress: `${formData.streetLine}, ${formData.city}, ${formData.state}, ${formData.postalCode}, ${formData.country}`,
-    shippingAddress: sameAsBilling
+    shippingAddress: sameAsBilling 
       ? `${formData.streetLine}, ${formData.city}, ${formData.state}, ${formData.postalCode}, ${formData.country}`
       : formData.shippingAddress || `${formData.streetLine}, ${formData.city}, ${formData.state}, ${formData.postalCode}, ${formData.country}`,
     paymentMethod,
@@ -208,7 +209,7 @@ const Checkout = () => {
   return (
     <div className="min-h-screen bg-white">
       <Header />
-
+      
       <div className="container mx-auto px-4 py-8">
         {/* Back Button */}
         <Link to={ROUTES.CART} className="inline-flex items-center text-gray-600 hover:text-gray-800 mb-6">
@@ -235,29 +236,29 @@ const Checkout = () => {
                   <span className="w-6 h-6 bg-black text-white rounded-full flex items-center justify-center text-sm mr-3">1</span>
                   <h2 className="text-xl font-semibold">Customer Information</h2>
                 </div>
-
+                
                 <div className="grid grid-cols-2 gap-4 mb-4">
-                  <Input
-                    placeholder="First Name *"
+                  <Input 
+                    placeholder="First Name *" 
                     value={formData.firstName}
                     onChange={(e) => handleInputChange('firstName', e.target.value)}
                   />
-                  <Input
-                    placeholder="Last Name *"
+                  <Input 
+                    placeholder="Last Name *" 
                     value={formData.lastName}
                     onChange={(e) => handleInputChange('lastName', e.target.value)}
                   />
                 </div>
-
+                
                 <div className="grid grid-cols-2 gap-4 mb-4">
-                  <Input
-                    placeholder={auth?.user ? "Email" : "Email *"}
-                    type="email"
+                  <Input 
+                    placeholder={auth?.user ? "Email" : "Email *"} 
+                    type="email" 
                     value={formData.email}
                     onChange={(e) => handleInputChange('email', e.target.value)}
                   />
                   <div className="flex gap-2">
-                    <select
+                    <select 
                       value={formData.countryCode}
                       onChange={(e) => handleInputChange('countryCode', e.target.value)}
                       className="w-20 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500"
@@ -269,8 +270,8 @@ const Checkout = () => {
                       <option value="+1">🇺🇸 +1</option>
                       <option value="+44">🇬🇧 +44</option>
                     </select>
-                    <Input
-                      placeholder="Phone Number"
+                    <Input 
+                      placeholder="Phone Number" 
                       type="tel"
                       value={formData.phone}
                       onChange={(e) => handleInputChange('phone', e.target.value)}
@@ -278,23 +279,23 @@ const Checkout = () => {
                     />
                   </div>
                 </div>
-
+                
                 <div className="grid grid-cols-2 gap-4 mb-4">
-                  <Input
-                    placeholder="Location *"
+                  <Input 
+                    placeholder="Location *" 
                     value={formData.location}
                     onChange={(e) => handleInputChange('location', e.target.value)}
                   />
                   <div></div>
                 </div>
-
-                <Input
-                  placeholder="Street Line *"
-                  className="mb-4"
+                
+                <Input 
+                  placeholder="Street Line *" 
+                  className="mb-4" 
                   value={formData.streetLine}
                   onChange={(e) => handleInputChange('streetLine', e.target.value)}
                 />
-
+                
                 {!auth?.user && (
                   <p className="text-sm text-gray-600">
                     * Required fields. You will receive order confirmation via email.
@@ -308,28 +309,28 @@ const Checkout = () => {
                   <span className="w-6 h-6 bg-black text-white rounded-full flex items-center justify-center text-sm mr-3">2</span>
                   <h2 className="text-xl font-semibold">Billing Address</h2>
                 </div>
-
+                
                 <div className="grid grid-cols-2 gap-4 mb-4">
-                  <Input
-                    placeholder="City *"
+                  <Input 
+                    placeholder="City *" 
                     value={formData.city || ''}
                     onChange={(e) => handleInputChange('city', e.target.value)}
                   />
-                  <Input
-                    placeholder="State/Province *"
+                  <Input 
+                    placeholder="State/Province *" 
                     value={formData.state || ''}
                     onChange={(e) => handleInputChange('state', e.target.value)}
                   />
                 </div>
-
+                
                 <div className="grid grid-cols-2 gap-4 mb-4">
-                  <Input
-                    placeholder="Postal Code *"
+                  <Input 
+                    placeholder="Postal Code *" 
                     value={formData.postalCode || ''}
                     onChange={(e) => handleInputChange('postalCode', e.target.value)}
                   />
-                  <Input
-                    placeholder="Country *"
+                  <Input 
+                    placeholder="Country *" 
                     value={formData.country || ''}
                     onChange={(e) => handleInputChange('country', e.target.value)}
                   />
@@ -342,10 +343,10 @@ const Checkout = () => {
                   <span className="w-6 h-6 bg-black text-white rounded-full flex items-center justify-center text-sm mr-3">3</span>
                   <h2 className="text-xl font-semibold">Shipping Address</h2>
                 </div>
-
+                
                 <div className="flex items-center space-x-2 mb-4">
-                  <Checkbox
-                    id="same-address"
+                  <Checkbox 
+                    id="same-address" 
                     checked={sameAsBilling}
                     onCheckedChange={handleSameAsBillingChange}
                   />
@@ -353,8 +354,8 @@ const Checkout = () => {
                 </div>
 
                 {!sameAsBilling && (
-                  <Input
-                    placeholder="Shipping Address"
+                  <Input 
+                    placeholder="Shipping Address" 
                     value={formData.shippingAddress}
                     onChange={(e) => handleInputChange('shippingAddress', e.target.value)}
                   />
@@ -367,7 +368,7 @@ const Checkout = () => {
                   <span className="w-6 h-6 bg-black text-white rounded-full flex items-center justify-center text-sm mr-3">4</span>
                   <h2 className="text-xl font-semibold">Payment Method</h2>
                 </div>
-
+                
                 <RadioGroup value={paymentMethod} onValueChange={handlePaymentMethodChange} className="mb-4 space-y-3">
                   <div className="flex items-center space-x-2">
                     <RadioGroupItem value={APP_CONSTANTS.PAYMENT_METHODS.MTN} id="mtn" />
@@ -387,7 +388,7 @@ const Checkout = () => {
                       <h6>* Beritha Niyotwagira</h6>
                       <div className="text-lg font-bold text-green-600">{paymentCode}</div>
                       <p className="text-sm text-gray-600 mt-1">
-                        Use this number {paymentCode} to complete your MoMo payment
+                        Use this number to complete your MoMo payment
                       </p>
                     </div>
                     {currentOrderId && (
@@ -417,13 +418,13 @@ const Checkout = () => {
                   <Shield className="w-4 h-4 text-green-500" />
                   <span className="text-sm text-gray-600">Secure Payment</span>
                 </div>
-
+                
                 <p className="text-xs text-gray-500 mt-2">
                   Your purchases are secured by industry-standard encryption
                 </p>
               </div>
 
-              <Button
+              <Button 
                 onClick={handleCompleteOrder}
                 disabled={processing || currentOrderId !== null}
                 className="w-full bg-purple-500 hover:bg-purple-600 text-white py-3 rounded-lg"
@@ -435,7 +436,7 @@ const Checkout = () => {
                 <div className="mt-4 p-4 bg-green-50 rounded-lg">
                   <h3 className="font-semibold text-green-800 mb-2">✅ Order Completed!</h3>
                   <p className="text-green-700 text-sm">
-                    Your order has been placed successfully.
+                    Your order has been placed successfully. 
                     {paymentMethod === APP_CONSTANTS.PAYMENT_METHODS.MTN && " Please complete the payment using the MoMo code above."}
                     {paymentMethod === APP_CONSTANTS.PAYMENT_METHODS.PAY_ON_DELIVERY && " Payment will be collected on delivery."}
                     You will receive email updates about your order status.
@@ -452,12 +453,12 @@ const Checkout = () => {
             {/* Right Side - Order Summary */}
             <div className="lg:pl-8">
               <h2 className="text-xl font-semibold mb-6">Order Summary</h2>
-
+              
               <div className="space-y-4 mb-6">
                 {cartItems.map((item) => (
                   <div key={item.id} className="flex items-center space-x-4 p-4 border rounded-lg">
-                    <img
-                      src={item.product.coverImage}
+                    <img 
+                      src={item.product.coverImage} 
                       alt={item.product.name}
                       className="w-16 h-16 object-cover rounded"
                     />
