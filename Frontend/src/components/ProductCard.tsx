@@ -12,6 +12,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Textarea } from '@/components/ui/textarea';
 import { useMutation, useQueryClient, useQuery } from '@tanstack/react-query';
 import { createProductReview, getProductReviews } from '@/api/reviews';
+import {  Product } from '@/api/products';
 
 // Import supabase client to construct full image URL
 import { supabase } from '@/lib/supabase';  // Adjust this import path if necessary
@@ -56,6 +57,7 @@ const ProductCard = ({
   availableStock = 0,
   seller
 }: ProductCardProps) => {
+  const [product] = useState<Product | null>(null);
   const { toast } = useToast();
   const { t } = useLanguage();
   const auth = useContext(AuthContext);
@@ -274,10 +276,14 @@ const ProductCard = ({
           </div>
           
           {/* Stock and Available Display */}
-          <div className="text-xs text-gray-500 mb-2 space-y-1">
-            {/* <div>In Stock: {stock}</div> */}
-            <div>Available: {availableStock}</div>
-          </div>
+           <div className="text-sm text-gray-600">
+          {availableStock > 0 ? (
+  <span className="text-green-600">{t('products.in_stock')} ({availableStock} {t('products.available')})</span>
+) : (
+  <span className="text-red-600">{t('products.out_of_stock')}</span>
+)}
+
+            </div>
           
           {seller && (
             <div className="text-xs text-gray-600 mb-2">
@@ -286,20 +292,30 @@ const ProductCard = ({
           )}
 
           <div className="flex items-center space-x-2">
-            <Button 
-              size="sm" 
-              className={`flex-1 ${isInCart(parseInt(id)) ? 'bg-green-500 hover:bg-green-600' : 'bg-purple-500 hover:bg-purple-600'} text-white`}
-              onClick={handleAddToCart}
-              disabled={isAddingToCart}
-            >
-              {isAddingToCart ? (
-                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
-              ) : isInCart(parseInt(id)) ? (
-                '✓ Added to Cart'
-              ) : (
-                t('cart.add_to_cart') || 'Add to Cart'
-              )}
-            </Button>
+            {
+              <Button 
+  size="sm" 
+  className={`flex-1 ${
+    isInCart(parseInt(id)) 
+      ? 'bg-green-500 hover:bg-green-600' 
+      : 'bg-purple-500 hover:bg-purple-600'
+  } text-white`}
+  onClick={handleAddToCart}
+  disabled={isAddingToCart || availableStock === 0}
+>
+  {isAddingToCart ? (
+    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+  ) : isInCart(parseInt(id)) ? (
+    '✓ Added to Cart'
+  ) : availableStock === 0 ? (
+    t('products.out_of_stock') || 'Out of Stock'
+  ) : (
+    t('cart.add_to_cart') || 'Add to Cart'
+  )}
+</Button>
+
+            }
+            
             
             <Dialog open={showReviewDialog} onOpenChange={setShowReviewDialog}>
               <DialogTrigger asChild>

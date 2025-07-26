@@ -14,10 +14,12 @@ import { useCartStatus } from '@/hooks/useCartStatus';
 import { AuthContext } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
 import { CartQuantityControls } from '@/components/cart/CartQuantityControls';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 const SingleProduct = () => {
   const { id } = useParams<{ id: string }>();
   const { toast } = useToast();
+  const { t } = useLanguage();
   const { user } = useContext(AuthContext);
   const { addToCart, isAddingToCart } = useCart();
   const { isInCart, getCartItemQuantity } = useCartStatus();
@@ -76,7 +78,7 @@ const SingleProduct = () => {
     }
   };
 
-  const increaseQuantity = () => setQuantity(prev => Math.min(prev + 1, product?.stock || 999));
+  const increaseQuantity = () => setQuantity(prev => Math.min(prev + 1, product?.availableStock || 999));
   const decreaseQuantity = () => setQuantity(prev => (prev > 1 ? prev - 1 : 1));
   const handleQuantityChange = (newQuantity: number) => setQuantity(newQuantity);
 
@@ -87,7 +89,7 @@ const SingleProduct = () => {
         <div className="flex items-center justify-center min-h-[400px]">
           <div className="text-center">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-500 mx-auto mb-4"></div>
-            <p className="text-gray-600">Loading product...</p>
+            <p className="text-gray-600">{t('products.loading')}</p>
           </div>
         </div>
         <Footer />
@@ -101,9 +103,9 @@ const SingleProduct = () => {
         <Header />
         <div className="flex items-center justify-center min-h-[400px]">
           <div className="text-center">
-            <div className="text-lg text-red-600 mb-4">{error || 'Product not found'}</div>
+            <div className="text-lg text-red-600 mb-4">{error || t('products.product_not_found')}</div>
             <Button onClick={() => window.location.reload()} className="bg-purple-500 hover:bg-purple-600">
-              Try Again
+              {t('common.try_again')}
             </Button>
           </div>
         </div>
@@ -121,7 +123,7 @@ const SingleProduct = () => {
       <Header />
       <div className="container mx-auto px-4 py-8">
         <div className="text-sm text-gray-500 mb-6">
-          Home / Shop / {product.category?.name || 'Category'} / {product.name}
+          {t('common.home')} / {t('common.shop')} / {product.category?.name || t('categories.category')} / {product.name}
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 mb-12">
@@ -138,7 +140,7 @@ const SingleProduct = () => {
                 <div className="absolute top-4 right-4">
                   <Badge className="bg-green-500 text-white flex items-center space-x-1">
                     <CheckCircle className="w-3 h-3" />
-                    <span>In Cart ({cartQuantity})</span>
+                    <span>{t('products.in_cart')} ({cartQuantity})</span>
                   </Badge>
                 </div>
               )}
@@ -151,7 +153,7 @@ const SingleProduct = () => {
               {productInCart && (
                 <Badge variant="secondary" className="bg-green-100 text-green-800">
                   <CheckCircle className="w-3 h-3 mr-1" />
-                  Added to Cart
+                  {t('products.added_to_cart')}
                 </Badge>
               )}
             </div>
@@ -169,7 +171,7 @@ const SingleProduct = () => {
 
             {product.colors?.length > 0 && (
               <div>
-                <h3 className="font-medium mb-3">Color</h3>
+                <h3 className="font-medium mb-3">{t('products.color')}</h3>
                 <div className="flex gap-2">
                   {product.colors.map((color) => (
                     <button
@@ -188,7 +190,7 @@ const SingleProduct = () => {
 
             {product.sizes?.length > 0 && (
               <div>
-                <h3 className="font-medium mb-3">Size</h3>
+                <h3 className="font-medium mb-3">{t('products.size')}</h3>
                 <div className="flex gap-2">
                   {product.sizes.map((size) => (
                     <button
@@ -208,10 +210,10 @@ const SingleProduct = () => {
             )}
 
             <div className="text-sm text-gray-600">
-              {product.stock > 0 ? (
-                <span className="text-green-600">In Stock ({product.stock} available)</span>
+              {product.availableStock > 0 ? (
+                <span className="text-green-600">{t('products.in_stock')} ({product.availableStock} {t('products.available')})</span>
               ) : (
-                <span className="text-red-600">Out of Stock</span>
+                <span className="text-red-600">{t('products.out_of_stock')}</span>
               )}
             </div>
 
@@ -222,7 +224,7 @@ const SingleProduct = () => {
                    onIncrease={increaseQuantity}
                    onDecrease={decreaseQuantity}
                    onQuantityChange={handleQuantityChange}
-                   maxStock={product.stock}
+                   maxStock={product.availableStock}
                    isLoading={isAddingToCart}
                  />
                 <Button
@@ -232,17 +234,17 @@ const SingleProduct = () => {
                       : 'bg-purple-500 hover:bg-purple-600'
                   }`}
                   onClick={handleAddToCart}
-                  disabled={product.stock === 0 || isAddingToCart}
+                  disabled={product.availableStock === 0 || isAddingToCart}
                 >
                   {productInCart ? (
                     <>
                       <CheckCircle className="w-4 h-4 mr-2" />
-                      {isAddingToCart ? 'Adding...' : 'Add More to Cart'}
+                      {isAddingToCart ? t('cart.adding') : t('cart.add_more_to_cart')}
                     </>
                   ) : (
                     <>
                       <ShoppingCart className="w-4 h-4 mr-2" />
-                      {isAddingToCart ? 'Adding...' : 'Add to Cart'}
+                      {isAddingToCart ? t('cart.adding') : t('cart.add_to_cart')}
                     </>
                   )}
                 </Button>
@@ -264,7 +266,7 @@ const SingleProduct = () => {
                     : 'border-transparent text-gray-500 hover:text-gray-700'
                 }`}
               >
-                {tab === 'details' ? 'Product Details' : tab === 'reviews' ? 'Rating & Reviews' : 'FAQs'}
+                {tab === 'details' ? t('products.product_details') : tab === 'reviews' ? t('products.rating_reviews') : t('products.faqs')}
               </button>
             ))}
           </div>
@@ -280,8 +282,8 @@ const SingleProduct = () => {
           {activeTab === 'faq' && (
             <div className="space-y-4">
               <div>
-                <h4 className="font-medium mb-2">How should I care for this item?</h4>
-                <p className="text-gray-600">Follow care instructions provided with the product</p>
+                <h4 className="font-medium mb-2">{t('products.care_instructions_title')}</h4>
+                <p className="text-gray-600">{t('products.care_instructions_text')}</p>
               </div>
             </div>
           )}

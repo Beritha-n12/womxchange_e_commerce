@@ -193,7 +193,7 @@ const OrderPreview = () => {
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   <div>
                     <p className="text-sm text-gray-600">Name</p>
                     <p className="font-medium">{order.user?.name || order.customerName || 'Guest'}</p>
@@ -201,6 +201,10 @@ const OrderPreview = () => {
                   <div>
                     <p className="text-sm text-gray-600">Email</p>
                     <p className="font-medium">{order.user?.email || order.customerEmail || 'N/A'}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm text-gray-600">Phone</p>
+                    <p className="font-medium">{order.customerPhone || order.user?.phone || '0785546467'}</p>
                   </div>
                 </div>
               </CardContent>
@@ -296,18 +300,19 @@ const OrderPreview = () => {
                     </div>
                     <div className="flex justify-between items-center text-sm">
                       <span>Delivery Fee:</span>
-                      <span>{(order.shippingPrice || 1200).toLocaleString()} Rwf</span>
+                      <span>1200 Rwf</span>
                     </div>
-                    {order.discountAmount && order.discountAmount > 0 && (
-                      <div className="flex justify-between items-center text-sm text-green-600">
-                        <span>Discount:</span>
-                        <span>-{order.discountAmount.toLocaleString()} Rwf</span>
-                      </div>
-                    )}
+                  
+                    <div className="flex justify-between items-center text-sm text-green-600">
+                      <span>Discount:</span>
+                      <span>-{order.discountAmount || order.totalPrice*0.02} Rwf</span>
+                    </div>
+                  
+
                   </div>
                   <div className="flex justify-between items-center text-lg font-bold border-t pt-2">
                     <span>Total Amount:</span>
-                    <span>{order.totalPrice?.toLocaleString()} Rwf</span>
+                    <span>{order.totalPrice-(order.totalPrice*0.02)+1200} Rwf</span>
                   </div>
                 </div>
               </CardContent>

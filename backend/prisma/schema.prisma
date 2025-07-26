@@ -65,7 +65,7 @@ model User {
   businessName   String?
   gender         String?
   isActive       Boolean          @default(true)
-  sellerStatus   SellerStatus     @default(INACTIVE)
+  sellerStatus   SellerStatus     @default(ACTIVE)
   sellerPermissions Json?
   createdAt      DateTime         @default(now())
   updatedAt      DateTime         @updatedAt
@@ -188,7 +188,7 @@ model CartItem {
 
 model Order {
   id                  Int        @id @default(autoincrement())
-  user                User?      @relation(fields: [userId], references: [id], onDelete: Restrict)
+  user    User?  @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId              Int?
   orderNumber         String     @unique @db.VarChar(50)
   customerName        String?

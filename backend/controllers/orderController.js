@@ -1,5 +1,5 @@
 import prisma from '../utils/prismaClient.js';
-import { sendOrderConfirmationEmail, sendOrderCancellationEmail, sendPaymentConfirmationEmail,sendDeliveryStatusUpdateEmail } from '../utils/emailService.js';
+import { sendOrderConfirmationEmail, sendOrderCancellationEmail, sendPaymentConfirmationEmail, sendDeliveryStatusUpdateEmail, sendAdminOrderNotification } from '../utils/emailService.js';
 import { generateOrderNumber } from '../utils/orderUtils.js';
 import { logFailedAction } from './failedActionsController.js';
 
@@ -221,7 +221,7 @@ export const placeOrder = async (req, res, next) => {
       return res.status(400).json({ message: 'Cart is empty' });
     }
 
-    // Check available stock first
+    // Check available stock
     for (const item of cart.items) {
       if (item.product.availableStock < item.quantity) {
         return res.status(400).json({ 
@@ -234,21 +234,20 @@ export const placeOrder = async (req, res, next) => {
     const totalPrice = cart.items.reduce((sum, item) => sum + (item.product.price * item.quantity), 0);
     const orderNumber = generateOrderNumber();
 
-    // Create order with optimized transaction
+    // Create order in transaction
     const order = await prisma.$transaction(async (tx) => {
-      // Create the order
       const newOrder = await tx.order.create({
         data: {
           orderNumber,
-          user: {
-            connect: { id: userId }
-          },
+          user: { connect: { id: userId } },
           customerName: req.user.name,
           customerEmail: req.user.email,
           customerPhone,
           shippingAddress,
           paymentMethod,
           totalPrice,
+          shippingPrice: 1200, // Example: Add delivery fee
+          discountAmount: totalPrice * 0.02,   // Example: Set initial discount
           status: 'PENDING',
           isPaid: false,
           isDelivered: false,
@@ -256,46 +255,52 @@ export const placeOrder = async (req, res, next) => {
         }
       });
 
-      // Create order items and update stock
+      // Order items
       const orderItems = cart.items.map(item => ({
         orderId: newOrder.id,
         productId: item.productId,
         quantity: item.quantity,
         price: item.product.price,
       }));
+      await tx.orderItem.createMany({ data: orderItems });
 
-      await tx.orderItem.createMany({
-        data: orderItems
-      });
-
-      // Update available stock (not full stock)
+      // Update stock
       for (const item of cart.items) {
         await tx.product.update({
           where: { id: item.productId },
           data: {
-            availableStock: {
-              decrement: item.quantity
-            }
+            availableStock: { decrement: item.quantity }
           }
         });
       }
 
-      // Clear the cart
-      await tx.cartItem.deleteMany({
-        where: { cartId: cart.id }
-      });
+      // Clear cart
+      await tx.cartItem.deleteMany({ where: { cartId: cart.id } });
 
       return newOrder;
-    }, {
-      timeout: 10000, // 10 second timeout
-      maxWait: 5000,
     });
 
     console.log('✅ Order placed successfully:', order.id);
 
-    // Send confirmation email
+    // Send confirmation emails
     try {
-      await sendOrderConfirmationEmail(order);
+      await sendOrderConfirmationEmail({
+        ...order,
+        items: cart.items,
+        deliveryFee: order.shippingPrice ?? 0,
+        discount: order.discountAmount ?? 0,
+        
+      });
+
+      await sendAdminOrderNotification({
+        customerEmail: order.customerEmail,
+        customerName: order.customerName,
+        orderNumber: order.orderNumber,
+        totalPrice: order.totalPrice,
+        items: cart.items,
+        shippingAddress: order.shippingAddress
+      });
+
     } catch (emailError) {
       console.error('❌ Email sending failed:', emailError);
     }
@@ -307,20 +312,21 @@ export const placeOrder = async (req, res, next) => {
 
   } catch (error) {
     console.error('❌ Place order error:', error);
-    
+
     if (error.code === 'P2034') {
-      return res.status(500).json({ 
+      return res.status(500).json({
         message: 'Order processing timeout. Please try again.',
         error: 'Transaction timeout'
       });
     }
 
-    res.status(500).json({ 
+    res.status(500).json({
       message: 'Failed to place order. Please try again.',
-      error: error.message 
+      error: error.message
     });
   }
 };
+
 
 export const placeAnonymousOrder = async (req, res, next) => {
   try {
@@ -332,7 +338,6 @@ export const placeAnonymousOrder = async (req, res, next) => {
       return res.status(400).json({ message: 'Missing required fields' });
     }
 
-    // Get cart with items
     const cart = await prisma.cart.findUnique({
       where: { id: cartId },
       include: {
@@ -348,11 +353,10 @@ export const placeAnonymousOrder = async (req, res, next) => {
       return res.status(400).json({ message: 'Cart is empty or not found' });
     }
 
-    // Check available stock
     for (const item of cart.items) {
       if (item.product.availableStock < item.quantity) {
         return res.status(400).json({ 
-          message: `Insufficient available stock for ${item.product.name}. Available: ${item.product.availableStock}, Requested: ${item.quantity}` 
+          message: `Insufficient stock for ${item.product.name}` 
         });
       }
     }
@@ -360,9 +364,7 @@ export const placeAnonymousOrder = async (req, res, next) => {
     const totalPrice = cart.items.reduce((sum, item) => sum + (item.product.price * item.quantity), 0);
     const orderNumber = generateOrderNumber();
 
-    // Create order with optimized transaction
     const order = await prisma.$transaction(async (tx) => {
-      // Create the order
       const newOrder = await tx.order.create({
         data: {
           orderNumber,
@@ -372,6 +374,8 @@ export const placeAnonymousOrder = async (req, res, next) => {
           shippingAddress,
           paymentMethod,
           totalPrice,
+          shippingPrice: 1000,   // Example fee
+          discountAmount: totalPrice * 0.02,
           status: 'PENDING',
           isPaid: false,
           isDelivered: false,
@@ -379,44 +383,30 @@ export const placeAnonymousOrder = async (req, res, next) => {
         }
       });
 
-      // Create order items
       const orderItems = cart.items.map(item => ({
         orderId: newOrder.id,
         productId: item.productId,
         quantity: item.quantity,
         price: item.product.price,
       }));
+      await tx.orderItem.createMany({ data: orderItems });
 
-      await tx.orderItem.createMany({
-        data: orderItems
-      });
-
-      // Update available stock (not full stock)
       for (const item of cart.items) {
         await tx.product.update({
           where: { id: item.productId },
           data: {
-            availableStock: {
-              decrement: item.quantity
-            }
+            availableStock: { decrement: item.quantity }
           }
         });
       }
 
-      // Clear the cart
-      await tx.cartItem.deleteMany({
-        where: { cartId: cart.id }
-      });
+      await tx.cartItem.deleteMany({ where: { cartId: cart.id } });
 
       return newOrder;
-    }, {
-      timeout: 10000,
-      maxWait: 5000,
     });
 
-    console.log('✅ Anonymous order placed successfully:', order.id);
+    console.log('✅ Anonymous order placed:', order.id);
 
-    // Get order with items for email
     const orderWithItems = await prisma.order.findUnique({
       where: { id: order.id },
       include: {
@@ -428,16 +418,25 @@ export const placeAnonymousOrder = async (req, res, next) => {
       }
     });
 
-    // Send confirmation email
     try {
       await sendOrderConfirmationEmail({
         ...orderWithItems,
-        items: orderWithItems.items
+        items: orderWithItems.items,
+        deliveryFee: orderWithItems.shippingPrice ?? 0,
+        discount: orderWithItems.discountAmount ?? 0
       });
+
+      await sendAdminOrderNotification({
+        customerEmail: orderWithItems.customerEmail,
+        customerName: orderWithItems.customerName,
+        orderNumber: orderWithItems.orderNumber,
+        totalPrice: orderWithItems.totalPrice,
+        items: orderWithItems.items,
+        shippingAddress: orderWithItems.shippingAddress
+      });
+
     } catch (emailError) {
       console.error('❌ Email sending failed:', emailError);
-      
-      // Log failed email action
       await logFailedAction(
         'EMAIL',
         null,
@@ -453,6 +452,7 @@ export const placeAnonymousOrder = async (req, res, next) => {
         emailError.code,
         emailError.stack
       );
+      console.log('Failed to send order confirmation email:', emailError);
     }
 
     res.status(201).json({
@@ -462,143 +462,85 @@ export const placeAnonymousOrder = async (req, res, next) => {
 
   } catch (error) {
     console.error('❌ Anonymous order error:', error);
-    
-    if (error.code === 'P2034') {
-      return res.status(500).json({ 
-        message: 'Order processing timeout. Please try again.',
-        error: 'Transaction timeout'
-      });
-    }
-
-    res.status(500).json({ 
-      message: 'Failed to place order. Please try again.',
-      error: error.message 
-    });
+    res.status(500).json({ message: 'Failed to place anonymous order', error: error.message });
   }
 };
 
-export const createOrder = async (req, res, next) => {
+
+export const createOrder = async (req, res) => {
   try {
     const {
-      customerName,
-      customerEmail,
-      customerPhone,
-      userId,
-      billingAddress,
-      shippingAddress,
-      shippingPrice,
-      discountAmount = 0,
-      paymentMethod,
       items,
-      totalPrice
+      shippingAddress,
+      paymentMethod,
+      deliveryFee,
+      discountAmount,
     } = req.body;
 
-    console.log('📦 Creating order with data:', {
-      customerName,
-      customerEmail,
-      itemsCount: items?.length,
-      totalPrice
-    });
+    const userId = req.user.id;
 
-    if (!customerName || !customerEmail || !shippingAddress || !items || items.length === 0) {
-      return res.status(400).json({ message: 'Missing required fields' });
-    }
-
-    // Generate order number
-    const orderNumber = generateOrderNumber();
-
-    // Create order with optimized transaction
-    const order = await prisma.$transaction(async (tx) => {
-      // Create the order first
-      const newOrder = await tx.order.create({
-        data: {
-          orderNumber,
-          customerName,
-          customerEmail,
-          customerPhone,
-          userId,
-          billingAddress,
-          shippingAddress,
-          shippingPrice,
-          discountAmount,
-          paymentMethod,
-          totalPrice,
-          status: 'PENDING',
-          isPaid: false,
-          isDelivered: false,
-          isConfirmedByAdmin: false,
-        }
-      });
-
-      // Create order items in batch
-      const orderItems = items.map(item => ({
-        orderId: newOrder.id,
-        productId: item.productId,
-        quantity: item.quantity,
-        price: item.price,
-      }));
-
-      await tx.orderItem.createMany({
-        data: orderItems
-      });
-
-      // Update product stock in batch
-      for (const item of items) {
-        await tx.product.update({
+    const cartItems = await Promise.all(
+      items.map(async (item) => {
+const product = await prisma.product.findUnique({
           where: { id: item.productId },
-          data: {
-            stock: {
-              decrement: item.quantity
-            }
-          }
         });
-      }
+        if (!product) throw new Error("Product not found");
 
-      return newOrder;
-    }, {
-      timeout: 10000, // Increase timeout to 10 seconds
-      maxWait: 5000,  // Maximum time to wait for a transaction slot
+        return {
+          product: {
+            connect: { id: product.id },
+          },
+          quantity: item.quantity,
+          price: product.price,
+        };
+      })
+    );
+
+    const totalPrice = cartItems.reduce(
+      (total, item) => total + item.quantity * item.price,
+      0
+    );
+
+    const order = await prisma.order.create({
+      data: {
+        user: { connect: { id: userId } },
+        shippingAddress,
+        paymentMethod,
+        deliveryFee,
+        discountAmount,
+        totalPrice,
+        items: {
+          create: cartItems,
+        },
+      },
+      include: {
+        items: {
+          include: {
+            product: true,
+          },
+        },
+        user: true,
+      },
     });
 
-    console.log('✅ Order created successfully:', order.id);
-
-    // Send confirmation email (outside of transaction to avoid blocking)
-    try {
-      await sendOrderConfirmationEmail(order);
-    } catch (emailError) {
-      console.error('❌ Failed to send confirmation email:', emailError);
-      // Don't fail the order creation if email fails
-    }
-
-    res.status(201).json({
-      message: 'Order created successfully',
-      order
+    // ✅ SEND ADMIN NOTIFICATION HERE
+    await sendAdminOrderNotification({
+      customerEmail: order.user.email,
+      customerName: order.user.name,
+      orderNumber: order.id,
+      totalPrice: order.totalPrice,
+      shippingAddress: order.shippingAddress,
+      items: order.items,
     });
 
+    res.status(201).json(order);
   } catch (error) {
-    console.error('❌ Order creation error:', error);
-    
-    // Handle specific Prisma errors
-    if (error.code === 'P2034') {
-      return res.status(500).json({ 
-        message: 'Order processing timeout. Please try again.',
-        error: 'Transaction timeout'
-      });
-    }
-    
-    if (error.code === 'P2002') {
-      return res.status(400).json({ 
-        message: 'Order number already exists. Please try again.',
-        error: 'Duplicate order'
-      });
-    }
-
-    res.status(500).json({ 
-      message: 'Failed to create order. Please try again.',
-      error: error.message 
-    });
+    console.error("❌ Error creating order:", error);
+    res.status(500).json({ message: "Server error" });
   }
 };
+
+
 
 export const getUserOrders = async (req, res) => {
   try {
@@ -1006,6 +948,8 @@ export const confirmOrderPayment = async (req, res) => {
         customerName: order.customerName,
         orderNumber: order.orderNumber,
         totalPrice: order.totalPrice,
+        deliveryFee: 1200,
+        discount: order.totalPrice * 0.02,
         items: order.items,
         shippingAddress: order.shippingAddress
       });
@@ -1017,7 +961,9 @@ export const confirmOrderPayment = async (req, res) => {
         order.customerEmail,
         `Failed to send payment confirmation email: ${emailError.message}`,
         { orderId: order.id, orderNumber: order.orderNumber, emailType: 'payment_confirmation' }
+        
       );
+      console.log('Failed to send payment confirmation email:', emailError);
     }
 
     res.status(200).json({ message: 'Order payment confirmed successfully', order });

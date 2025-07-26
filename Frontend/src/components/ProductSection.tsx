@@ -36,7 +36,7 @@ const ProductSection = ({ title, products }: ProductSectionProps) => {
             <ProductCard
               key={product.id}
               id={product.id.toString()}
-              image={product.coverImage}
+              image={product.coverImage || 'https://www.shutterstock.com/image-vector/shopping-cart-icon-flat-design-600nw-570153007.jpg'} // Fallback image
               title={product.name}
               price={`${product.price.toLocaleString()} Rwf`}
               rating={product.averageRating || 0}

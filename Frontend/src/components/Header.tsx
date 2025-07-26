@@ -108,7 +108,7 @@ const Header = () => {
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
                       <Button variant="ghost" className="text-gray-700 text-md hover:text-purple-600 transition-colors">
-                        Sellers
+                        {t('nav.sellers')}
                       </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="start" className="bg-white border border-gray-200 shadow-lg z-50 w-56">
@@ -209,7 +209,7 @@ const Header = () => {
                   className="hidden lg:flex items-center space-x-2"
                 >
                   <ArrowLeft className="w-4 h-4" />
-                  <span>Back to Home</span>
+                  <span>{t('nav.back_to_home')}</span>
                 </Button>
               </div>
             )}

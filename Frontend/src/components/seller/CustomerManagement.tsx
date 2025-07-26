@@ -1,15 +1,15 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { Edit, Trash2, Plus, Mail, Phone, Users } from 'lucide-react';
+import { Edit, Trash2, Mail, Phone, Users } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import api from '@/api/api';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 interface Customer {
   id: number;
@@ -39,6 +39,7 @@ export const CustomerManagement: React.FC<CustomerManagementProps> = ({ customer
   });
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const { t } = useLanguage();
 
   const updateCustomerMutation = useMutation({
     mutationFn: async (data: { id: number; customerData: Partial<Customer> }) => {
@@ -50,13 +51,16 @@ export const CustomerManagement: React.FC<CustomerManagementProps> = ({ customer
       queryClient.invalidateQueries({ queryKey: ['seller-customers'] });
       setIsEditDialogOpen(false);
       setSelectedCustomer(null);
-      toast({ title: 'Success', description: 'Customer updated successfully' });
+      toast({ 
+        title: t('customer_management.success'),
+        description: t('customer_management.customer_updated'),
+      });
     },
     onError: (error: any) => {
       console.error('❌ Error updating customer:', error);
       toast({ 
-        title: 'Error', 
-        description: error.response?.data?.message || 'Failed to update customer',
+        title: t('customer_management.error'), 
+        description: error.response?.data?.message || t('customer_management.update_failed'),
         variant: 'destructive' 
       });
     }
@@ -70,13 +74,16 @@ export const CustomerManagement: React.FC<CustomerManagementProps> = ({ customer
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['seller-customers'] });
-      toast({ title: 'Success', description: 'Customer removed successfully' });
+      toast({ 
+        title: t('customer_management.success'), 
+        description: t('customer_management.customer_removed') 
+      });
     },
     onError: (error: any) => {
       console.error('❌ Error deleting customer:', error);
       toast({ 
-        title: 'Error', 
-        description: error.response?.data?.message || 'Failed to remove customer',
+        title: t('customer_management.error'), 
+        description: error.response?.data?.message || t('customer_management.remove_failed'),
         variant: 'destructive' 
       });
     }
@@ -103,7 +110,7 @@ export const CustomerManagement: React.FC<CustomerManagementProps> = ({ customer
   };
 
   const handleDeleteCustomer = (customerId: number) => {
-    if (window.confirm('Are you sure you want to remove this customer? This will not delete their account but remove them from your customer list.')) {
+    if (window.confirm(t('customer_management.confirm_delete'))) {
       deleteCustomerMutation.mutate(customerId);
     }
   };
@@ -112,7 +119,7 @@ export const CustomerManagement: React.FC<CustomerManagementProps> = ({ customer
     return (
       <Card>
         <CardContent className="p-6">
-          <div className="text-center">Loading customers...</div>
+          <div className="text-center">{t('customer_management.loading_customers')}</div>
         </CardContent>
       </Card>
     );
@@ -122,7 +129,7 @@ export const CustomerManagement: React.FC<CustomerManagementProps> = ({ customer
     <Card>
       <CardHeader>
         <CardTitle className="flex items-center justify-between">
-          <span>Customer Management ({customers.length})</span>
+          <span>{t('customer_management.title', { count: customers.length })}</span>
         </CardTitle>
       </CardHeader>
       <CardContent>
@@ -131,11 +138,11 @@ export const CustomerManagement: React.FC<CustomerManagementProps> = ({ customer
             <table className="w-full">
               <thead className="bg-gray-900 text-white">
                 <tr>
-                  <th className="px-4 py-3 text-left text-sm font-medium">Customer</th>
-                  <th className="px-4 py-3 text-left text-sm font-medium">Contact</th>
-                  <th className="px-4 py-3 text-left text-sm font-medium">Orders</th>
-                  <th className="px-4 py-3 text-left text-sm font-medium">Joined</th>
-                  <th className="px-4 py-3 text-left text-sm font-medium">Actions</th>
+                  <th className="px-4 py-3 text-left text-sm font-medium">{t('customer_management.customer')}</th>
+                  <th className="px-4 py-3 text-left text-sm font-medium">{t('customer_management.contact')}</th>
+                  <th className="px-4 py-3 text-left text-sm font-medium">{t('customer_management.orders')}</th>
+                  <th className="px-4 py-3 text-left text-sm font-medium">{t('customer_management.joined')}</th>
+                  <th className="px-4 py-3 text-left text-sm font-medium">{t('customer_management.actions')}</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-200">
@@ -150,7 +157,7 @@ export const CustomerManagement: React.FC<CustomerManagementProps> = ({ customer
                         </div>
                         <div>
                           <p className="text-sm font-medium text-gray-900">{customer.name}</p>
-                          <p className="text-sm text-gray-500">ID: #{customer.id}</p>
+                          <p className="text-sm text-gray-500">{t('customer_management.id_prefix')} #{customer.id}</p>
                         </div>
                       </div>
                     </td>
@@ -170,7 +177,7 @@ export const CustomerManagement: React.FC<CustomerManagementProps> = ({ customer
                     </td>
                     <td className="px-4 py-3">
                       <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                        {customer._count?.orders || 0} orders
+                        {customer._count?.orders || 0} {t('customer_management.orders_label')}
                       </span>
                     </td>
                     <td className="px-4 py-3 text-sm text-gray-900">
@@ -204,9 +211,9 @@ export const CustomerManagement: React.FC<CustomerManagementProps> = ({ customer
         ) : (
           <div className="text-center py-12">
             <Users className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-            <p className="text-gray-600 text-lg">No customers found</p>
+            <p className="text-gray-600 text-lg">{t('customer_management.no_customers')}</p>
             <p className="text-gray-500 text-sm mt-2">
-              Customers will appear here when they purchase your products
+              {t('customer_management.no_customers_subtext')}
             </p>
           </div>
         )}
@@ -215,11 +222,11 @@ export const CustomerManagement: React.FC<CustomerManagementProps> = ({ customer
         <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
           <DialogContent>
             <DialogHeader>
-              <DialogTitle>Edit Customer</DialogTitle>
+              <DialogTitle>{t('customer_management.edit_customer')}</DialogTitle>
             </DialogHeader>
             <div className="space-y-4">
               <div>
-                <Label htmlFor="name">Name</Label>
+                <Label htmlFor="name">{t('customer_management.name')}</Label>
                 <Input
                   id="name"
                   value={editForm.name}
@@ -227,7 +234,7 @@ export const CustomerManagement: React.FC<CustomerManagementProps> = ({ customer
                 />
               </div>
               <div>
-                <Label htmlFor="email">Email</Label>
+                <Label htmlFor="email">{t('customer_management.email')}</Label>
                 <Input
                   id="email"
                   type="email"
@@ -236,7 +243,7 @@ export const CustomerManagement: React.FC<CustomerManagementProps> = ({ customer
                 />
               </div>
               <div>
-                <Label htmlFor="phone">Phone</Label>
+                <Label htmlFor="phone">{t('customer_management.phone')}</Label>
                 <Input
                   id="phone"
                   value={editForm.phone}
@@ -244,7 +251,7 @@ export const CustomerManagement: React.FC<CustomerManagementProps> = ({ customer
                 />
               </div>
               <div>
-                <Label htmlFor="address">Address</Label>
+                <Label htmlFor="address">{t('customer_management.address')}</Label>
                 <Textarea
                   id="address"
                   value={editForm.address}
@@ -253,13 +260,13 @@ export const CustomerManagement: React.FC<CustomerManagementProps> = ({ customer
               </div>
               <div className="flex justify-end space-x-2">
                 <Button variant="outline" onClick={() => setIsEditDialogOpen(false)}>
-                  Cancel
+                  {t('customer_management.cancel')}
                 </Button>
                 <Button 
                   onClick={handleUpdateCustomer}
                   disabled={updateCustomerMutation.isPending}
                 >
-                  {updateCustomerMutation.isPending ? 'Updating...' : 'Update Customer'}
+                  {updateCustomerMutation.isPending ? t('customer_management.updating') : t('customer_management.update_customer')}
                 </Button>
               </div>
             </div>

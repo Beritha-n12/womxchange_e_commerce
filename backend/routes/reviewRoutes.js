@@ -1,4 +1,3 @@
-
 import express from 'express';
 import {
   createReview,
@@ -14,7 +13,7 @@ const reviewRouter = express.Router({ mergeParams: true });
 // Routes for specific product reviews
 reviewRouter.route('/')
   .get(getReviews)
-  .post(createReview);
+  .post(protect, createReview); // ✅ Fixed here
 
 reviewRouter.route('/:id')
   .put(protect, updateReview)

@@ -9,6 +9,7 @@ import { registerUser } from '@/api/auth';
 import { placeAnonymousOrder } from '@/api/orders';
 import { Loader2, User, ShoppingCart } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 interface GuestCheckoutModalProps {
   isOpen: boolean;
@@ -30,6 +31,7 @@ export const GuestCheckoutModal: React.FC<GuestCheckoutModalProps> = ({
   onSuccess
 }) => {
   const { toast } = useToast();
+  const { t } = useLanguage();
   const [step, setStep] = useState<'register' | 'order'>('register');
   const [loading, setLoading] = useState(false);
   const [registrationData, setRegistrationData] = useState({
@@ -42,8 +44,8 @@ export const GuestCheckoutModal: React.FC<GuestCheckoutModalProps> = ({
   const handleRegistration = async () => {
     if (!registrationData.password || registrationData.password !== registrationData.confirmPassword) {
       toast({
-        title: "Password Error",
-        description: "Passwords don't match or are empty",
+        title: t('modal.password_error'),
+        description: t('modal.passwords_not_match'),
         variant: "destructive",
       });
       return;
@@ -59,15 +61,15 @@ export const GuestCheckoutModal: React.FC<GuestCheckoutModalProps> = ({
       });
 
       toast({
-        title: "Registration Successful!",
-        description: "Account created. Now placing your order...",
+        title: t('modal.registration_successful'),
+        description: t('modal.account_created'),
       });
 
       setStep('order');
     } catch (error: any) {
       toast({
-        title: "Registration Failed",
-        description: error.response?.data?.message || "Failed to create account",
+        title: t('modal.registration_failed'),
+        description: error.response?.data?.message || t('modal.failed_create_account'),
         variant: "destructive",
       });
     } finally {
@@ -81,16 +83,16 @@ export const GuestCheckoutModal: React.FC<GuestCheckoutModalProps> = ({
       await placeAnonymousOrder(checkoutData);
       
       toast({
-        title: "Order Placed Successfully!",
-        description: "Your order has been placed and confirmation email sent.",
+        title: t('modal.order_placed_success'),
+        description: t('modal.order_confirmation_sent'),
       });
 
       onSuccess();
       onClose();
     } catch (error: any) {
       toast({
-        title: "Order Failed",
-        description: error.response?.data?.message || "Failed to place order",
+        title: t('modal.order_failed'),
+        description: error.response?.data?.message || t('modal.failed_place_order'),
         variant: "destructive",
       });
     } finally {
@@ -104,16 +106,16 @@ export const GuestCheckoutModal: React.FC<GuestCheckoutModalProps> = ({
       await placeAnonymousOrder(checkoutData);
       
       toast({
-        title: "Order Placed Successfully!",
-        description: "Your order has been placed and confirmation email sent.",
+        title: t('modal.order_placed_success'),
+        description: t('modal.order_confirmation_sent'),
       });
 
       onSuccess();
       onClose();
     } catch (error: any) {
       toast({
-        title: "Order Failed",
-        description: error.response?.data?.message || "Failed to place order",
+        title: t('modal.order_failed'),
+        description: error.response?.data?.message || t('modal.failed_place_order'),
         variant: "destructive",
       });
     } finally {
@@ -129,12 +131,12 @@ export const GuestCheckoutModal: React.FC<GuestCheckoutModalProps> = ({
             {step === 'register' ? (
               <>
                 <User className="w-5 h-5" />
-                <span>Create Account (Optional)</span>
+                <span>{t('modal.create_account_optional')}</span>
               </>
             ) : (
               <>
                 <ShoppingCart className="w-5 h-5" />
-                <span>Place Order</span>
+                <span>{t('modal.place_order')}</span>
               </>
             )}
           </DialogTitle>
@@ -144,9 +146,9 @@ export const GuestCheckoutModal: React.FC<GuestCheckoutModalProps> = ({
           {step === 'register' ? (
             <>
               <p className="text-sm text-gray-600">
-                Create an account to track your orders and get exclusive offers, or skip to place order as guest.
+                {t('modal.create_account_benefits')}
               </p>
-                 <Link to="/login">Create account</Link>
+               <Link to="/login">{t('modal.create_account')}</Link>
 
 
               <div className="flex space-x-3">
@@ -158,14 +160,14 @@ export const GuestCheckoutModal: React.FC<GuestCheckoutModalProps> = ({
                   disabled={loading}
                   className="flex-1"
                 >
-                  Skip & Place Order
+                  {t('modal.skip_place_order')}
                 </Button>
               </div>
             </>
           ) : (
             <>
               <p className="text-sm text-gray-600">
-                Account created successfully! Now placing your order...
+                {t('modal.account_created_success')}
               </p>
               
               <Button
@@ -174,7 +176,7 @@ export const GuestCheckoutModal: React.FC<GuestCheckoutModalProps> = ({
                 className="w-full bg-green-500 hover:bg-green-600"
               >
                 {loading ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : null}
-                Place Order
+                {t('modal.place_order')}
               </Button>
             </>
           )}

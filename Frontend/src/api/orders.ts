@@ -32,6 +32,8 @@ export interface Order {
   isConfirmedByAdmin: any;
   confirmedAt?: string;
   user?: any;
+  deliveryFee?: number;
+  customerPhone?: string;
   customerName: any;
   customerEmail: any;
   shippingAddress: string;
@@ -56,6 +58,8 @@ export interface PlaceAnonymousOrderData {
   customerEmail: string;
   billingAddress?: string;
   shippingAddress: string;
+  deliveryFee?: number;
+  discountAmount?: number;
   paymentMethod: string;
   cartId: number;
 }

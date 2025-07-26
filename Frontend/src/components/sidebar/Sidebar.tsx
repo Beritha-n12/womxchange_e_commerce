@@ -3,6 +3,7 @@ import React, { useContext } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { BarChart3, Users, Package, FileText, ShoppingCart, TrendingUp, MessageSquare, UserCheck, FolderOpen, Settings, X } from 'lucide-react';
 import { AuthContext } from '../../contexts/AuthContext';
+import { useLanguage } from '@/contexts/LanguageContext';
 import { Button } from '@/components/ui/button';
 
 interface SidebarProps {
@@ -10,47 +11,49 @@ interface SidebarProps {
   onClose?: () => void;
 }
 
-const getMenuItems = (userRole: string) => {
+const getMenuItems = (userRole: string, t: (key: string) => string) => {
   const baseItems = [
-    { id: 'dashboard', label: 'Dashboard', icon: BarChart3, path: '/dashboard', roles: ['admin', 'seller'] }
+    { id: 'dashboard', label: t('sidebar.dashboard'), icon: BarChart3, path: '/dashboard', roles: ['admin', 'seller'] }
   ];
 
   // Add role-specific menu items
   if (userRole === 'seller') {
     baseItems.push(
-      { id: 'customers', label: 'Customers', icon: Users, path: '/customers', roles: ['seller'] }
+      { id: 'customers', label: t('sidebar.customers'), icon: Users, path: '/customers', roles: ['seller'] }
     );
   } else if (userRole === 'admin') {
     baseItems.push(
-      { id: 'customers', label: 'Users', icon: Users, path: '/user-management', roles: ['admin'] }
+      { id: 'customers', label: t('admin.user'), icon: Users, path: '/user-management', roles: ['admin'] }
     );
   }
 
   // Add common items
   baseItems.push(
-    { id: 'seller-management', label: 'Vendor', icon: Settings, path: '/seller-management', roles: ['admin'] },
-    { id: 'community-chat', label: 'Community Chat', icon: MessageSquare, path: '/community-chat', roles: ['admin', 'seller'] }
+    { id: 'seller-management', label: t('sidebar.vendors'), icon: Settings, path: '/seller-management', roles: ['admin'] },
+    { id: 'community-chat', label: t('sidebar.community_chat'), icon: MessageSquare, path: '/community-chat', roles: ['admin', 'seller'] }
   );
 
   return baseItems;
 };
 
-const managementItems = [
-  { label: 'Products', path: '/admin-products', roles: ['admin', 'seller'] },
-  { label: 'Categories', path: '/admin-categories', roles: ['admin', 'seller'] },
-  { label: 'Orders', path: '/orders', roles: ['admin', 'seller'] },
-  { label: 'Track issue', path: '/unfinished-orders', roles: ['admin'] },
-  { label: 'Reports', path: '/reports', roles: ['admin', 'seller'] },
+const getManagementItems = (t: (key: string) => string) => [
+  { label: t('sidebar.products'), path: '/admin-products', roles: ['admin', 'seller'] },
+  { label: t('admin.sidebar.analytics'), path: '/admin-categories', roles: ['admin', 'seller'] },
+  { label: t('sidebar.orders'), path: '/orders', roles: ['admin', 'seller'] },
+  { label: t('failed_actions.title'), path: '/unfinished-orders', roles: ['admin'] },
+  { label: t('sidebar.reports'), path: '/reports', roles: ['admin', 'seller'] },
 ];
 
 export const Sidebar: React.FC<SidebarProps> = ({ currentPage, onClose }) => {
   const { user } = useContext(AuthContext);
+  const { t } = useLanguage();
   const location = useLocation();
   
   if (!user) return null;
 
   const userRole = user.role?.toLowerCase();
-  const menuItems = getMenuItems(userRole);
+  const menuItems = getMenuItems(userRole, t);
+  const managementItems = getManagementItems(t);
   
   // Filter menu items based on user role
   const filteredMenuItems = menuItems.filter(item => 
@@ -116,7 +119,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentPage, onClose }) => {
 
       {filteredManagementItems.length > 0 && (
         <div className="mt-8 pt-8 border-t border-purple-300">
-          <h3 className="text-purple-200 text-sm font-semibold mb-4">Management</h3>
+          <h3 className="text-purple-200 text-sm font-semibold mb-4">{t('sidebar.management')}</h3>
           <div className="space-y-2">
             {filteredManagementItems.map((item) => {
               const isActive = location.pathname === item.path;

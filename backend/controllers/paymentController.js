@@ -116,12 +116,28 @@ export const confirmPaymentByAdmin = asyncHandler(async (req, res) => {
 
   console.log(`🛠️ Confirming payment for Order ID: ${orderId}`);
 
-  await prisma.order.update({
-    where: { id: orderId },
-    data: {
-      isConfirmedByAdmin: true,
-      confirmedAt: new Date(),
-    },
+  // Use transaction to update order and deduct actual stock
+  await prisma.$transaction(async (tx) => {
+    // Update order status
+    await tx.order.update({
+      where: { id: orderId },
+      data: {
+        isConfirmedByAdmin: true,
+        confirmedAt: new Date(),
+      },
+    });
+
+    // Deduct actual stock when payment is confirmed
+    for (const item of order.items) {
+      await tx.product.update({
+        where: { id: item.productId },
+        data: {
+          stock: {
+            decrement: item.quantity
+          }
+        }
+      });
+    }
   });
 
   // 📧 Send payment confirmation email

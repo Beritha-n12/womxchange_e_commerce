@@ -2,9 +2,12 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 
 const AboutUs = () => {
+  const { t } = useLanguage();
+  
   return (
     <div className="font-sans text-gray-800 bg-gray-50 min-h-screen flex flex-col">
       {/* Header/Nav*/}
@@ -15,7 +18,7 @@ const AboutUs = () => {
         {/* About Us Title */}
         <section className="py-16 text-center">
           <h1 className="text-4xl font-normal text-gray-800 tracking-wider">
-            About Us
+            {t('nav.about')}
           </h1>
         </section>
 
@@ -32,13 +35,9 @@ const AboutUs = () => {
               />
             </div>
             <div className="w-full md:w-2/3 text-center md:text-left">
-              <h2 className="text-3xl font-semibold mb-4 text-gray-800">Our Story</h2>
+              <h2 className="text-3xl font-semibold mb-4 text-gray-800">{t('about.our_story')}</h2>
               <p className="text-gray-700 leading-relaxed text-lg">
-                Founded in the heart of Kigali, <span className="font-semibold text-purple-600">wXc</span>, WomXchange was born from a simple but powerful
-                idea: to create an online marketplace where Rwandan women would showcase, sell, and grow their
-                businesses on their own terms. What began as individual idea now has become initiative among wone
-                entrepreneurs and it has blossomed into Rwanda's premier e-commerce platform dedicated to elevating
-                women entrepreneurs across every Kigali.
+                {t('about.story_content')}
               </p>
             </div>
           </div>
@@ -50,24 +49,16 @@ const AboutUs = () => {
           <div className="container mx-auto px-2 max-w-7xl grid grid-cols-1 md:grid-cols-2 gap-10">
             {/* Mission */}
             <div className="bg-white p-8 rounded-lg shadow-md text-center md:text-left">
-              <h3 className="text-2xl font-semibold mb-4 text-gray-800">Mission</h3>
+              <h3 className="text-2xl font-semibold mb-4 text-gray-800">{t('about.mission')}</h3>
               <p className="text-gray-700 leading-relaxed text-lg">
-                Founded in the heart of Kigali, <span className="font-semibold text-purple-600">wXc</span>, WomenXchange was born from a simple but powerful idea to create
-                an online marketplace where Rwandan women could showcase, sell, and grow their businesses on their
-                own terms. What began as individual idea now has become initiative among women entrepreneurs and it
-                has blossomed into Rwanda's premier e-commerce platform dedicated to elevating women
-                entrepreneurs across every Kigali.
+                {t('about.mission_content')}
               </p>
             </div>
             {/* Vision */}
             <div className="bg-white p-8 rounded-lg shadow-md text-center md:text-left">
-              <h3 className="text-2xl font-semibold mb-4 text-gray-800">Vision</h3>
+              <h3 className="text-2xl font-semibold mb-4 text-gray-800">{t('about.vision')}</h3>
               <p className="text-gray-700 leading-relaxed text-lg">
-                Founded in the heart of Kigali, <span className="font-semibold text-purple-600">wXc</span>, WomenXchange was born from a simple but powerful idea to create
-                an online marketplace where Rwandan women could showcase, sell, and grow their businesses on their
-                own terms. What began as individual idea now has become initiative among women entrepreneurs and it
-                has blossomed into Rwanda's premier e-commerce platform dedicated to elevating women
-                entrepreneurs across every Kigali.
+                {t('about.vision_content')}
               </p>
             </div>
           </div>
@@ -105,7 +96,7 @@ const AboutUs = () => {
         <section className="py-16 text-center">
           <Link to="/contact">
             <button className="bg-purple-600 text-white py-3 px-10 rounded-full text-lg font-medium hover:bg-purple-700 transition-colors shadow-lg">
-              Contact Us
+              {t('nav.contact')}
             </button>
           </Link>
         </section>

@@ -7,6 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { getChatMessages, createChatMessage, ChatMessage, CreateMessageData } from '@/api/chat';
 import { useToast } from '@/hooks/use-toast';
+import { useLanguage } from '@/contexts/LanguageContext';
 import MessageBubble from './MessageBubble';
 import FileUpload, { FileData } from './FileUpload';
 import AudioRecorder, { AudioData } from './AudioRecorder';
@@ -21,6 +22,7 @@ const WhatsAppChat: React.FC<WhatsAppChatProps> = ({ currentUser }) => {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const queryClient = useQueryClient();
   const { toast } = useToast();
+  const { t } = useLanguage();
 
   console.log('WhatsAppChat - Current user:', currentUser?.id, currentUser?.role);
 
@@ -87,7 +89,7 @@ const WhatsAppChat: React.FC<WhatsAppChatProps> = ({ currentUser }) => {
       queryClient.setQueryData(['whatsapp-chat-messages'], context?.previousMessages);
       toast({
         title: "Error",
-        description: error.response?.data?.message || "Failed to send message",
+        description: error.response?.data?.message || t('chat.failed_send_message'),
         variant: "destructive",
       });
     },
@@ -188,18 +190,18 @@ const WhatsAppChat: React.FC<WhatsAppChatProps> = ({ currentUser }) => {
     <Card className="flex flex-col h-[calc(100vh-80px)] bg-gray-50">
       {/* Chat Header - WhatsApp Style */}
       <CardHeader className="bg-purple-600 text-white p-4 rounded-t-lg">
-        <CardTitle className="flex items-center space-x-3">
-          <div className="w-10 h-10 bg-purple-700 rounded-full flex items-center justify-center">
-            <Users className="w-6 h-6" />
-          </div>
-          <div>
-            <h2 className="text-lg font-semibold">Community Chat</h2>
-            <p className="text-sm text-purple-100">
-              {messages.length} messages • Vendors & Admins
-            </p>
-          </div>
-        </CardTitle>
-      </CardHeader>
+  <CardTitle className="flex items-center space-x-3">
+    <div className="w-10 h-10 bg-purple-700 rounded-full flex items-center justify-center">
+      <Users className="w-6 h-6" />
+    </div>
+    <div>
+      <h2 className="text-lg font-semibold">{t('chat.community_chat')}</h2>
+      <p className="text-sm text-purple-100">
+        {messages.length} {t('chat.messages')} • {t('chat.vendors_and_admins')}
+      </p>
+    </div>
+  </CardTitle>
+</CardHeader>
 
       <CardContent className="flex-1 flex flex-col p-0 overflow-hidden">
         {/* Messages Area - WhatsApp Style */}
@@ -218,12 +220,12 @@ const WhatsAppChat: React.FC<WhatsAppChatProps> = ({ currentUser }) => {
               />
             ))
           ) : (
-            <div className="flex items-center justify-center h-full">
-              <div className="text-center">
-                <MessageSquare className="w-12 h-12 text-gray-300 mx-auto mb-4" />
-                <p className="text-gray-500">No messages yet. Start the conversation!</p>
-              </div>
-            </div>
+              <div className="flex items-center justify-center h-full">
+        <div className="text-center">
+          <MessageSquare className="w-12 h-12 text-gray-300 mx-auto mb-4" />
+          <p className="text-gray-500">{t('chat.no_messages_yet')}</p>
+        </div>
+      </div>
           )}
           <div ref={messagesEndRef} />
         </div>
@@ -243,10 +245,10 @@ const WhatsAppChat: React.FC<WhatsAppChatProps> = ({ currentUser }) => {
           
           <form onSubmit={handleSendMessage} className="flex items-end space-x-2">
             <div className="flex-1">
-              <Input
+           <Input
                 value={newMessage}
                 onChange={(e) => setNewMessage(e.target.value)}
-                placeholder="Type a message..."
+                placeholder={t('chat.type_message_placeholder')}
                 className="rounded-full border-gray-300 focus:border-purple-500"
                 disabled={createMessageMutation.isPending}
                 maxLength={1000}
@@ -263,7 +265,7 @@ const WhatsAppChat: React.FC<WhatsAppChatProps> = ({ currentUser }) => {
           
           {newMessage.length > 0 && (
             <p className="text-xs text-gray-500 mt-1 text-right">
-              {newMessage.length}/1000 characters
+              {newMessage.length}/1000 {t('chat.characters')}
             </p>
           )}
         </div>

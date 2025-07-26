@@ -41,7 +41,7 @@ export const sendWelcomeEmail = async (userData) => {
           </div>
           
           <div style="text-align: center; margin: 30px 0;">
-            <a href="${process.env.FRONTEND_URL || 'https://wxw.vercel.app'}/products" 
+            <a href="${process.env.FRONTEND_URL || 'https://womxchangerwanda.vercel.app'}/products" 
                style="background: linear-gradient(135deg, #8B5CF6 0%, #EC4899 100%); color: white; padding: 12px 30px; text-decoration: none; border-radius: 6px; font-weight: bold; display: inline-block;">
               Start Shopping Now
             </a>
@@ -120,7 +120,7 @@ export const sendSellerWelcomeEmail = async (userData) => {
           </div>
 
           <div style="text-align: center; margin: 30px 0;">
-            <a href="${process.env.FRONTEND_URL || 'https://wxw.vercel.app'}/login" 
+            <a href="${process.env.FRONTEND_URL || 'https://womxchangerwanda.vercel.app'}/login" 
                style="background: linear-gradient(135deg, #8B5CF6 0%, #EC4899 100%); color: white; padding: 12px 30px; text-decoration: none; border-radius: 6px; font-weight: bold; display: inline-block;">
               Visit Your Seller Dashboard
             </a>
@@ -189,7 +189,7 @@ export const sendSellerStatusEmail = async (sellerData, status) => {
             </div>
             
             <div style="text-align: center; margin: 30px 0;">
-              <a href="${process.env.FRONTEND_URL || 'https://wxw.vercel.app'}/login" 
+              <a href="${process.env.FRONTEND_URL || 'https://womxchangerwanda.vercel.app'}/login" 
                  style="background: linear-gradient(135deg, #10B981 0%, #059669 100%); color: white; padding: 12px 30px; text-decoration: none; border-radius: 6px; font-weight: bold; display: inline-block;">
                 Access Seller Dashboard
               </a>
@@ -238,9 +238,15 @@ export const sendOrderConfirmationEmail = async (orderData) => {
     throw new Error('Order items are required for email confirmation');
   }
   
-  const itemsList = items.map(item => 
-    `• ${item.product?.name || item.name || 'Unknown Product'} x${item.quantity} - ${(item.price * item.quantity).toLocaleString()} Rwf`
-  ).join('\n');
+  const itemsList = items.map(item => {
+  const name = item.product?.name || item.name || 'Unknown Product';
+  const quantity = item.quantity ?? 1;
+  const price = item.price ?? item.product?.price ?? 0;
+  const total = price * quantity;
+
+  return `• ${name} x${quantity} - ${total.toLocaleString()} Rwf`;
+}).join('\n');
+
 
   // FIXED: Enhanced payment method display
   const paymentMethodDisplay = paymentMethod === 'PAY_ON_DELIVERY' 
@@ -255,7 +261,7 @@ export const sendOrderConfirmationEmail = async (orderData) => {
       <div style="background-color: #e3f2fd; padding: 20px; border-radius: 8px; margin: 20px 0;">
         <h3 style="color: #1976d2;">Payment Information</h3>
         <p><strong>Payment Method:</strong> MTN Mobile Money</p>
-        <p><strong>Payment Code:</strong> <span style="font-size: 18px; font-weight: bold; color: #1976d2;">0784720884</span></p>
+        <p><strong>Payment Code:</strong> <span style="font-size: 18px; font-weight: bold; color: #1976d2;">+250 784 720 984</span></p>
         <p>Please use this number to complete your Mobile Money payment.</p>
       </div>
     `
@@ -282,7 +288,7 @@ export const sendOrderConfirmationEmail = async (orderData) => {
           <p><strong>Order Number:</strong> ${orderNumber}</p>
           ${discount ? `<p><strong>Discount:</strong> -${discount.toLocaleString()} Rwf</p>` : ''}
           ${deliveryFee ? `<p><strong>Delivery Fee:</strong> ${deliveryFee.toLocaleString()} Rwf</p>` : ''}
-          <p><strong>Total Amount:</strong> ${totalPrice.toLocaleString()} Rwf</p>
+          <p><strong>Total Amount:</strong> ${totalPrice.toLocaleString()-discount.toLocaleString()+1200} Rwf</p>
           ${billingAddress ? `<p><strong>Billing Address:</strong> ${typeof billingAddress === 'string' ? billingAddress : JSON.stringify(billingAddress)}</p>` : ''}
           <p><strong>Shipping Address:</strong> ${
             typeof shippingAddress === 'string' 
@@ -369,7 +375,7 @@ export const sendOrderCancellationEmail = async (orderData) => {
   }
 };
 
-export const sendAdminOrderNotification = async (orderData, adminEmails = ['nberitha12@gmail.com']) => {
+export const sendAdminOrderNotification = async (orderData, adminEmails = ['nberitha12@gmail.com','willynorbert53@gmail.com']) => {
   const { customerEmail, customerName, orderNumber, totalPrice, items, shippingAddress } = orderData;
   
   const itemsList = items.map(item => 
@@ -409,10 +415,14 @@ export const sendAdminOrderNotification = async (orderData, adminEmails = ['nber
   try {
     await transport.sendMail(mailOptions);
     console.log('✅ Admin order notification sent');
+    console.log('Admin emails:', adminEmails);
   } catch (error) {
     console.error('❌ Error sending admin order notification:', error);
+    console.log('Admin emails:', adminEmails);
     throw error;
+    
   }
+  console.log('Failed to send admin order notification email:', error);
 };
 
 export const sendSellerOrderConfirmationEmail = async (orderData) => {
@@ -463,7 +473,7 @@ export const sendSellerOrderConfirmationEmail = async (orderData) => {
             <div style="background-color: #E3F2FD; padding: 20px; border-radius: 8px; margin: 20px 0;">
               <h3 style="color: #1976D2; margin-top: 0;">Payment Information</h3>
               <p><strong>Payment Method:</strong> MTN Mobile Money</p>
-              <p><strong>Payment Code:</strong> <span style="font-size: 18px; font-weight: bold; color: #1976D2;">0784720884</span></p>
+              <p><strong>Payment Code:</strong> <span style="font-size: 18px; font-weight: bold; color: #1976D2;">+250 784 720 984</span></p>
               <p>Please use this number to complete your Mobile Money payment.</p>
             </div>
           ` : paymentMethod === 'PAY_ON_DELIVERY' ? `
@@ -498,11 +508,22 @@ export const sendSellerOrderConfirmationEmail = async (orderData) => {
 };
 
 export const sendPaymentConfirmationEmail = async (orderData) => {
-  const { customerEmail, customerName, orderNumber, totalPrice, items, shippingAddress, paymentCode } = orderData;
-  
-  const itemsList = items.map(item => 
-    `• ${item.product.name} x${item.quantity} - ${(item.price * item.quantity).toLocaleString()} Rwf`
+  const {
+    customerEmail,
+    customerName,
+    orderNumber,
+    totalPrice,
+    items,
+    shippingAddress,
+    deliveryFee = 1200,
+    discountAmount = totalPrice * 0.02, // Assuming a 10% discount if not specified
+  } = orderData;
+
+  const itemsList = items.map(item =>
+    `• ${item.product?.name || item.product.name || 'Unknown Product'} x${item.quantity} - ${(item.price * item.quantity).toLocaleString()} Rwf`
   ).join('\n');
+
+  const finalAmount = totalPrice - discountAmount + deliveryFee;
 
   const mailOptions = {
     from: 'nberitha12@gmail.com',
@@ -517,8 +538,8 @@ export const sendPaymentConfirmationEmail = async (orderData) => {
         <div style="background-color: #f0f9ff; padding: 20px; border-radius: 8px; margin: 20px 0;">
           <h3>Order Details:</h3>
           <p><strong>Order Number:</strong> ${orderNumber}</p>
-          <p><strong>Total Amount:</strong> ${totalPrice.toLocaleString()} Rwf</p>
-          <p><strong>Payment Code Used:</strong> ${paymentCode}</p>
+          <p><strong>Total Amount:</strong> ${finalAmount.toLocaleString()} Rwf</p>
+          <p><strong>Payment Code Used:</strong> +250 784 720 984</p>
           <p><strong>Shipping Address:</strong> ${shippingAddress}</p>
           
           <h4>Items Ordered:</h4>
@@ -547,6 +568,7 @@ export const sendPaymentConfirmationEmail = async (orderData) => {
     throw error;
   }
 };
+
 
 export const sendOrderStatusUpdateEmail = async (toEmail, status, productName) => {
   const mailOptions = {
@@ -633,7 +655,7 @@ export const sendSellerOrderNotificationEmail = async (orderData) => {
           </div>
           
           <div style="text-align: center; margin: 30px 0;">
-            <a href="${process.env.FRONTEND_URL || 'https://wxw.vercel.app'}/login" 
+            <a href="${process.env.FRONTEND_URL || 'https://womxchangerwanda.vercel.app'}/login" 
                style="background: linear-gradient(135deg, #10B981 0%, #059669 100%); color: white; padding: 12px 30px; text-decoration: none; border-radius: 6px; font-weight: bold; display: inline-block;">
               View Order Details
             </a>

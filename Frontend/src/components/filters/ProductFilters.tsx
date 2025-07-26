@@ -3,6 +3,7 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Search, DollarSign, Calendar } from 'lucide-react';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 interface ProductFiltersProps {
   searchTerm: string;
@@ -31,6 +32,7 @@ export const ProductFilters: React.FC<ProductFiltersProps> = ({
   const [maxPrice, setMaxPrice] = useState(priceFilter?.max?.toString() || '');
   const [customStartDate, setCustomStartDate] = useState('');
   const [customEndDate, setCustomEndDate] = useState('');
+   const { t } = useLanguage();
 
   const handlePriceFilter = () => {
     const min = parseFloat(minPrice) || 0;
@@ -51,7 +53,7 @@ export const ProductFilters: React.FC<ProductFiltersProps> = ({
       <div className="relative">
         <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
         <Input
-          placeholder="Search products by name, SKU, or description..."
+          placeholder={t("Search.products")}
           className="pl-10"
           value={searchTerm}
           onChange={(e) => onSearchChange(e.target.value)}
@@ -62,13 +64,13 @@ export const ProductFilters: React.FC<ProductFiltersProps> = ({
       <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
         {/* Category Filter */}
         <div className="space-y-1">
-          <label className="text-sm font-medium text-gray-700">Category</label>
+          <label className="text-sm font-medium text-gray-700">{t('Category')}</label>
           <Select value={categoryFilter} onValueChange={onCategoryChange}>
             <SelectTrigger>
               <SelectValue placeholder="All Categories" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">All Categories</SelectItem>
+              <SelectItem value="all">{t('All.Categories')}</SelectItem>
               {categories.map((category) => (
                 <SelectItem key={category.id} value={category.id.toString()}>
                   {category.name}
@@ -82,18 +84,18 @@ export const ProductFilters: React.FC<ProductFiltersProps> = ({
         <div className="space-y-1">
           <label className="text-sm font-medium text-gray-700 flex items-center">
             <DollarSign className="w-4 h-4 mr-1" />
-            Price Range (Rwf)
+            {t('Price.Range')}(Rwf)
           </label>
           <div className="flex space-x-2">
             <Input
-              placeholder="Min"
+              placeholder={t("Min")}
               type="number"
               value={minPrice}
               onChange={(e) => setMinPrice(e.target.value)}
               className="text-xs"
             />
             <Input
-              placeholder="Max"
+              placeholder={t("Max")}
               type="number"
               value={maxPrice}
               onChange={(e) => setMaxPrice(e.target.value)}
@@ -102,7 +104,7 @@ export const ProductFilters: React.FC<ProductFiltersProps> = ({
           </div>
           {onPriceChange && (minPrice || maxPrice) && (
             <Button size="sm" onClick={handlePriceFilter} className="w-full text-xs">
-              Apply Price
+              {t('Apply.Price')}
             </Button>
           )}
         </div>
@@ -111,18 +113,18 @@ export const ProductFilters: React.FC<ProductFiltersProps> = ({
         <div className="space-y-1">
           <label className="text-sm font-medium text-gray-700 flex items-center">
             <Calendar className="w-4 h-4 mr-1" />
-            Created Date
+            {t('Created.Date')}
           </label>
           <Select value={dateFilter} onValueChange={onDateChange}>
             <SelectTrigger>
               <SelectValue placeholder="All Dates" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">All Dates</SelectItem>
-              <SelectItem value="today">Today</SelectItem>
-              <SelectItem value="week">This Week</SelectItem>
-              <SelectItem value="month">This Month</SelectItem>
-              <SelectItem value="custom">Custom Range</SelectItem>
+              <SelectItem value="all">{t('All.Dates')}</SelectItem>
+              <SelectItem value="today">{t('Today')}</SelectItem>
+              <SelectItem value="week">{t('This.Week')}</SelectItem>
+              <SelectItem value="month">{t('This.Month')}</SelectItem>
+              <SelectItem value="custom">{t('Custom.Range')}</SelectItem>
             </SelectContent>
           </Select>
           
@@ -144,7 +146,7 @@ export const ProductFilters: React.FC<ProductFiltersProps> = ({
               </div>
               {customStartDate && customEndDate && (
                 <Button size="sm" onClick={handleCustomDateFilter} className="w-full text-xs">
-                  Apply Range
+                  {t('Apply.Range')}
                 </Button>
               )}
             </div>
@@ -167,7 +169,7 @@ export const ProductFilters: React.FC<ProductFiltersProps> = ({
               setCustomEndDate('');
             }}
           >
-            Clear All
+           {t('Clear.All')}
           </Button>
         </div>
       </div>

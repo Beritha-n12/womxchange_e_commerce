@@ -15,6 +15,7 @@ import { X } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
 import { getAllUsers } from '@/api/users';
 import FileUpload, { FileData } from '@/components/chat/FileUpload';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 interface ProductFormProps {
   editingProduct?: any;
@@ -35,6 +36,8 @@ export const ProductForm: React.FC<ProductFormProps> = ({
   onSubmit,
   onCancel,
 }) => {
+  const { t } = useLanguage();
+
   const [formData, setFormData] = useState({
     name: '',
     description: '',
@@ -81,7 +84,6 @@ export const ProductForm: React.FC<ProductFormProps> = ({
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-
     const submitData = {
       ...formData,
       price: parseFloat(formData.price),
@@ -92,7 +94,6 @@ export const ProductForm: React.FC<ProductFormProps> = ({
         ? parseInt(formData.assignedSellerId)
         : undefined,
     };
-
     onSubmit(submitData);
   };
 
@@ -140,7 +141,7 @@ export const ProductForm: React.FC<ProductFormProps> = ({
     <form onSubmit={handleSubmit} className="space-y-4">
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div>
-          <Label htmlFor="name">Product Name *</Label>
+          <Label htmlFor="name">{t('seller.name')}</Label>
           <Input
             id="name"
             value={formData.name}
@@ -152,7 +153,7 @@ export const ProductForm: React.FC<ProductFormProps> = ({
         </div>
 
         <div>
-          <Label htmlFor="category">Category *</Label>
+          <Label htmlFor="category">{t('seller.category')}</Label>
           <Select
             value={formData.categoryId}
             onValueChange={(value) =>
@@ -160,7 +161,7 @@ export const ProductForm: React.FC<ProductFormProps> = ({
             }
           >
             <SelectTrigger>
-              <SelectValue placeholder="Select category" />
+              <SelectValue placeholder={t('seller.select_category')} />
             </SelectTrigger>
             <SelectContent>
               {categories.map((category) => (
@@ -173,7 +174,7 @@ export const ProductForm: React.FC<ProductFormProps> = ({
         </div>
 
         <div>
-          <Label htmlFor="price">Price (Rwf) *</Label>
+          <Label htmlFor="price">{t('seller.price')}</Label>
           <Input
             id="price"
             type="number"
@@ -187,7 +188,7 @@ export const ProductForm: React.FC<ProductFormProps> = ({
         </div>
 
         <div>
-          <Label htmlFor="stock">Stock Quantity *</Label>
+          <Label htmlFor="stock">{t('seller.stock')}</Label>
           <Input
             id="stock"
             type="number"
@@ -200,7 +201,7 @@ export const ProductForm: React.FC<ProductFormProps> = ({
         </div>
 
         <div className="md:col-span-2">
-          <Label htmlFor="assignedSeller">Assign to Seller (Optional)</Label>
+          <Label htmlFor="assignedSeller">{t('seller.assign')}</Label>
           <Select
             value={formData.assignedSellerId}
             onValueChange={(value) =>
@@ -208,10 +209,10 @@ export const ProductForm: React.FC<ProductFormProps> = ({
             }
           >
             <SelectTrigger>
-              <SelectValue placeholder="Select seller (leave empty to assign to yourself)" />
+              <SelectValue placeholder={t('seller.select_seller')} />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="self">Assign to myself</SelectItem>
+              <SelectItem value="self">{t('seller.assign_self')}</SelectItem>
               {sellers.map((seller) => (
                 <SelectItem key={seller.id} value={seller.id.toString()}>
                   {seller.businessName || seller.name} ({seller.email})
@@ -223,7 +224,7 @@ export const ProductForm: React.FC<ProductFormProps> = ({
       </div>
 
       <div>
-        <Label htmlFor="description">Description</Label>
+        <Label htmlFor="description">{t('seller.description')}</Label>
         <Textarea
           id="description"
           value={formData.description}
@@ -235,12 +236,12 @@ export const ProductForm: React.FC<ProductFormProps> = ({
       </div>
 
       <div>
-        <Label htmlFor="imageUrl">Product cover  image</Label>
-       <div className="border-t pt-4">
+        <Label htmlFor="imageUrl">{t('seller.image_label')}</Label>
+        <div className="border-t pt-4">
           <Label className="block text-sm font-medium mb-2 p-2">
-            Upload Product Image *
+            {t('seller.upload_image')}
           </Label>
-          <FileUpload 
+          <FileUpload
             onlyImages
             onFileSelect={(files: FileData[]) => {
               const imageFile = files.find((f) => f.type === 'image');
@@ -250,13 +251,13 @@ export const ProductForm: React.FC<ProductFormProps> = ({
             }}
           />
           <Label className="block text-sm font-medium mb-2 p-2">
-            or choose to use url *
+            {t('seller.or_use_url')}
           </Label>
         </div>
 
         <Input
           id="imageUrl"
-          placeholder="Enter image URL"
+          placeholder={t('seller.enter_image_url')}
           value={imageUrl}
           onChange={(e) => handleImageUrlChange(e.target.value)}
         />
@@ -272,16 +273,16 @@ export const ProductForm: React.FC<ProductFormProps> = ({
       </div>
 
       <div>
-        <Label>Available Colors</Label>
+        <Label>{t('seller.available_colors')}</Label>
         <div className="flex gap-2 mb-2">
           <Input
-            placeholder="Add color"
+            placeholder={t('seller.add_color')}
             value={newColor}
             onChange={(e) => setNewColor(e.target.value)}
             onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), addColor())}
           />
           <Button type="button" onClick={addColor} size="sm">
-            Add
+            {t('seller.add')}
           </Button>
         </div>
         <div className="flex flex-wrap gap-2">
@@ -302,16 +303,16 @@ export const ProductForm: React.FC<ProductFormProps> = ({
       </div>
 
       <div>
-        <Label>Available Sizes</Label>
+        <Label>{t('seller.available_sizes')}</Label>
         <div className="flex gap-2 mb-2">
           <Input
-            placeholder="Add size"
+            placeholder={t('seller.add_size')}
             value={newSize}
             onChange={(e) => setNewSize(e.target.value)}
             onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), addSize())}
           />
           <Button type="button" onClick={addSize} size="sm">
-            Add
+            {t('seller.add')}
           </Button>
         </div>
         <div className="flex flex-wrap gap-2">
@@ -333,14 +334,14 @@ export const ProductForm: React.FC<ProductFormProps> = ({
 
       <div className="flex justify-end gap-2 pt-4">
         <Button type="button" variant="outline" onClick={onCancel}>
-          Cancel
+          {t('seller.cancel')}
         </Button>
         <Button type="submit" disabled={isLoading}>
           {isLoading
-            ? 'Processing...'
+            ? t('seller.processing')
             : editingProduct
-            ? 'Update Product'
-            : 'Create Product'}
+            ? t('seller.update_product')
+            : t('seller.create_product')}
         </Button>
       </div>
     </form>

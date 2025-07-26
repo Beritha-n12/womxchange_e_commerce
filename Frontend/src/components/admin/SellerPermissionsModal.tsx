@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
@@ -9,6 +8,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useToast } from '@/hooks/use-toast';
 import { Settings, CheckCircle, Edit, X, Trash2 } from 'lucide-react';
 import api from '@/api/api';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 interface SellerPermission {
   canConfirmOrder: boolean;
@@ -31,7 +31,8 @@ export const SellerPermissionsModal: React.FC<SellerPermissionsModalProps> = ({
 }) => {
   const { toast } = useToast();
   const queryClient = useQueryClient();
-  
+  const { t } = useLanguage();
+
   const [permissions, setPermissions] = useState<SellerPermission>({
     canConfirmOrder: false,
     canEditOrder: false,
@@ -59,29 +60,25 @@ export const SellerPermissionsModal: React.FC<SellerPermissionsModalProps> = ({
 
   const updatePermissionsMutation = useMutation({
     mutationFn: async (permissionsData: SellerPermission) => {
-      console.log('🔄 Updating seller permissions:', { sellerId: seller.id, permissions: permissionsData });
       return api.put(`/sellers/${seller.id}/status`, {
         status: seller.sellerStatus,
         permissions: permissionsData
       });
     },
     onSuccess: (response) => {
-      console.log('✅ Permissions updated successfully:', response.data);
       queryClient.invalidateQueries({ queryKey: ['sellers'] });
       queryClient.invalidateQueries({ queryKey: ['pending-sellers'] });
-      // Force refresh of user context if this is the current user
       queryClient.invalidateQueries({ queryKey: ['user-profile'] });
       toast({
-        title: "Permissions Updated",
-        description: "Seller permissions have been updated successfully",
+        title: t('seller_permissions.permissions_updated_title'),
+        description: t('seller_permissions.permissions_updated_description'),
       });
       onClose();
     },
     onError: (error: any) => {
-      console.error('❌ Error updating permissions:', error);
       toast({
-        title: "Error",
-        description: error.response?.data?.message || "Failed to update permissions",
+        title: t('seller_permissions.error_title'),
+        description: error.response?.data?.message || t('seller_permissions.error_description'),
         variant: "destructive",
       });
     }
@@ -106,7 +103,7 @@ export const SellerPermissionsModal: React.FC<SellerPermissionsModalProps> = ({
         <DialogHeader>
           <DialogTitle className="flex items-center space-x-2">
             <Settings className="w-5 h-5" />
-            <span>Manage Seller Permissions</span>
+            <span>{t('seller_permissions.manage_seller_permissions')}</span>
           </DialogTitle>
         </DialogHeader>
 
@@ -116,26 +113,28 @@ export const SellerPermissionsModal: React.FC<SellerPermissionsModalProps> = ({
             <div className="flex items-center justify-between mb-2">
               <h3 className="font-semibold">{seller.name}</h3>
               <Badge variant={seller.sellerStatus === 'ACTIVE' ? 'default' : 'secondary'}>
-                {seller.sellerStatus}
+                {t(`seller_permissions.status.${seller.sellerStatus.toLowerCase()}`) || seller.sellerStatus}
               </Badge>
             </div>
             <p className="text-sm text-gray-600">{seller.email}</p>
             {seller.businessName && (
-              <p className="text-sm text-gray-600">Business: {seller.businessName}</p>
+              <p className="text-sm text-gray-600">
+                {t('seller_permissions.business')}: {seller.businessName}
+              </p>
             )}
           </div>
 
           {/* Permissions */}
           <div className="space-y-4">
-            <h4 className="font-semibold">Order Management Permissions</h4>
+            <h4 className="font-semibold">{t('seller_permissions.order_management_permissions')}</h4>
             
             <div className="space-y-4">
               <div className="flex items-center justify-between p-3 border rounded-lg">
                 <div className="flex items-center space-x-3">
                   <CheckCircle className="w-5 h-5 text-green-600" />
                   <div>
-                    <p className="font-medium">Confirm Orders</p>
-                    <p className="text-sm text-gray-600">Allow seller to confirm payment status</p>
+                    <p className="font-medium">{t('seller_permissions.confirm_orders')}</p>
+                    <p className="text-sm text-gray-600">{t('seller_permissions.allow_confirm_payment')}</p>
                   </div>
                 </div>
                 <Switch
@@ -148,8 +147,8 @@ export const SellerPermissionsModal: React.FC<SellerPermissionsModalProps> = ({
                 <div className="flex items-center space-x-3">
                   <Edit className="w-5 h-5 text-blue-600" />
                   <div>
-                    <p className="font-medium">Edit Orders</p>
-                    <p className="text-sm text-gray-600">Allow seller to modify order details</p>
+                    <p className="font-medium">{t('seller_permissions.edit_orders')}</p>
+                    <p className="text-sm text-gray-600">{t('seller_permissions.allow_edit_order')}</p>
                   </div>
                 </div>
                 <Switch
@@ -162,8 +161,8 @@ export const SellerPermissionsModal: React.FC<SellerPermissionsModalProps> = ({
                 <div className="flex items-center space-x-3">
                   <X className="w-5 h-5 text-orange-600" />
                   <div>
-                    <p className="font-medium">Cancel Orders</p>
-                    <p className="text-sm text-gray-600">Allow seller to cancel orders</p>
+                    <p className="font-medium">{t('seller_permissions.cancel_orders')}</p>
+                    <p className="text-sm text-gray-600">{t('seller_permissions.allow_cancel_order')}</p>
                   </div>
                 </div>
                 <Switch
@@ -176,8 +175,8 @@ export const SellerPermissionsModal: React.FC<SellerPermissionsModalProps> = ({
                 <div className="flex items-center space-x-3">
                   <Trash2 className="w-5 h-5 text-red-600" />
                   <div>
-                    <p className="font-medium">Delete Orders</p>
-                    <p className="text-sm text-gray-600">Allow seller to permanently delete orders</p>
+                    <p className="font-medium">{t('seller_permissions.delete_orders')}</p>
+                    <p className="text-sm text-gray-600">{t('seller_permissions.allow_delete_order')}</p>
                   </div>
                 </div>
                 <Switch
@@ -187,14 +186,14 @@ export const SellerPermissionsModal: React.FC<SellerPermissionsModalProps> = ({
               </div>
             </div>
 
-            <h4 className="font-semibold pt-4">Customer Management Permissions</h4>
+            <h4 className="font-semibold pt-4">{t('seller_permissions.customer_management_permissions')}</h4>
             
             <div className="flex items-center justify-between p-3 border rounded-lg">
               <div className="flex items-center space-x-3">
                 <Settings className="w-5 h-5 text-purple-600" />
                 <div>
-                  <p className="font-medium">Create New Customers</p>
-                  <p className="text-sm text-gray-600">Allow seller to add new customers when creating orders</p>
+                  <p className="font-medium">{t('seller_permissions.create_customers')}</p>
+                  <p className="text-sm text-gray-600">{t('seller_permissions.allow_add_customers')}</p>
                 </div>
               </div>
               <Switch
@@ -207,14 +206,14 @@ export const SellerPermissionsModal: React.FC<SellerPermissionsModalProps> = ({
           {/* Actions */}
           <div className="flex justify-end space-x-3 pt-4 border-t">
             <Button variant="outline" onClick={onClose}>
-              Cancel
+              {t('seller_permissions.cancel')}
             </Button>
             <Button
               onClick={handleSave}
               disabled={updatePermissionsMutation.isPending}
               className="bg-purple-600 hover:bg-purple-700"
             >
-              {updatePermissionsMutation.isPending ? 'Saving...' : 'Save Permissions'}
+              {updatePermissionsMutation.isPending ? t('seller_permissions.saving') : t('seller_permissions.save_permissions')}
             </Button>
           </div>
         </div>

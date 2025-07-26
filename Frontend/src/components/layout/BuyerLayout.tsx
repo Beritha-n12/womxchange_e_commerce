@@ -3,6 +3,7 @@ import React from 'react';
 import { ArrowLeft } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 interface BuyerLayoutProps {
   children: React.ReactNode;
@@ -10,6 +11,7 @@ interface BuyerLayoutProps {
 }
 
 export const BuyerLayout: React.FC<BuyerLayoutProps> = ({ children, title = "Profile" }) => {
+  const { t } = useLanguage();
   return (
     <div className="min-h-screen bg-gray-50">
       <header className="bg-white border-b border-gray-200 px-4 sm:px-6 py-4">
@@ -18,7 +20,7 @@ export const BuyerLayout: React.FC<BuyerLayoutProps> = ({ children, title = "Pro
             <Link to="/">
               <Button variant="ghost" className="flex items-center space-x-2 text-purple-600 hover:text-purple-700">
                 <ArrowLeft className="w-4 h-4" />
-                <span>Back to Home</span>
+                <span>{t('Back to Home')}</span>
               </Button>
             </Link>
             <h1 className="text-xl font-semibold text-gray-900">{title}</h1>

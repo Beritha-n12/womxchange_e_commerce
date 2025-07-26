@@ -9,8 +9,10 @@ import { Navigation, Pagination, Autoplay } from 'swiper/modules';
 import 'swiper/css';
 import 'swiper/css/navigation';
 import 'swiper/css/pagination';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 const TestimonialSection = () => {
+  const { t } = useLanguage();
   const { data: reviewsData, isLoading, error } = useQuery({
     queryKey: ['all-reviews'],
     queryFn: getAllReviews,
@@ -32,12 +34,12 @@ const TestimonialSection = () => {
       <div className="container mx-auto px-4">
         <div className="text-center mb-12">
           <h2 className="text-3xl font-bold text-gray-900 mb-4">
-            What Our Customers Say
+            {t('testimonials.title')}
           </h2>
           <p className="text-gray-600 max-w-2xl mx-auto">
             {filteredReviews.length > 0 
-              ? `Read what our ${filteredReviews.length} satisfied customers have to say about their experience`
-              : "No reviews available at the moment."
+              ? t('testimonials.description', { count: filteredReviews.length })
+              : t('testimonials.no_reviews')
             }
           </p>
         </div>
@@ -98,7 +100,7 @@ const TestimonialSection = () => {
                   </div>
                   <p className="text-gray-600 mb-4 line-clamp-3">"{review.comment}"</p>
                   <div className="text-sm text-purple-600 font-medium">
-                    Verified Purchase
+                    {t('testimonials.verified_purchase')}
                   </div>
                 </div>
               </SwiperSlide>
@@ -109,7 +111,7 @@ const TestimonialSection = () => {
         {!isLoading && filteredReviews.length === 0 && (
           <div className="text-center mt-8">
             <p className="text-gray-500 text-sm">
-              Be the first to leave a review and help other customers!
+              {t('testimonials.be_first_review')}
             </p>
           </div>
         )}

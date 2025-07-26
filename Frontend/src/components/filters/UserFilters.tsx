@@ -3,6 +3,7 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Search } from 'lucide-react';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 interface UserFiltersProps {
   searchTerm: string;
@@ -25,13 +26,15 @@ export const UserFilters: React.FC<UserFiltersProps> = ({
   dateFilter,
   onDateChange
 }) => {
+  const { t } = useLanguage();
+
   return (
     <div className="space-y-4">
       {/* Search Input */}
       <div className="relative">
         <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
         <Input
-          placeholder="Search users by name, email, or phone..."
+          placeholder={t('user_filters.search_placeholder')}
           className="pl-10"
           value={searchTerm}
           onChange={(e) => onSearchChange(e.target.value)}
@@ -42,68 +45,52 @@ export const UserFilters: React.FC<UserFiltersProps> = ({
       <div className="grid grid-cols-1 md:grid-cols-5 gap-3">
         {/* Status Filter */}
         <div className="space-y-1">
-          <label className="text-sm font-medium text-gray-700">Status</label>
+          <label className="text-sm font-medium text-gray-700">{t('user_filters.status')}</label>
           <Select value={statusFilter} onValueChange={onStatusChange}>
             <SelectTrigger>
-              <SelectValue placeholder="All Status" />
+              <SelectValue placeholder={t('user_filters.all_status')} />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">All Status</SelectItem>
-              <SelectItem value="active">Active</SelectItem>
-              <SelectItem value="inactive">Inactive</SelectItem>
-              <SelectItem value="blocked">Blocked</SelectItem>
+              <SelectItem value="all">{t('user_filters.all_status')}</SelectItem>
+              <SelectItem value="active">{t('user_filters.active')}</SelectItem>
+              <SelectItem value="inactive">{t('user_filters.inactive')}</SelectItem>
+              <SelectItem value="blocked">{t('user_filters.blocked')}</SelectItem>
             </SelectContent>
           </Select>
         </div>
 
         {/* Role Filter */}
         <div className="space-y-1">
-          <label className="text-sm font-medium text-gray-700">Role</label>
+          <label className="text-sm font-medium text-gray-700">{t('user_filters.role')}</label>
           <Select value={roleFilter} onValueChange={onRoleChange}>
             <SelectTrigger>
-              <SelectValue placeholder="All Roles" />
+              <SelectValue placeholder={t('user_filters.all_roles')} />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">All Roles</SelectItem>
-              <SelectItem value="buyer">Buyers</SelectItem>
-              <SelectItem value="seller">Sellers</SelectItem>
-              <SelectItem value="admin">Admins</SelectItem>
+              <SelectItem value="all">{t('user_filters.all_roles')}</SelectItem>
+              <SelectItem value="buyer">{t('user_filters.buyers')}</SelectItem>
+              <SelectItem value="seller">{t('user_filters.sellers')}</SelectItem>
+              <SelectItem value="admin">{t('user_filters.admins')}</SelectItem>
             </SelectContent>
           </Select>
         </div>
 
         {/* Date Filter */}
-        {/* <div className="space-y-1">
-          <label className="text-sm font-medium text-gray-700">Registered</label>
+        <div className="space-y-1">
+          <label className="text-sm font-medium text-gray-700">{t('user_filters.registered')}</label>
           <Select value={dateFilter} onValueChange={onDateChange}>
             <SelectTrigger>
-              <SelectValue placeholder="All Dates" />
+              <SelectValue placeholder={t('user_filters.all_dates')} />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">All Dates</SelectItem>
-              <SelectItem value="today">Today</SelectItem>
-              <SelectItem value="week">This Week</SelectItem>
-              <SelectItem value="month">This Month</SelectItem>
-              <SelectItem value="year">This Year</SelectItem>
+              <SelectItem value="all">{t('user_filters.all_dates')}</SelectItem>
+              <SelectItem value="today">{t('user_filters.today')}</SelectItem>
+              <SelectItem value="week">{t('user_filters.this_week')}</SelectItem>
+              <SelectItem value="month">{t('user_filters.this_month')}</SelectItem>
+              <SelectItem value="year">{t('user_filters.this_year')}</SelectItem>
             </SelectContent>
           </Select>
-        </div> */}
-
-        {/* Seller Status
-        <div className="space-y-1">
-          <label className="text-sm font-medium text-gray-700">Seller Status</label>
-          <Select value="" onValueChange={() => {}}>
-            <SelectTrigger>
-              <SelectValue placeholder="All Sellers" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All Sellers</SelectItem>
-              <SelectItem value="pending">Pending</SelectItem>
-              <SelectItem value="active">Active</SelectItem>
-              <SelectItem value="suspended">Suspended</SelectItem>
-            </SelectContent>
-          </Select>
-        </div> */}
+        </div>
 
         {/* Clear Filters */}
         <div className="space-y-1">
@@ -118,7 +105,7 @@ export const UserFilters: React.FC<UserFiltersProps> = ({
               onDateChange('all');
             }}
           >
-            Clear All
+            {t('user_filters.clear_all')}
           </Button>
         </div>
       </div>

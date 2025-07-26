@@ -178,9 +178,9 @@ const Products = () => {
       <div className="container mx-auto px-4 py-8">
         {/* Page Header */}
         <div className="text-center mb-8">
-          <h1 className="text-4xl font-bold text-gray-900 mb-4">Our Products</h1>
+          <h1 className="text-4xl font-bold text-gray-900 mb-4">{t('Our.Products')}</h1>
           <p className="text-gray-600 max-w-2xl mx-auto">
-            Discover our amazing collection of products
+            {t('Discover.our')}
           </p>
         </div>
 
@@ -213,7 +213,7 @@ const Products = () => {
           <div className="mb-6 flex flex-wrap gap-2">
             {selectedCategory && (
               <Badge variant="secondary" className="px-3 py-1">
-                Category: {categories.find(c => c.id.toString() === selectedCategory)?.name}
+                {t('Category.search')}: {categories.find(c => c.id.toString() === selectedCategory)?.name}
                 <button
                   onClick={() => handleCategoryChange('')}
                   className="ml-2 text-gray-500 hover:text-gray-700"
@@ -224,7 +224,7 @@ const Products = () => {
             )}
             {searchTerm && (
               <Badge variant="secondary" className="px-3 py-1">
-                Search: "{searchTerm}"
+                {t('Search')}: "{searchTerm}"
                 <button
                   onClick={() => handleSearchChange('')}
                   className="ml-2 text-gray-500 hover:text-gray-700"
@@ -239,7 +239,7 @@ const Products = () => {
         {/* Results Info */}
         <div className="mb-6 flex justify-between items-center">
           <div className="text-gray-600">
-            Showing {startIndex + 1}-{Math.min(startIndex + itemsPerPage, filteredProducts.length)} of {filteredProducts.length} products
+            {t('Showing')} {startIndex + 1}-{Math.min(startIndex + itemsPerPage, filteredProducts.length)} of {filteredProducts.length} products
           </div>
           <div className="text-gray-600">
             Page {currentPage} of {totalPages}
@@ -252,9 +252,9 @@ const Products = () => {
             <div className="text-gray-400 mb-4">
               <Search className="w-16 h-16 mx-auto" />
             </div>
-            <h3 className="text-xl font-semibold text-gray-900 mb-2">No products found</h3>
+            <h3 className="text-xl font-semibold text-gray-900 mb-2">{t('No.product')}</h3>
             <p className="text-gray-600 mb-4">
-              Try adjusting your search or filter criteria
+              {t('Try.adjusting')}
             </p>
             <Button
               onClick={() => {
@@ -265,7 +265,7 @@ const Products = () => {
               }}
               variant="outline"
             >
-              Clear all filters
+              {t('Clear.all')}
             </Button>
           </div>
         ) : (
@@ -336,7 +336,7 @@ const Products = () => {
                           )}
                           <div className="text-xs text-gray-500 space-y-1">
                             {/* <div>In Stock: {product.stock}</div> */}
-                            <div>Available: {product.availableStock || 0}</div>
+                            <div>{t('Available:')} {product.availableStock || 0}</div>
                           </div>
                         </div>
                         <Button
@@ -375,7 +375,7 @@ const Products = () => {
                         className="gap-1 pl-2.5"
                       >
                         <ChevronLeft className="h-4 w-4" />
-                        Previous
+                        {t('Previous')}
                       </Button>
                     </PaginationItem>
                     
@@ -412,7 +412,7 @@ const Products = () => {
                         disabled={currentPage === totalPages}
                         className="gap-1 pr-2.5"
                       >
-                        Next
+                        {t('Next')}
                         <ChevronRight className="h-4 w-4" />
                       </Button>
                     </PaginationItem>
