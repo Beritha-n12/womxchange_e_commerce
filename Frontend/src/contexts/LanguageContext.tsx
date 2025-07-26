@@ -929,6 +929,7 @@ const translations = {
     
     // Community Chat
     'community.chat': 'Community Chat',
+
     
     // Customers
     'customers.user_management': 'User Management',
@@ -1645,7 +1646,7 @@ const translations = {
     'sidebar.analytics': 'Isesengura',
     'sidebar.profile': 'Umwirondoro',
     'sidebar.settings': 'Igenamiterere',
-    'sidebar.community_chat': 'Iganira ry\'ubunyangamugayo',
+    'sidebar.community_chat': 'Uruganiriro ',
     'sidebar.management': 'Ubuyobozi',
     
     // Admin Pages - Kinyarwanda
