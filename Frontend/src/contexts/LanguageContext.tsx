@@ -1416,7 +1416,7 @@ const translations = {
     'user_management.joined': 'Yinjiye',
     'products.care_instructions_title': 'Amabwiriza yo Kwita ku Bicruzwa',
     'products.out_of_stock': 'Byarangiye',
-    'products.in_stock': 'Birahari',
+    'products.in_stock': 'Ibihari',
     'products.color': 'Ibara',
     'products.size': 'Ingano',
     'common.search': 'Gushaka',
