@@ -40,8 +40,10 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { useForm } from 'react-hook-form';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 const UserManagement = () => {
+  const { t } = useLanguage();
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [searchTerm, setSearchTerm] = useState('');
@@ -68,14 +70,14 @@ const UserManagement = () => {
       setIsCreateModalOpen(false);
       createForm.reset();
       toast({
-        title: "Success",
-        description: "User created successfully",
+        title: t('common.success'),
+        description: t('user_management.user_created_success'),
       });
     },
     onError: (error: any) => {
       toast({
-        title: "Error",
-        description: error.response?.data?.message || "Failed to create user",
+        title: t('common.error'),
+        description: error.response?.data?.message || t('user_management.failed_create_user'),
         variant: "destructive",
       });
     },
@@ -86,14 +88,14 @@ const UserManagement = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['users'] });
       toast({
-        title: "Success",
-        description: "User deleted successfully",
+        title: t('common.success'),
+        description: t('user_management.user_deleted_success'),
       });
     },
     onError: (error: any) => {
       toast({
-        title: "Error",
-        description: error.response?.data?.message || "Failed to delete user",
+        title: t('common.error'),
+        description: error.response?.data?.message || t('user_management.failed_delete_user'),
         variant: "destructive",
       });
     },
@@ -107,14 +109,14 @@ const UserManagement = () => {
       setIsEditModalOpen(false);
       editForm.reset();
       toast({
-        title: "Success",
-        description: "User updated successfully",
+        title: t('common.success'),
+        description: t('user_management.user_updated_success'),
       });
     },
     onError: (error: any) => {
       toast({
-        title: "Error",
-        description: error.response?.data?.message || "Failed to update user",
+        title: t('common.error'),
+        description: error.response?.data?.message || t('user_management.failed_update_user'),
         variant: "destructive",
       });
     },
@@ -208,7 +210,7 @@ const UserManagement = () => {
     return (
       <DashboardLayout currentPage="user-management">
         <div className="flex items-center justify-center min-h-[400px]">
-          <div className="text-lg text-gray-600">Loading users...</div>
+          <div className="text-lg text-gray-600">{t('user_management.loading_users')}</div>
         </div>
       </DashboardLayout>
     );
@@ -218,7 +220,7 @@ const UserManagement = () => {
     return (
       <DashboardLayout currentPage="user-management">
         <div className="flex items-center justify-center min-h-[400px]">
-          <div className="text-lg text-red-600">Failed to load users</div>
+          <div className="text-lg text-red-600">{t('user_management.failed_load_users')}</div>
         </div>
       </DashboardLayout>
     );
@@ -228,10 +230,10 @@ const UserManagement = () => {
     <DashboardLayout currentPage="user-management">
       <div className="space-y-6">
         <div className="flex justify-between items-center">
-          <h1 className="text-2xl font-bold text-gray-900">User Management</h1>
+          <h1 className="text-2xl font-bold text-gray-900">{t('user_management.title')}</h1>
           <Button onClick={() => setIsCreateModalOpen(true)} className="bg-purple-700 hover:bg-purple-700">
             <Plus className="w-4 h-4 mr-2" />
-            Create User
+            {t('user_management.create_user')}
           </Button>
         </div>
 
@@ -250,18 +252,18 @@ const UserManagement = () => {
         {/* Users Table */}
         <Card>
           <CardHeader>
-            <CardTitle>All Users ({filteredUsers.length})</CardTitle>
+            <CardTitle>{t('user_management.all_users')} ({filteredUsers.length})</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="overflow-x-auto">
               <table className="w-full">
                 <thead className="bg-gray-50">
                   <tr>
-                    <th className="px-4 py-3 text-left text-sm font-medium text-gray-700">User</th>
-                    <th className="px-4 py-3 text-left text-sm font-medium text-gray-700">Email</th>
-                    <th className="px-4 py-3 text-left text-sm font-medium text-gray-700">Role</th>
-                    <th className="px-4 py-3 text-left text-sm font-medium text-gray-700">Status</th>
-                    <th className="px-4 py-3 text-left text-sm font-medium text-gray-700">Actions</th>
+                    <th className="px-4 py-3 text-left text-sm font-medium text-gray-700">{t('user_management.user')}</th>
+                    <th className="px-4 py-3 text-left text-sm font-medium text-gray-700">{t('user_management.email')}</th>
+                    <th className="px-4 py-3 text-left text-sm font-medium text-gray-700">{t('user_management.role')}</th>
+                    <th className="px-4 py-3 text-left text-sm font-medium text-gray-700">{t('user_management.status')}</th>
+                    <th className="px-4 py-3 text-left text-sm font-medium text-gray-700">{t('user_management.actions')}</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-200">
@@ -290,7 +292,7 @@ const UserManagement = () => {
                       </td>
                       <td className="px-4 py-3">
                         <Badge className={user.isActive ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}>
-                          {user.isActive ? 'Active' : 'Inactive'}
+                          {user.isActive ? t('user_management.active') : t('user_management.inactive')}
                         </Badge>
                       </td>
                       <td className="px-4 py-3">
@@ -334,7 +336,7 @@ const UserManagement = () => {
         <Dialog open={isCreateModalOpen} onOpenChange={setIsCreateModalOpen}>
           <DialogContent className="max-w-md">
             <DialogHeader>
-              <DialogTitle>Create New User</DialogTitle>
+              <DialogTitle>{t('user_management.create_new_user')}</DialogTitle>
             </DialogHeader>
             <Form {...createForm}>
               <form onSubmit={createForm.handleSubmit(onCreateSubmit)} className="space-y-4">
@@ -343,7 +345,7 @@ const UserManagement = () => {
                   name="name"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Name</FormLabel>
+                      <FormLabel>{t('user_management.name')}</FormLabel>
                       <FormControl>
                         <Input {...field} required />
                       </FormControl>
@@ -357,7 +359,7 @@ const UserManagement = () => {
                   name="email"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Email</FormLabel>
+                      <FormLabel>{t('user_management.email')}</FormLabel>
                       <FormControl>
                         <Input type="email" {...field} required />
                       </FormControl>
@@ -371,7 +373,7 @@ const UserManagement = () => {
                   name="password"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Password</FormLabel>
+                      <FormLabel>{t('user_management.password')}</FormLabel>
                       <FormControl>
                         <Input type="password" {...field} required />
                       </FormControl>
@@ -385,17 +387,17 @@ const UserManagement = () => {
                   name="role"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Role</FormLabel>
+                      <FormLabel>{t('user_management.role')}</FormLabel>
                       <Select onValueChange={field.onChange} defaultValue={field.value}>
                         <FormControl>
                           <SelectTrigger>
-                            <SelectValue placeholder="Select role" />
+                            <SelectValue placeholder={t('user_management.select_role')} />
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent>
-                          <SelectItem value="buyer">Buyer</SelectItem>
-                          <SelectItem value="seller">Seller</SelectItem>
-                          <SelectItem value="admin">Admin</SelectItem>
+                          <SelectItem value="buyer">{t('user_management.buyer')}</SelectItem>
+                          <SelectItem value="seller">{t('user_management.seller')}</SelectItem>
+                          <SelectItem value="admin">{t('user_management.admin')}</SelectItem>
                         </SelectContent>
                       </Select>
                       <FormMessage />
@@ -409,7 +411,7 @@ const UserManagement = () => {
                     disabled={createMutation.isPending}
                     className="flex-1"
                   >
-                    {createMutation.isPending ? 'Creating...' : 'Create User'}
+                    {createMutation.isPending ? t('user_management.creating') : t('user_management.create_user')}
                   </Button>
                   <Button
                     variant="outline"
@@ -417,7 +419,7 @@ const UserManagement = () => {
                     onClick={() => setIsCreateModalOpen(false)}
                     className="flex-1"
                   >
-                    Cancel
+                    {t('common.cancel')}
                   </Button>
                 </div>
               </form>
@@ -429,7 +431,7 @@ const UserManagement = () => {
         <Dialog open={isEditModalOpen} onOpenChange={setIsEditModalOpen}>
           <DialogContent className="max-w-md">
             <DialogHeader>
-              <DialogTitle>Edit User</DialogTitle>
+              <DialogTitle>{t('user_management.edit_user')}</DialogTitle>
             </DialogHeader>
             <Form {...editForm}>
               <form onSubmit={editForm.handleSubmit(onEditSubmit)} className="space-y-4">

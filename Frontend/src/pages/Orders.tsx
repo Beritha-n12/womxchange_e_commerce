@@ -17,8 +17,10 @@ import { ThreeStepSellerOrderCreation } from '@/components/seller/ThreeStepSelle
 import { OrderUpdateDialog } from '@/components/OrderUpdateDialog';
 import { Link } from 'react-router-dom';
 import { useSellerPermissions } from '@/hooks/useSellerPermissions';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 const Orders = () => {
+  const { t } = useLanguage();
   const { user } = useContext(AuthContext);
   const { toast } = useToast();
   const queryClient = useQueryClient();
@@ -53,12 +55,12 @@ const Orders = () => {
     mutationFn: (orderId: number) => confirmOrderPayment(orderId),
     onSuccess: (_, orderId) => {
       queryClient.invalidateQueries({ queryKey: ['all-orders', user?.role, user?.id] });
-      toast({ title: 'Payment confirmed', description: `Order #${orderId} payment confirmed.` });
+      toast({ title: t('orders.payment_confirmed'), description: t('orders.payment_confirmed_description', { orderId }) });
     },
     onError: (error: any) => {
       toast({
-        title: 'Error',
-        description: error.response?.data?.message || 'Failed to confirm payment',
+        title: t('common.error'),
+        description: error.response?.data?.message || t('orders.failed_confirm_payment'),
         variant: 'destructive',
       });
     },
@@ -69,12 +71,12 @@ const Orders = () => {
       updateOrderStatus(orderId, undefined, undefined, { status: 'CANCELLED', isCancelled: true }),
     onSuccess: (_, orderId) => {
       queryClient.invalidateQueries({ queryKey: ['all-orders', user?.role, user?.id] });
-      toast({ title: 'Order cancelled', description: `Order #${orderId} has been cancelled.` });
+      toast({ title: t('orders.order_cancelled'), description: t('orders.order_cancelled_description', { orderId }) });
     },
     onError: (error: any) => {
       toast({
-        title: 'Error',
-        description: error.response?.data?.message || 'Failed to cancel order',
+        title: t('common.error'),
+        description: error.response?.data?.message || t('orders.failed_cancel_order'),
         variant: 'destructive',
       });
     },
@@ -84,12 +86,12 @@ const Orders = () => {
     mutationFn: (orderId: number) => deleteOrder(orderId),
     onSuccess: (_, orderId) => {
       queryClient.invalidateQueries({ queryKey: ['all-orders', user?.role, user?.id] });
-      toast({ title: 'Order deleted', description: `Order #${orderId} has been deleted.` });
+      toast({ title: t('orders.order_deleted'), description: t('orders.order_deleted_description', { orderId }) });
     },
     onError: (error: any) => {
       toast({
-        title: 'Error',
-        description: error.response?.data?.message || 'Failed to delete order',
+        title: t('common.error'),
+        description: error.response?.data?.message || t('orders.failed_delete_order'),
         variant: 'destructive',
       });
     },
@@ -210,12 +212,12 @@ const Orders = () => {
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
           <div className="flex items-center space-x-3">
             <Package className="w-6 h-6 sm:w-8 sm:h-8 text-purple-600" />
-            <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-purple-700">Order Management</h1>
+            <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-purple-700">{t('orders.order_management')}</h1>
           </div>
           {(isAdmin || (isSeller && sellerPermissions.canCreateCustomers)) && (
             <Button onClick={() => setIsCreateOrderOpen(true)} className="bg-purple-600 hover:bg-purple-700">
               <Plus className="w-4 h-4 mr-2" />
-              Create Order
+              {t('orders.create_order')}
             </Button>
           )}
         </div>
@@ -225,18 +227,18 @@ const Orders = () => {
           <CardHeader>
             <CardTitle className="flex items-center space-x-2">
               <Filter className="w-5 h-5" />
-              <span>Filters & Search</span>
+              <span>{t('orders.filters_search')}</span>
             </CardTitle>
           </CardHeader>
           <CardContent>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
               {/* Search */}
               <div className="space-y-2">
-                <label className="text-sm font-medium">Search Orders</label>
+                <label className="text-sm font-medium">{t('orders.search_orders')}</label>
                 <div className="relative">
                   <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
                   <Input
-                    placeholder="Order ID, customer name, email..."
+                    placeholder={t('orders.search_placeholder')}
                     className="pl-10"
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
@@ -247,35 +249,35 @@ const Orders = () => {
 
               {/* Unified Status Filter */}
               <div className="space-y-2">
-                <label className="text-sm font-medium">Status</label>
+                <label className="text-sm font-medium">{t('orders.status')}</label>
                 <Select value={statusFilter} onValueChange={setStatusFilter}>
                   <SelectTrigger>
-                    <SelectValue placeholder="All Orders" />
+                    <SelectValue placeholder={t('orders.all_orders')} />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="all">All Orders</SelectItem>
-                    <SelectItem value="pending">Pending Orders</SelectItem>
-                    <SelectItem value="delivered">Delivered Orders</SelectItem>
-                    <SelectItem value="cancelled">Cancelled Orders</SelectItem>
-                    <SelectItem value="paid">Paid Orders</SelectItem>
-                    <SelectItem value="unpaid">Unpaid Orders</SelectItem>
+                    <SelectItem value="all">{t('orders.all_orders')}</SelectItem>
+                    <SelectItem value="pending">{t('orders.pending_orders')}</SelectItem>
+                    <SelectItem value="delivered">{t('orders.delivered_orders')}</SelectItem>
+                    <SelectItem value="cancelled">{t('orders.cancelled_orders')}</SelectItem>
+                    <SelectItem value="paid">{t('orders.paid_orders')}</SelectItem>
+                    <SelectItem value="unpaid">{t('orders.unpaid_orders')}</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
 
               {/* Date Filter with Quick Options */}
               <div className="space-y-2">
-                <label className="text-sm font-medium">Filter by Date</label>
+                <label className="text-sm font-medium">{t('orders.filter_by_date')}</label>
                 <Select value={selectedDate} onValueChange={setSelectedDate}>
                   <SelectTrigger>
-                    <SelectValue placeholder="All dates" />
+                    <SelectValue placeholder={t('orders.all_dates')} />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="all">All dates</SelectItem>
-                    <SelectItem value="today">Today</SelectItem>
-                    <SelectItem value="7days">Last 7 days</SelectItem>
-                    <SelectItem value="30days">Last 30 days</SelectItem>
-                    <SelectItem value="custom">Custom date</SelectItem>
+                    <SelectItem value="all">{t('orders.all_dates')}</SelectItem>
+                    <SelectItem value="today">{t('orders.today')}</SelectItem>
+                    <SelectItem value="7days">{t('orders.last_7_days')}</SelectItem>
+                    <SelectItem value="30days">{t('orders.last_30_days')}</SelectItem>
+                    <SelectItem value="custom">{t('orders.custom_date')}</SelectItem>
                   </SelectContent>
                 </Select>
                  {selectedDate === 'custom' && (
@@ -284,27 +286,27 @@ const Orders = () => {
                        type="date"
                        value={customDateRange.startDate}
                        onChange={(e) => setCustomDateRange({ ...customDateRange, startDate: e.target.value })}
-                       placeholder="Start date"
+                       placeholder={t('orders.start_date')}
                        className="w-full"
                      />
                      <Input
                        type="date"
                        value={customDateRange.endDate}
                        onChange={(e) => setCustomDateRange({ ...customDateRange, endDate: e.target.value })}
-                       placeholder="End date"
+                       placeholder={t('orders.end_date')}
                        className="w-full"
                      />
                    </div>
                  )}
                 {selectedDate && selectedDate !== 'custom' && selectedDate !== '' && (
-                  <p className="text-xs text-gray-600">
-                    Showing orders from {
-                      selectedDate === 'today' ? 'today' :
-                      selectedDate === '7days' ? 'last 7 days' :
-                      selectedDate === '30days' ? 'last 30 days' :
-                      new Date(selectedDate).toLocaleDateString()
-                    }
-                  </p>
+                   <p className="text-xs text-gray-600">
+                     {t('orders.showing_orders_from')} {
+                       selectedDate === 'today' ? t('orders.today') :
+                       selectedDate === '7days' ? t('orders.last_7_days') :
+                       selectedDate === '30days' ? t('orders.last_30_days') :
+                       new Date(selectedDate).toLocaleDateString()
+                     }
+                   </p>
                 )}
               </div>
             </div>
@@ -312,7 +314,7 @@ const Orders = () => {
             {/* Filter Summary */}
             <div className="flex items-center justify-between mt-4 pt-4 border-t">
               <div className="flex items-center space-x-4 text-sm text-gray-600">
-                <span>Showing {filteredOrders.length} of {orders.length} orders</span>
+                <span>{t('orders.showing_orders', { filtered: filteredOrders.length, total: orders.length })}</span>
                 {(searchTerm || statusFilter !== 'all' || paymentFilter !== 'all' || selectedDate !== '') && (
                   <Button
                     variant="outline"
@@ -325,13 +327,13 @@ const Orders = () => {
                       setCustomDateRange({ startDate: '', endDate: '' });
                     }}
                   >
-                    Clear Filters
+                    {t('orders.clear_filters')}
                   </Button>
                 )}
               </div>
               <div className="flex items-center space-x-2">
                 <Calendar className="w-4 h-4 text-gray-400" />
-                <span className="text-sm text-gray-600">Real-time updates</span>
+                <span className="text-sm text-gray-600">{t('orders.real_time_updates')}</span>
               </div>
             </div>
           </CardContent>
@@ -339,18 +341,18 @@ const Orders = () => {
 
         <Card>
           <CardHeader>
-            <CardTitle>All Orders ({filteredOrders.length})</CardTitle>
+            <CardTitle>{t('orders.all_orders')} ({filteredOrders.length})</CardTitle>
           </CardHeader>
           <CardContent>
             {filteredOrders.length === 0 ? (
               <div className="text-center py-8">
                 <Package className="w-12 h-12 text-gray-400 mx-auto mb-4" />
                 <p className="text-gray-600">
-                  {orders.length === 0 ? 'No orders found' : 'No orders match your filters'}
+                  {orders.length === 0 ? t('orders.no_orders_found') : t('orders.no_orders_match_filters')}
                 </p>
                 {orders.length > 0 && (
                   <p className="text-sm text-gray-500 mt-2">
-                    Try adjusting your search terms or filters
+                    {t('orders.try_adjusting_filters')}
                   </p>
                 )}
               </div>
@@ -359,14 +361,14 @@ const Orders = () => {
                 <Table>
                   <TableHeader>
                     <TableRow>
-                      <TableHead>Order ID</TableHead>
-                      <TableHead>Customer</TableHead>
-                      <TableHead className="hidden sm:table-cell">Items</TableHead>
-                      <TableHead>Total</TableHead>
-                      <TableHead className="hidden md:table-cell">Payment</TableHead>
-                      <TableHead className="hidden md:table-cell">Delivery</TableHead>
-                      <TableHead className="hidden lg:table-cell">Date</TableHead>
-                      <TableHead className="text-right">Actions</TableHead>
+                      <TableHead>{t('orders.order_id')}</TableHead>
+                      <TableHead>{t('orders.customer')}</TableHead>
+                      <TableHead className="hidden sm:table-cell">{t('orders.items')}</TableHead>
+                      <TableHead>{t('orders.total')}</TableHead>
+                      <TableHead className="hidden md:table-cell">{t('orders.payment')}</TableHead>
+                      <TableHead className="hidden md:table-cell">{t('orders.delivery')}</TableHead>
+                      <TableHead className="hidden lg:table-cell">{t('orders.date')}</TableHead>
+                      <TableHead className="text-right">{t('orders.actions')}</TableHead>
                     </TableRow>
                   </TableHeader>
                 <TableBody>
@@ -391,7 +393,7 @@ const Orders = () => {
                       <TableCell className="hidden md:table-cell">
                         <div className="flex flex-col gap-1">
                           <Badge variant={order.isPaid ? 'default' : 'secondary'} className="text-xs">
-                            {order.isPaid ? 'Paid' : 'Pending'}
+                            {order.isPaid ? t('orders.paid') : t('orders.pending')}
                           </Badge>
                           {order.isConfirmedByAdmin && order.status !== 'CANCELLED' && (
                             <Badge variant="outline" className="text-xs text-green-600 border-green-600">

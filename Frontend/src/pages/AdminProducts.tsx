@@ -80,19 +80,18 @@ const AdminProducts = () => {
 
   const handleCreateProduct = async (data) => {
     try {
-      // Use the uploaded image URL if available
       const productData = {
         ...data,
         coverImage: uploadedImageUrl || data.coverImage
       };
       await createProductMutation.mutateAsync(productData);
-      toast({ title: 'Success', description: 'Product created successfully!' });
+      toast({ title: t('admin.products.success'), description: t('admin.products.product_created') });
       refetch();
       setIsFormOpen(false);
     } catch (error) {
       toast({
-        title: 'Error',
-        description: error.response?.data?.message || 'Failed to create product',
+        title: t('admin.products.error'),
+        description: error.response?.data?.message || t('admin.products.create_failed'),
         variant: 'destructive',
       });
     }
@@ -100,35 +99,34 @@ const AdminProducts = () => {
 
   const handleUpdateProduct = async (data) => {
     try {
-      // Use the uploaded image URL if available, otherwise keep existing
       const productData = {
         ...data,
         coverImage: uploadedImageUrl || data.coverImage
       };
       await updateProductMutation.mutateAsync({ id: editingProduct.id, data: productData });
-      toast({ title: 'Success', description: 'Product updated successfully!' });
+      toast({ title: t('admin.products.success'), description: t('admin.products.product_updated') });
       setEditingProduct(null);
       setIsFormOpen(false);
       refetch();
     } catch (error) {
       toast({
-        title: 'Error',
-        description: error.response?.data?.message || 'Failed to update product',
+        title: t('admin.products.error'),
+        description: error.response?.data?.message || t('admin.products.update_failed'),
         variant: 'destructive',
       });
     }
   };
 
   const handleDeleteProduct = async (productId) => {
-    if (window.confirm('Are you sure you want to delete this product?')) {
+    if (window.confirm(t('admin.products.confirm_delete'))) {
       try {
         await deleteProductMutation.mutateAsync(productId);
-        toast({ title: 'Success', description: 'Product deleted successfully!' });
+        toast({ title: t('admin.products.success'), description: t('admin.products.product_deleted') });
         refetch();
       } catch (error) {
         toast({
-          title: 'Error',
-          description: error.response?.data?.message || 'Failed to delete product',
+          title: t('admin.products.error'),
+          description: error.response?.data?.message || t('admin.products.delete_failed'),
           variant: 'destructive',
         });
       }
@@ -160,23 +158,21 @@ const AdminProducts = () => {
     setPreviewImage(url);
   };
 
-  // 🛡 Admin-only product creation popup
-  if (!isSeller) {
-    return (
-      <AdminOnlyGuard>
-        <DashboardLayout currentPage="products">
-          <div className="space-y-6">
+  const isAdmin = !isSeller;
+
+  return (
+    <DashboardLayout currentPage="products">
+      <div className="space-y-6">
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
           <h1 className="text-2xl font-bold text-gray-900">
-            {isSeller ? 'My Products' : t('products.title')}
+            {isSeller ? t('admin.products.my_products') : t('admin.products.title')}
           </h1>
           <Button onClick={() => setIsFormOpen(true)} className="bg-blue-600 hover:bg-blue-700">
             <Plus className="w-4 h-4 mr-2" />
-            {t('products.add_product')}
+            {t('admin.products.add_product')}
           </Button>
         </div>
 
-        {/* Filters */}
         {isSeller ? (
           <SellerProductFilters
             searchTerm={searchTerm}
@@ -215,76 +211,9 @@ const AdminProducts = () => {
             <Card className="w-full max-w-2xl max-h-[90vh] overflow-y-auto">
               <CardHeader>
                 <CardTitle>
-                  {editingProduct ? t('products.edit_product') : t('products.add_product')}
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  <ProductForm
-                    editingProduct={editingProduct}
-                    categories={categories}
-                    onUrlChange={handleUrlChange}
-                    onSubmit={editingProduct ? handleUpdateProduct : handleCreateProduct}
-                    onCancel={handleCloseForm}
-                    previewImage={previewImage}
-                    isLoading={createProductMutation.isPending || updateProductMutation.isPending}
-                  />
-
-                  {/* FileUpload for Supabase integration */}
-                  {/* <div className="border-t pt-4">
-                    <label className="block text-sm font-medium mb-2">
-                      Upload Product Image *
-                    </label>
-                    <FileUpload onFileSelect={handleFileSelect} />
-                  </div> */}
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-        )}
-      </div>
-    </DashboardLayout>
-      </AdminOnlyGuard>
-    );
-  }
-
-  // 🔐 Seller view (restricted functionality)
-  return (
-    <DashboardLayout currentPage="products">
-      <div className="space-y-6">
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-          <h1 className="text-2xl font-bold text-gray-900">My Products</h1>
-          <Button onClick={() => setIsFormOpen(true)} className="bg-blue-600 hover:bg-blue-700">
-            <Plus className="w-4 h-4 mr-2" />
-            {t('products.add_product')}
-          </Button>
-        </div>
-
-        <SellerProductFilters
-          searchTerm={searchTerm}
-          onSearchChange={setSearchTerm}
-          categoryFilter={categoryFilter}
-          onCategoryChange={setCategoryFilter}
-          dateFilter={dateFilter}
-          onDateChange={setDateFilter}
-          stockFilter={stockFilter}
-          onStockChange={setStockFilter}
-          categories={categories}
-        />
-
-        <ProductTable
-          products={filteredProducts}
-          onEdit={handleEditProduct}
-          onDelete={handleDeleteProduct}
-          userRole={userRole}
-        />
-
-        {isFormOpen && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-            <Card className="w-full max-w-2xl max-h-[90vh] overflow-y-auto">
-              <CardHeader>
-                <CardTitle>
-                  {editingProduct ? t('products.edit_product') : t('products.add_product')}
+                  {editingProduct
+                    ? t('admin.products.edit_product')
+                    : t('admin.products.add_product')}
                 </CardTitle>
               </CardHeader>
               <CardContent>

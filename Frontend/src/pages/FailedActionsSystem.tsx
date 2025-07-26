@@ -6,6 +6,7 @@ import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { useLanguage } from '@/contexts/LanguageContext';
 import { 
   AlertTriangle, 
   Package, 
@@ -46,6 +47,7 @@ const FailedActionsSystem = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [activeTab, setActiveTab] = useState('orders');
   const [selectedOrder, setSelectedOrder] = useState<any>(null);
+   const { t } = useLanguage();
 
   // Fetch unfinished orders
   const { data: unfinishedOrdersData, isLoading: ordersLoading, refetch: refetchOrders } = useQuery({
@@ -141,7 +143,7 @@ const FailedActionsSystem = () => {
   const actionCategories = [
     {
       id: 'orders',
-      title: 'Order Issues',
+      title: t('Order.Issues'),
       icon: Package,
       count: unfinishedOrders.length + failedOrderOps.length,
       color: 'text-red-600',
@@ -149,7 +151,7 @@ const FailedActionsSystem = () => {
     },
     {
       id: 'auth',
-      title: 'Authentication Issues',
+      title: t('Authentication.Issues'),
       icon: Lock,
       count: failedLogins.length,
       color: 'text-orange-600',
@@ -157,7 +159,7 @@ const FailedActionsSystem = () => {
     },
     {
       id: 'email',
-      title: 'Email Issues',
+      title: t('Email.Issues'),
       icon: Mail,
       count: failedEmails.length,
       color: 'text-yellow-600',
@@ -165,7 +167,7 @@ const FailedActionsSystem = () => {
     },
     {
       id: 'cart',
-      title: 'Cart Issues',
+      title: t('Cart.Issues'),
       icon: ShoppingCart,
       count: failedCartOps.length,
       color: 'text-blue-600',
@@ -173,7 +175,7 @@ const FailedActionsSystem = () => {
     },
     {
       id: 'chat',
-      title: 'Chat Issues',
+      title: t('Chat.Issues'),
       icon: MessageSquare,
       count: failedChatOps.length,
       color: 'text-purple-600',
@@ -181,7 +183,7 @@ const FailedActionsSystem = () => {
     },
     {
       id: 'vendor',
-      title: 'Vendor Issues',
+      title: t('Vendor.Issues'),
       icon: Users,
       count: failedVendorOps.length,
       color: 'text-green-600',
@@ -198,10 +200,10 @@ const FailedActionsSystem = () => {
   const renderOrderIssues = () => (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <h3 className="text-lg font-semibold">Failed/Unfinished Orders</h3>
+        <h3 className="text-lg font-semibold">{t('Failed/Unfinished.Orders')}</h3>
         <Button onClick={() => refetchOrders()} size="sm" variant="outline">
           <RefreshCw className="w-4 h-4 mr-2" />
-          Refresh
+          {t('Refresh')}
         </Button>
       </div>
       
@@ -222,7 +224,7 @@ const FailedActionsSystem = () => {
       ) : filteredOrders.length === 0 ? (
         <div className="text-center py-8">
           <Package className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-          <p className="text-gray-600">No failed orders found</p>
+          <p className="text-gray-600">{t('No failed orders found')}</p>
         </div>
       ) : (
         <div className="space-y-3">
@@ -238,7 +240,7 @@ const FailedActionsSystem = () => {
                       </Badge>
                     </div>
                     <div className="text-sm text-gray-600">
-                      <p><strong>Customer:</strong> {order.userName || 'Unknown'}</p>
+                      <p><strong>{t('Customer:')}</strong> {order.userName || 'Unknown'}</p>
                       <p><strong>Email:</strong> {order.userEmail || 'N/A'}</p>
                       <p><strong>Status:</strong> {order.status}</p>
                       <p className="flex items-center">
@@ -314,7 +316,7 @@ const FailedActionsSystem = () => {
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-3">
             <AlertTriangle className="w-8 h-8 text-red-600" />
-            <h1 className="text-3xl font-bold text-gray-900">Failed Actions Dashboard</h1>
+            <h1 className="text-3xl font-bold text-gray-900">{t('Failed.Actions.Dashboard')}</h1>
           </div>
         </div>
 

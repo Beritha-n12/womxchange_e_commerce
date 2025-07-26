@@ -10,10 +10,12 @@ import { useQuery } from '@tanstack/react-query';
 import { getAllOrders } from '@/api/orders';
 import { getSellerOrders, getSellerProducts, getSellerStats } from '@/api/sellers';
 import api from '@/api/api';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 const Reports = () => {
   const { user } = useContext(AuthContext);
   const navigate = useNavigate();
+  const { t } = useLanguage();
 
   useEffect(() => {
     if (!user) {
@@ -52,7 +54,7 @@ const Reports = () => {
     return (
       <DashboardLayout currentPage="reports">
         <div className="flex items-center justify-center min-h-[400px]">
-          <div className="text-lg text-gray-600">Loading reports...</div>
+          <div className="text-lg text-gray-600">{t('Loading.reports')}...</div>
         </div>
       </DashboardLayout>
     );
@@ -97,7 +99,7 @@ const Reports = () => {
       <div className="space-y-6">
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
           <h1 className="text-3xl font-bold bg-gradient-to-r text-purple-300 bg-clip-text text-transparent">
-            {isSeller ? 'My Sales Reports & Analytics' : 'Reports & Analytics'}
+            {isSeller ? t('reports.my_sales_reports') : t('Report.Analytics')}
           </h1>
         </div>
         
@@ -106,7 +108,7 @@ const Reports = () => {
           <Card className="bg-white shadow-lg border-0 hover:shadow-xl transition-all duration-300">
             <CardHeader className="flex flex-row items-center justify-between pb-3">
               <CardTitle className="text-lg font-semibold text-gray-800">
-                {isSeller ? 'My Customers' : 'Customer Analytics'}
+                {isSeller ? t('reports.my_customers') : t('Customer.Analytics')}
               </CardTitle>
               
             </CardHeader>
@@ -126,7 +128,7 @@ const Reports = () => {
           {!isSeller && (
             <Card className="bg-white shadow-lg border-0 hover:shadow-xl transition-all duration-300">
               <CardHeader className="flex flex-row items-center justify-between pb-3">
-                <CardTitle className="text-lg font-semibold text-gray-800">Vendor Performance</CardTitle>
+                <CardTitle className="text-lg font-semibold text-gray-800">{t('Vendor.Performance')}</CardTitle>
                 
               </CardHeader>
               <CardContent className="space-y-4">
@@ -146,7 +148,7 @@ const Reports = () => {
           <Card className="bg-white shadow-lg border-0 hover:shadow-xl transition-all duration-300 md:col-span-2 xl:col-span-1">
             <CardHeader className="flex flex-row items-center justify-between pb-3">
               <CardTitle className="text-lg font-semibold text-gray-800">
-                {isSeller ? 'My Sales Overview' : 'Sales Overview'}
+                {isSeller ? t('reports.my_sales_overview') : t('Sales.Overview')}
               </CardTitle>
               
             </CardHeader>
@@ -174,7 +176,7 @@ const Reports = () => {
           {/* Monthly Revenue Report */}
           <Card className="bg-white shadow-lg border-0 hover:shadow-xl transition-all duration-300">
             <CardHeader className="flex flex-row items-center justify-between pb-3">
-              <CardTitle className="text-lg font-semibold text-gray-800">Monthly Revenue</CardTitle>
+              <CardTitle className="text-lg font-semibold text-gray-800">{t('Monthly.Revenue')}</CardTitle>
               
             </CardHeader>
             <CardContent className="space-y-4">
@@ -192,7 +194,7 @@ const Reports = () => {
           <Card className="bg-white shadow-lg border-0 hover:shadow-xl transition-all duration-300">
             <CardHeader className="flex flex-row items-center justify-between pb-3">
               <CardTitle className="text-lg font-semibold text-gray-800">
-                {isSeller ? 'My Products' : 'Product Analytics'}
+                {isSeller ? t('reports.my_products') : t('Product.Analytics')}
               </CardTitle>
               
             </CardHeader>
@@ -211,7 +213,7 @@ const Reports = () => {
           <Card className="bg-white shadow-lg border-0 hover:shadow-xl transition-all duration-300">
             <CardHeader className="flex flex-row items-center justify-between pb-3">
               <CardTitle className="text-lg font-semibold text-gray-800">
-                {isSeller ? 'My Orders' : 'Order Analytics'}
+                {isSeller ? t('reports.my_orders') : t('Order.Analytics')}
               </CardTitle>
               
             </CardHeader>
@@ -231,26 +233,26 @@ const Reports = () => {
         <Card className="bg-gradient-to-r from-purple-50 to-pink-50 border-0 shadow-lg">
           <CardHeader>
             <CardTitle className="text-xl font-semibold text-gray-800">
-              {isSeller ? 'My Business Summary' : 'Database Summary'}
+              {isSeller ? t('reports.my_business_summary') : t('Database.Summary')}
             </CardTitle>
           </CardHeader>
           <CardContent>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
               <div className="text-center p-4 bg-white rounded-lg shadow-sm">
                 <div className="text-2xl font-bold text-purple-600">{totalOrders}</div>
-                <div className="text-sm text-gray-600">Total Orders</div>
+                <div className="text-sm text-gray-600">{t('Total.Orders')}</div>
               </div>
               <div className="text-center p-4 bg-white rounded-lg shadow-sm">
                 <div className="text-2xl font-bold text-green-600">{totalRevenue.toLocaleString()} Rwf</div>
-                <div className="text-sm text-gray-600">Total Revenue</div>
+                <div className="text-sm text-gray-600">{t('Total.Revenue')}</div>
               </div>
               <div className="text-center p-4 bg-white rounded-lg shadow-sm">
                 <div className="text-2xl font-bold text-blue-600">{totalCustomers}</div>
-                <div className="text-sm text-gray-600">{isSeller ? 'My Customers' : 'Total Customers'}</div>
+                <div className="text-sm text-gray-600">{isSeller ? t('reports.my_customers') : t('reports.total_customers')}</div>
               </div>
               <div className="text-center p-4 bg-white rounded-lg shadow-sm">
                 <div className="text-2xl font-bold text-orange-600">{paidOrders.length}</div>
-                <div className="text-sm text-gray-600">Paid Orders</div>
+                <div className="text-sm text-gray-600">{t('reports.paid_orders')}</div>
               </div>
             </div>
           </CardContent>

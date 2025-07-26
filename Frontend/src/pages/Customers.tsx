@@ -1,4 +1,3 @@
-
 import React, { useContext, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { AuthContext } from '../contexts/AuthContext';
@@ -26,12 +25,10 @@ const Customers = () => {
     }
   }, [user, navigate]);
 
-  // If user is a seller, show seller-specific customers
   if (user?.role.toLowerCase() === 'seller') {
     return <SellerCustomers />;
   }
 
-  // Admin view - show all users (only if user is admin)
   const { data: usersData, isLoading, error } = useQuery({
     queryKey: ['all-users'],
     queryFn: async () => {
@@ -45,7 +42,6 @@ const Customers = () => {
     return null;
   }
 
-  // If user is not admin, redirect to dashboard
   if (user.role.toLowerCase() !== 'admin') {
     navigate('/dashboard');
     return null;
@@ -55,7 +51,7 @@ const Customers = () => {
     return (
       <DashboardLayout currentPage="customers">
         <div className="flex items-center justify-center min-h-[400px]">
-          <div className="text-lg text-gray-600">Loading users...</div>
+          <div className="text-lg text-gray-600">{t('customers.loading_users')}</div>
         </div>
       </DashboardLayout>
     );
@@ -65,7 +61,7 @@ const Customers = () => {
     return (
       <DashboardLayout currentPage="customers">
         <div className="flex items-center justify-center min-h-[400px]">
-          <div className="text-lg text-red-600">Failed to load users</div>
+          <div className="text-lg text-red-600">{t('customers.failed_load_users')}</div>
         </div>
       </DashboardLayout>
     );
@@ -78,14 +74,13 @@ const Customers = () => {
   return (
     <DashboardLayout currentPage="customers">
       <div className="space-y-6">
-        <h1 className="text-2xl font-bold text-gray-900">User Management</h1>
+        <h1 className="text-2xl font-bold text-gray-900">{t('customers.user_management')}</h1>
 
         <div className="relative max-w-md">
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
-          <Input placeholder="Search users..." className="pl-10 bg-gray-50 border-gray-200" />
+          <Input placeholder={t('customers.search_users')} className="pl-10 bg-gray-50 border-gray-200" />
         </div>
 
-        {/* Stats */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           <Card>
             <CardContent className="p-6">
@@ -93,7 +88,7 @@ const Customers = () => {
                 <Users className="w-8 h-8 text-blue-500" />
                 <div>
                   <p className="text-2xl font-bold">{buyers.length}</p>
-                  <p className="text-gray-600">Total Buyers</p>
+                  <p className="text-gray-600">{t('customers.total_buyers')}</p>
                 </div>
               </div>
             </CardContent>
@@ -105,7 +100,7 @@ const Customers = () => {
                 <Users className="w-8 h-8 text-green-500" />
                 <div>
                   <p className="text-2xl font-bold">{sellers.length}</p>
-                  <p className="text-gray-600">Total Sellers</p>
+                  <p className="text-gray-600">{t('customers.total_sellers')}</p>
                 </div>
               </div>
             </CardContent>
@@ -117,28 +112,27 @@ const Customers = () => {
                 <Users className="w-8 h-8 text-purple-500" />
                 <div>
                   <p className="text-2xl font-bold">{users.length}</p>
-                  <p className="text-gray-600">Total Users</p>
+                  <p className="text-gray-600">{t('customers.total_users')}</p>
                 </div>
               </div>
             </CardContent>
           </Card>
         </div>
 
-        {/* Users Table */}
         <Card>
           <CardHeader>
-            <CardTitle>All Users</CardTitle>
+            <CardTitle>{t('customers.all_users')}</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="overflow-x-auto">
               <table className="w-full">
                 <thead className="bg-gray-900 text-white">
                   <tr>
-                    <th className="px-4 py-3 text-left text-sm font-medium">User</th>
-                    <th className="px-4 py-3 text-left text-sm font-medium">Email</th>
-                    <th className="px-4 py-3 text-left text-sm font-medium">Role</th>
-                    <th className="px-4 py-3 text-left text-sm font-medium">Status</th>
-                    <th className="px-4 py-3 text-left text-sm font-medium">Joined</th>
+                    <th className="px-4 py-3 text-left text-sm font-medium">{t('customers.user')}</th>
+                    <th className="px-4 py-3 text-left text-sm font-medium">{t('customers.email')}</th>
+                    <th className="px-4 py-3 text-left text-sm font-medium">{t('vendors.role')}</th>
+                    <th className="px-4 py-3 text-left text-sm font-medium">{t('customers.status')}</th>
+                    <th className="px-4 py-3 text-left text-sm font-medium">{t('customers.joined')}</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-200">
@@ -168,7 +162,7 @@ const Customers = () => {
                             ? 'bg-blue-100 text-blue-800'
                             : 'bg-green-100 text-green-800'
                         }`}>
-                          {user.role}
+                          {t(`vendors.${user.role.toLowerCase()}`)}
                         </span>
                       </td>
                       <td className="px-4 py-3">
@@ -178,11 +172,11 @@ const Customers = () => {
                               ? 'bg-green-100 text-green-800'
                               : 'bg-yellow-100 text-yellow-800'
                           }`}>
-                            {user.isActive && user.sellerStatus === 'ACTIVE' ? 'Active' : 'Inactive'}
+                            {user.isActive && user.sellerStatus === 'ACTIVE' ? t('customers.active') : t('customers.inactive')}
                           </span>
                         ) : (
                           <span className="px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                            Active
+                            {t('customers.active')}
                           </span>
                         )}
                       </td>

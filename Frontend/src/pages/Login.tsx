@@ -10,6 +10,7 @@ import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 import { loginUser } from '@/api/auth';
 import { AuthContext } from '@/contexts/AuthContext';
+import { useLanguage } from '@/contexts/LanguageContext';
 import { AlertCircle, ArrowLeft, ShoppingBag } from 'lucide-react';
 
 const Login = () => {
@@ -18,6 +19,7 @@ const Login = () => {
   const { login } = useContext(AuthContext);
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { t } = useLanguage();
 
   const loginMutation = useMutation({
     mutationFn: loginUser,
@@ -102,10 +104,9 @@ const Login = () => {
             
             <Link to="/" className="inline-flex items-center text-gray-600 hover:text-gray-800 mb-4">
               <ArrowLeft className="w-4 h-4 mr-2" />
-              Back to Home
+              {t('register.back_to_home')}
             </Link>
-            
-            <h2 className="text-2xl font-bold text-gray-800 mb-2">Welcome Back</h2>
+
             
             {onmessage && (
               <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 mb-4">
@@ -117,37 +118,37 @@ const Login = () => {
             )}
             
             <div className="text-sm text-gray-600">
-              <span>Don't have an account? </span>
+              <span>{t('Don.have')} </span>
               <Link to="/register" className="text-purple-600 hover:underline">
-                Sign Up
+                {t('Sign.Up')}
               </Link>
             </div>
           </div>
 
       <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
+              <Label htmlFor="email">{t('register.email')}</Label>
               <Input
                 id="email"
                 type="email"
-                placeholder="Enter your email"
+                placeholder={t('register.enter_email')}
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="password">Password</Label>
+              <Label htmlFor="password">{t('register.password')}</Label>
               <PasswordInput
                 id="password"
-                placeholder="Enter your password"
+                placeholder={t('register.create_password')}
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
               />
               <div className="text-right">
                 <Link to="/forgot-password" className="text-sm text-purple-600 hover:text-purple-500">
-                  Forgot your password?
+                 {t('forget')}
                 </Link>
               </div>
             </div>
@@ -161,12 +162,12 @@ const Login = () => {
           </form>
 
           <div className="mt-6 text-center">
-            <p className="text-sm text-gray-600 mb-4">Want to start selling?</p>
+            <p className="text-sm text-gray-600 mb-4">{t('register.looking_to_sell')}</p>
             <Link
               to="/seller-request"
               className="inline-block bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded-md transition-colors"
             >
-              Start Selling Now
+              {t('register.start_selling_now')}
             </Link>
           </div>
         </div>

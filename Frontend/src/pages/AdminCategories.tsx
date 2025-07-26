@@ -11,8 +11,10 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Plus, Edit, Trash2, Package, Search } from 'lucide-react';
 import { getCategories, createCategory, updateCategory, deleteCategory } from '@/api/categories';
 import { useToast } from '@/hooks/use-toast';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 const AdminCategories = () => {
+  const { t } = useLanguage();
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [isCreateOpen, setIsCreateOpen] = useState(false);
@@ -132,23 +134,23 @@ const AdminCategories = () => {
           <div className="flex items-center space-x-3">
             <Package className="w-8 h-8 text-purple-600" />
             <h1 className="text-3xl font-bold bg-gradient-to-r text-purple-600  bg-clip-text">
-              Category Management
+              {t('admin.categories.title')}
             </h1>
           </div>
           <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
             <DialogTrigger asChild>
               <Button className="bg-gradient-to-r text-purple-600   hover:text-pink-700 ">
                 <Plus className="w-4 h-4 mr-2" />
-                Add Category
+                {t('admin.categories.add_category')}
               </Button>
             </DialogTrigger>
             <DialogContent>
               <DialogHeader>
-                <DialogTitle>Create New Category</DialogTitle>
+                <DialogTitle>{t('admin.categories.create_new')}</DialogTitle>
               </DialogHeader>
               <form onSubmit={handleCreate} className="space-y-4">
                 <div>
-                  <label className="block text-sm font-medium mb-2">Category Name</label>
+                  <label className="block text-sm font-medium mb-2">{t('admin.categories.category_name')}</label>
                   <Input
                     value={formData.name}
                     onChange={(e) => setFormData({ ...formData, name: e.target.value })}
@@ -156,7 +158,7 @@ const AdminCategories = () => {
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium mb-2">Description</label>
+                  <label className="block text-sm font-medium mb-2">{t('admin.categories.description')}</label>
                   <Textarea
                     value={formData.description}
                     onChange={(e) => setFormData({ ...formData, description: e.target.value })}
@@ -164,7 +166,7 @@ const AdminCategories = () => {
                   />
                 </div>
                 <Button type="submit" disabled={createMutation.isPending} className="w-full">
-                  {createMutation.isPending ? 'Creating...' : 'Create Category'}
+                  {createMutation.isPending ? t('admin.categories.creating') : t('admin.categories.create_category')}
                 </Button>
               </form>
             </DialogContent>
@@ -176,7 +178,7 @@ const AdminCategories = () => {
           <div className="relative flex-1 max-w-md">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
             <Input
-              placeholder="Search categories by name or description..."
+              placeholder={t('admin.categories.search_categories')}
               className="pl-10"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
@@ -184,25 +186,25 @@ const AdminCategories = () => {
           </div>
           {searchTerm && (
             <Button variant="outline" onClick={() => setSearchTerm('')}>
-              Clear
+              {t('admin.categories.clear')}
             </Button>
           )}
         </div>
 
         <Card>
           <CardHeader>
-            <CardTitle>Categories ({filteredCategories.length})</CardTitle>
+            <CardTitle>{t('admin.categories.title')} ({filteredCategories.length})</CardTitle>
           </CardHeader>
           <CardContent>
             {filteredCategories.length === 0 ? (
               <div className="text-center py-8">
                 <Package className="w-12 h-12 text-gray-400 mx-auto mb-4" />
                 <p className="text-gray-600">
-                  {categories.length === 0 ? 'No categories found' : 'No categories match your search'}
+                  {categories.length === 0 ? t('admin.categories.no_categories') : t('admin.categories.no_match_search')}
                 </p>
                 {searchTerm && (
                   <p className="text-sm text-gray-500 mt-2">
-                    Try adjusting your search term
+                    {t('admin.categories.adjust_search')}
                   </p>
                 )}
               </div>
@@ -210,9 +212,9 @@ const AdminCategories = () => {
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>Name</TableHead>
-                    <TableHead>Description</TableHead>
-                    <TableHead className="text-right">Actions</TableHead>
+                    <TableHead>{t('admin.categories.name')}</TableHead>
+                    <TableHead>{t('admin.categories.description')}</TableHead>
+                    <TableHead className="text-right">{t('admin.categories.actions')}</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -251,11 +253,11 @@ const AdminCategories = () => {
         <Dialog open={isEditOpen} onOpenChange={setIsEditOpen}>
           <DialogContent>
             <DialogHeader>
-              <DialogTitle>Edit Category</DialogTitle>
+              <DialogTitle>{t('admin.categories.edit_category')}</DialogTitle>
             </DialogHeader>
             <form onSubmit={handleUpdate} className="space-y-4">
               <div>
-                <label className="block text-sm font-medium mb-2">Category Name</label>
+                <label className="block text-sm font-medium mb-2">{t('admin.categories.category_name')}</label>
                 <Input
                   value={formData.name}
                   onChange={(e) => setFormData({ ...formData, name: e.target.value })}
@@ -263,7 +265,7 @@ const AdminCategories = () => {
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium mb-2">Description</label>
+                <label className="block text-sm font-medium mb-2">{t('admin.categories.description')}</label>
                 <Textarea
                   value={formData.description}
                   onChange={(e) => setFormData({ ...formData, description: e.target.value })}
@@ -271,7 +273,7 @@ const AdminCategories = () => {
                 />
               </div>
               <Button type="submit" disabled={updateMutation.isPending} className="w-full">
-                {updateMutation.isPending ? 'Updating...' : 'Update Category'}
+                {updateMutation.isPending ? t('admin.categories.updating') : t('admin.categories.update_category')}
               </Button>
             </form>
           </DialogContent>
