@@ -1685,7 +1685,7 @@ const translations = {
     'testimonials.review_3': 'Iri soko ryahinduye ubunyangamugayo bwanjye bwo kugura. Ibintu byinshi bidasanzwe kandi serivisi nziza!',
     'testimonials.no_reviews':"ntacyo baribivugaho",
     'testimonials.review_4': 'Serivisi nziza y\'abakiriya n\'ibicuruzwa byujuje Ibyatumijwe. Nzongera kugura hano!',
-    'testimonials.review_5': 'Ndakunda ibicuruzwa bitandukanye birahari. Gushyigikira ubucuruzi bw\'aho ntabwo byigeze byoroshye!',
+    'testimonials.review_5': 'Nkunda ibicuruzwa bitandukanye Kandi birahari. Gushyigikira ubucuruzi bw\'aho ntabwo byigeze nibyiza!',
     'testimonials.be_first_review':'Ba uwambere kugira icyo ubivugaho',
     
     // Banner
@@ -1837,7 +1837,7 @@ const translations = {
     'products.add_product': 'kongera igicuruzwa',
     'products.showing_results': 'Byerekana {{count}} muri {{total}} ibicuruzwa',
     'products.no_products_matching': 'Nta bicuruzwa bihuye n\'amatoranywa yawe.',
-    'products.previous': 'Ibambere',
+    'products.previous': 'Ibyambere',
     'products.next': 'Ibikurikira',
     
     // Cart Page
