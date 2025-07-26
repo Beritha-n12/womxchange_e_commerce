@@ -9,6 +9,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
+import { useLanguage } from '@/contexts/LanguageContext';
 import { registerUser } from '@/api/auth';
 import { ArrowLeft, ShoppingBag } from 'lucide-react';
 
@@ -19,20 +20,21 @@ const Register = () => {
   const [role, setRole] = useState<'buyer' | 'seller' | 'admin'>('buyer');
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { t } = useLanguage();
 
   const registerMutation = useMutation({
     mutationFn: registerUser,
     onSuccess: () => {
       toast({
-        title: "Registration successful",
-        description: "Please login with your credentials",
+        title: t('register.registration_successful'),
+        description: t('register.login_with_credentials'),
       });
       navigate('/login');
     },
     onError: (error: any) => {
       toast({
-        title: "Registration failed",
-        description: error.response?.data?.message || "Something went wrong",
+        title: t('register.registration_failed'),
+        description: error.response?.data?.message || t('register.something_went_wrong'),
         variant: "destructive",
       });
     },
@@ -51,62 +53,62 @@ const Register = () => {
             
             <Link to="/" className="inline-flex items-center text-gray-600 hover:text-gray-800 mb-4">
               <ArrowLeft className="w-4 h-4 mr-2" />
-              Back to Home
+              {t('register.back_to_home')}
             </Link>
             
-            <h2 className="text-2xl font-bold text-gray-800 mb-2">Create Account</h2>
+            <h2 className="text-2xl font-bold text-gray-800 mb-2">{t('register.create_account')}</h2>
             
             <div className="text-sm text-gray-600">
-              <span>Already have an account? </span>
+              <span>{t('register.already_have_account')} </span>
               <Link to="/login" className="text-purple-600 hover:underline">
-                Log In
+                {t('auth.login')}
               </Link>
             </div>
           </div>
 
       <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="name">Full Name</Label>
+              <Label htmlFor="name">{t('register.full_name')}</Label>
               <Input
                 id="name"
                 type="text"
-                placeholder="Enter your full name"
+                placeholder={t('register.enter_full_name')}
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 required
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
+              <Label htmlFor="email">{t('register.email')}</Label>
               <Input
                 id="email"
                 type="email"
-                placeholder="Enter your email"
+                placeholder={t('register.enter_email')}
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="password">Password</Label>
+              <Label htmlFor="password">{t('register.password')}</Label>
               <PasswordInput
                 id="password"
-                placeholder="Create a password"
+                placeholder={t('register.create_password')}
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="role">Account Type</Label>
+              <Label htmlFor="role">{t('register.account_type')}</Label>
               <Select value={role} onValueChange={(value: any) => setRole(value)}>
                 <SelectTrigger>
-                  <SelectValue placeholder="Select account type" />
+                  <SelectValue placeholder={t('register.select_account_type')} />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="buyer">Buyer</SelectItem>
-                  <SelectItem value="seller">Seller</SelectItem>
-                  {/* <SelectItem value="admin">Admin</SelectItem> */}
+                  <SelectItem value="buyer">{t('register.buyer')}</SelectItem>
+                  <SelectItem value="seller">{t('register.seller')}</SelectItem>
+                  <SelectItem value="admin">{t('register.admin')}</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -115,17 +117,17 @@ const Register = () => {
               className="w-full bg-black"
               disabled={registerMutation.isPending}
             >
-              {registerMutation.isPending ? 'Creating Account...' : 'Create Account'}
+              {registerMutation.isPending ? t('register.creating_account') : t('register.create_account')}
             </Button>
           </form>
 
           <div className="mt-6 text-center">
-            <p className="text-sm text-gray-600 mb-4">Looking to sell products?</p>
+            <p className="text-sm text-gray-600 mb-4">{t('register.looking_to_sell')}</p>
             <Link
               to="/seller-request"
               className="inline-block bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded-md transition-colors"
             >
-              Start Selling Now
+              {t('register.start_selling_now')}
             </Link>
           </div>
         </div>

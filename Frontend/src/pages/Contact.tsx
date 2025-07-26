@@ -6,9 +6,11 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 const Contact = () => {
   const form = useRef<HTMLFormElement>(null);
+  const { t } = useLanguage();
 
   const sendEmail = (e: React.FormEvent) => {
     e.preventDefault();
@@ -22,16 +24,16 @@ const Contact = () => {
         .sendForm(SERVICE_ID, TEMPLATE_ID, form.current, PUBLIC_KEY)
         .then((result) => {
           console.log('Email sent successfully!', result.text);
-          alert('Your message has been sent successfully!');
+          alert(t('contact.message_sent_success'));
           form.current?.reset();
         })
         .catch((error) => {
           console.error('Error sending email:', error.text);
-          alert('Failed to send message. Please try again later.');
+          alert(t('contact.message_send_failed'));
         });
     } else {
       console.error('Form reference is not available.');
-      alert('An error occurred. Please try again.');
+      alert(t('contact.error_occurred'));
     }
   };
 
@@ -55,25 +57,25 @@ const Contact = () => {
             <div className="bg-white rounded-2xl shadow-lg p-0 max-w-4xl w-full flex overflow-hidden">
               {/* Contact Form */}
               <div className="flex-1 p-8">
-                <h2 className="text-2xl font-bold mb-6">Send Us a Message</h2>
+                <h2 className="text-2xl font-bold mb-6">{t('contact.send_message')}</h2>
 
                 <form ref={form} onSubmit={sendEmail} className="space-y-4">
                   <Input
                     type="text"
-                    placeholder="Enter your full name"
+                    placeholder={t('contact.full_name')}
                     className="w-full border-gray-200"
                     name="user_name"
                     required
                   />
                   <Input
                     type="email"
-                    placeholder="Enter your email"
+                    placeholder={t('contact.email')}
                     className="w-full border-gray-200"
                     name="user_email"
                     required
                   />
                   <Textarea
-                    placeholder="Enter your message here..."
+                    placeholder={t('contact.message')}
                     rows={4}
                     className="w-full resize-none border-gray-200"
                     name="message"
@@ -83,7 +85,7 @@ const Contact = () => {
                     type="submit"
                     className="w-full bg-gray-900 hover:bg-gray-800 text-white rounded-lg"
                   >
-                    Send
+                    {t('contact.send')}
                   </Button>
                 </form>
               </div>
@@ -94,7 +96,7 @@ const Contact = () => {
                   <div className="flex items-start space-x-4">
                     <Phone className="w-5 h-5 text-white mt-1" />
                     <div>
-                      <p className="text-sm text-gray-300 mb-1">Phone:</p>
+                      <p className="text-sm text-gray-300 mb-1">{t('contact.phone')}</p>
                       <p className="font-medium">+250 784 720 984</p>
                     </div>
                   </div>
@@ -102,7 +104,7 @@ const Contact = () => {
                   <div className="flex items-start space-x-4">
                     <Mail className="w-5 h-5 text-white mt-1" />
                     <div>
-                      <p className="text-sm text-gray-300 mb-1">Email:</p>
+                      <p className="text-sm text-gray-300 mb-1">{t('contact.email_label')}</p>
                       <p className="font-medium">nberitha12@gmail.com</p>
                     </div>
                   </div>
@@ -110,16 +112,16 @@ const Contact = () => {
                   <div className="flex items-start space-x-4">
                     <Clock className="w-5 h-5 text-white mt-1" />
                     <div>
-                      <p className="text-sm text-gray-300 mb-1">Times:</p>
-                      <p className="font-medium">Mon - Sun: 7 AM - 9 PM</p>
+                      <p className="text-sm text-gray-300 mb-1">{t('contact.times')}</p>
+                      <p className="font-medium">{t('contact.hours')}</p>
                     </div>
                   </div>
 
                   <div className="flex items-start space-x-4">
                     <MapPin className="w-5 h-5 text-white mt-1" />
                     <div>
-                      <p className="text-sm text-gray-300 mb-1">Location:</p>
-                      <p className="font-medium">Downtown House Kigali</p>
+                      <p className="text-sm text-gray-300 mb-1">{t('contact.location')}</p>
+                      <p className="font-medium">{t('contact.address')}</p>
                     </div>
                   </div>
                 </div>

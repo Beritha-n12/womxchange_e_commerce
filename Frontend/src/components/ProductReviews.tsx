@@ -1,4 +1,3 @@
-
 import React, { useState, useContext } from 'react';
 import { Star, User } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -8,17 +7,19 @@ import { AuthContext } from '@/contexts/AuthContext';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useToast } from '@/hooks/use-toast';
 import { getProductReviews, createProductReview } from '@/api/reviews';
+import { useLanguage } from '@/contexts/LanguageContext';  // <-- Added
 
 type ProductReviewsProps = {
   productId: string | number;
 };
-
 
 const ProductReviews = ({ productId }: ProductReviewsProps) => {
   const auth = useContext(AuthContext);
   const user = auth?.user;
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const { t } = useLanguage(); // <-- Added
+
   const [rating, setRating] = useState(5);
   const [comment, setComment] = useState('');
   const [showForm, setShowForm] = useState(false);
@@ -34,13 +35,12 @@ const ProductReviews = ({ productId }: ProductReviewsProps) => {
   // Submit review mutation
   const submitReviewMutation = useMutation({
     mutationFn: (reviewData: { rating: number; comment: string }) => {
-      console.log('Submitting review:', reviewData, 'for product:', productId);
       return createProductReview(productId.toString(), reviewData);
     },
     onSuccess: () => {
       toast({
-        title: "Review submitted",
-        description: "Thank you for your review!",
+        title: t('sellerRequest.review_submitted'),
+        description: t('sellerRequest.thank_you_review'),
       });
       setComment('');
       setRating(5);
@@ -49,10 +49,9 @@ const ProductReviews = ({ productId }: ProductReviewsProps) => {
       queryClient.invalidateQueries({ queryKey: ['all-reviews'] }); // Refresh testimonial section
     },
     onError: (error: any) => {
-      console.error('Review submission error:', error);
-      const errorMessage = error.response?.data?.message || "Failed to submit review";
+      const errorMessage = error.response?.data?.message || t('sellerRequest.failed_to_submit_review');
       toast({
-        title: "Error",
+        title: t('sellerRequest.error'),
         description: errorMessage,
         variant: "destructive",
       });
@@ -62,8 +61,8 @@ const ProductReviews = ({ productId }: ProductReviewsProps) => {
   const handleSubmitReview = () => {
     if (!comment.trim()) {
       toast({
-        title: "Error",
-        description: "Please write a comment for your review",
+        title: t('sellerRequest.error'),
+        description: t('sellerRequest.write_comment_review'),
         variant: "destructive",
       });
       return;
@@ -71,8 +70,8 @@ const ProductReviews = ({ productId }: ProductReviewsProps) => {
 
     if (!user) {
       toast({
-        title: "Error",
-        description: "You must be logged in to submit a review",
+        title: t('sellerRequest.error'),
+        description: t('sellerRequest.login_to_submit_review'),
         variant: "destructive",
       });
       return;
@@ -103,18 +102,17 @@ const ProductReviews = ({ productId }: ProductReviewsProps) => {
     return (
       <Card>
         <CardContent className="p-6">
-          <div className="text-center text-gray-600">Loading reviews...</div>
+          <div className="text-center text-gray-600">{t('sellerRequest.loading_reviews')}</div>
         </CardContent>
       </Card>
     );
   }
 
   if (error) {
-    console.error('Error loading reviews:', error);
     return (
       <Card>
         <CardContent className="p-6">
-          <div className="text-center text-red-600">Failed to load reviews</div>
+          <div className="text-center text-red-600">{t('sellerRequest.failed_to_load_reviews')}</div>
         </CardContent>
       </Card>
     );
@@ -124,7 +122,7 @@ const ProductReviews = ({ productId }: ProductReviewsProps) => {
     <Card>
       <CardHeader>
         <CardTitle className="text-xl font-semibold">
-          Customer Reviews ({reviews.length})
+          {t('sellerRequest.customer_reviews')} ({reviews.length})
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-6">
@@ -136,23 +134,23 @@ const ProductReviews = ({ productId }: ProductReviewsProps) => {
                 onClick={() => setShowForm(true)}
                 className="bg-purple-600 hover:bg-purple-700 text-white"
               >
-                Write a Review
+                {t('sellerRequest.write_review')}
               </Button>
             ) : (
               <div className="space-y-4">
-                <h3 className="text-lg font-medium">Write Your Review</h3>
+                <h3 className="text-lg font-medium">{t('sellerRequest.write_your_review')}</h3>
                 
                 <div>
-                  <label className="block text-sm font-medium mb-2">Rating</label>
+                  <label className="block text-sm font-medium mb-2">{t('sellerRequest.rating')}</label>
                   <StarRating value={rating} onChange={setRating} />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium mb-2">Comment</label>
+                  <label className="block text-sm font-medium mb-2">{t('sellerRequest.comment')}</label>
                   <Textarea
                     value={comment}
                     onChange={(e) => setComment(e.target.value)}
-                    placeholder="Share your experience with this product..."
+                    placeholder={t('sellerRequest.share_experience')}
                     rows={4}
                     className="w-full"
                   />
@@ -164,7 +162,7 @@ const ProductReviews = ({ productId }: ProductReviewsProps) => {
                     disabled={submitReviewMutation.isPending}
                     className="bg-purple-600 hover:bg-purple-700 text-white"
                   >
-                    {submitReviewMutation.isPending ? 'Submitting...' : 'Submit Review'}
+                    {submitReviewMutation.isPending ? t('sellerRequest.submitting') : t('sellerRequest.submit_review')}
                   </Button>
                   <Button 
                     variant="outline" 
@@ -174,7 +172,7 @@ const ProductReviews = ({ productId }: ProductReviewsProps) => {
                       setRating(5);
                     }}
                   >
-                    Cancel
+                    {t('sellerRequest.cancel')}
                   </Button>
                 </div>
               </div>
@@ -185,7 +183,7 @@ const ProductReviews = ({ productId }: ProductReviewsProps) => {
         {!user && (
           <div className="border-b pb-6">
             <p className="text-gray-600 text-sm">
-              Please <a href="/login" className="text-purple-600 hover:underline">log in</a> to write a review.
+              {t('sellerRequest.login_to_write_review', { loginLink: <a href="/login" className="text-purple-600 hover:underline">{t('auth.login')}</a> })}
             </p>
           </div>
         )}
@@ -214,7 +212,7 @@ const ProductReviews = ({ productId }: ProductReviewsProps) => {
             ))
           ) : (
             <div className="text-center py-8 text-gray-500">
-              <p>No reviews yet. Be the first to review this product!</p>
+              <p>{t('sellerRequest.no_reviews_yet')}</p>
             </div>
           )}
         </div>

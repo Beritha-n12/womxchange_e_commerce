@@ -9,10 +9,12 @@ import { BarChart3, Clock, Users, Package, Plus,  ShoppingCart, TrendingUp } fro
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { useDashboardData } from '@/hooks/useDashboardData';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 const Dashboard = () => {
   const auth = useContext(AuthContext);
   const navigate = useNavigate();
+  const { t } = useLanguage();
   
   if (!auth) {
     throw new Error('AuthContext must be used within AuthProvider');
@@ -117,31 +119,31 @@ const Dashboard = () => {
     <DashboardLayout currentPage="dashboard">
       <div className="space-y-6">
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-          <h1 className="text-2xl font-bold text-gray-900">Admin Dashboard</h1>
+          <h1 className="text-2xl font-bold text-gray-900">{t('admin.sidebar.dashboard')}</h1>
         </div>
         
         {/* Stats Cards */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           <StatsCard
-            title="Total Revenue"
+            title={t('dashboard.total_revenue')}
             value={`${totalRevenue.toLocaleString()} Rwf`}
             icon={TrendingUp}
             color="text-green-500"
           />
           <StatsCard
-            title="Paid Revenue"
+            title={t('dashboard.paid_revenue')}
             value={`${paidRevenue.toLocaleString()} Rwf`}
             icon={TrendingUp}
             color="text-blue-500"
           />
           <StatsCard
-            title="Total Orders"
+            title={t('dashboard.total_orders')}
             value={totalOrders.toString()}
             icon={ShoppingCart}
             color="text-purple-500"
           />
           <StatsCard
-            title="Total Users"
+            title={t('dashboard.total_users')}
             value={totalUsers.toString()}
             icon={Users}
             color="text-orange-500"
@@ -151,25 +153,25 @@ const Dashboard = () => {
         {/* Secondary Stats */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           <StatsCard
-            title="Products"
+            title={t('dashboard.products')}
             value={totalProducts.toString()}
             icon={Package}
             color="text-green-500"
           />
           <StatsCard
-            title="Buyers"
+            title={t('dashboard.buyers')}
             value={buyers.toString()}
             icon={Users}
             color="text-purple-500"
           />
           <StatsCard
-            title="Sellers"
+            title={t('dashboard.sellers')}
             value={sellers.toString()}
             icon={BarChart3}
             color="text-orange-500"
           />
           <StatsCard
-            title="Admins"
+            title={t('dashboard.admins')}
             value={admins.toString()}
             icon={Users}
             color="text-red-500"
@@ -181,14 +183,14 @@ const Dashboard = () => {
           <ChartComponent
             type="bar"
             data={monthlyOrdersData.map(item => ({ ...item, value: item.orders }))}
-            title="Monthly Orders"
+            title={t('dashboard.monthly_orders')}
             dataKey="orders"
             height={300}
           />
           <ChartComponent
             type="pie"
             data={userRoleData}
-            title="User Roles Distribution"
+            title={t('dashboard.user_roles_distribution')}
             dataKey="value"
             height={300}
           />
@@ -198,14 +200,14 @@ const Dashboard = () => {
           <ChartComponent
             type="line"
             data={monthlyOrdersData.map(item => ({ ...item, value: item.revenue }))}
-            title="Monthly Revenue Trend"
+            title={t('dashboard.monthly_revenue_trend')}
             dataKey="revenue"
             height={300}
           />
           <ChartComponent
             type="pie"
             data={paymentStatusData}
-            title="Payment Status"
+            title={t('dashboard.payment_status')}
             dataKey="value"
             height={300}
           />
@@ -214,19 +216,19 @@ const Dashboard = () => {
         {/* Recent Orders Table */}
         <Card>
           <CardHeader>
-            <CardTitle className="text-lg font-medium">Recent Orders</CardTitle>
+            <CardTitle className="text-lg font-medium">{t('dashboard.recent_orders')}</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="overflow-x-auto">
               <table className="w-full">
                 <thead className="bg-gray-900 text-white">
                   <tr>
-                    <th className="px-4 py-3 text-left text-sm font-medium">Order ID</th>
-                    <th className="px-4 py-3 text-left text-sm font-medium">Customer</th>
-                    <th className="px-4 py-3 text-left text-sm font-medium">Total</th>
-                    <th className="px-4 py-3 text-left text-sm font-medium">Payment</th>
-                    <th className="px-4 py-3 text-left text-sm font-medium">Status</th>
-                    <th className="px-4 py-3 text-left text-sm font-medium">Date</th>
+                    <th className="px-4 py-3 text-left text-sm font-medium">{t('orders.order_id')}</th>
+                    <th className="px-4 py-3 text-left text-sm font-medium">{t('orders.customer')}</th>
+                    <th className="px-4 py-3 text-left text-sm font-medium">{t('orders.total_price')}</th>
+                    <th className="px-4 py-3 text-left text-sm font-medium">{t('orders.payment_status')}</th>
+                    <th className="px-4 py-3 text-left text-sm font-medium">{t('orders.delivery_status')}</th>
+                    <th className="px-4 py-3 text-left text-sm font-medium">{t('orders.date')}</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-200">
@@ -255,7 +257,7 @@ const Dashboard = () => {
           ? 'bg-green-100 text-green-800' 
           : 'bg-yellow-100 text-yellow-800'
       }`}>
-        {order.isPaid ? 'Paid' : 'Pending'}
+        {order.isPaid ? t('orders.paid') : t('orders.pending_payment_status')}
       </span>
     </Link>
   </td>
@@ -266,7 +268,7 @@ const Dashboard = () => {
           ? 'bg-blue-100 text-blue-800' 
           : 'bg-gray-100 text-gray-800'
       }`}>
-        {order.isDelivered ? 'Delivered' : 'Processing'}
+        {order.isDelivered ? t('orders.delivered') : t('orders.processing')}
       </span>
     </Link>
   </td>
@@ -287,7 +289,7 @@ const Dashboard = () => {
                   ) : (
                     <tr>
                       <td colSpan={6} className="px-4 py-8 text-center text-gray-500">
-                        No orders found
+                        {t('orders.no_orders')}
                       </td>
                     </tr>
                   )}
@@ -301,20 +303,20 @@ const Dashboard = () => {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           <Card>
             <CardHeader>
-              <CardTitle className="text-lg font-medium">Payment Summary</CardTitle>
+              <CardTitle className="text-lg font-medium">{t('dashboard.payment_summary')}</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="space-y-3">
                 <div className="flex justify-between">
-                  <span className="text-gray-600">Total Revenue:</span>
+                  <span className="text-gray-600">{t('dashboard.total_revenue')}:</span>
                   <span className="font-bold text-green-600">{totalRevenue.toLocaleString()} Rwf</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-gray-600">Paid Orders:</span>
+                  <span className="text-gray-600">{t('dashboard.paid_orders')}:</span>
                   <span className="font-bold text-blue-600">{paidRevenue.toLocaleString()} Rwf</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-gray-600">Pending:</span>
+                  <span className="text-gray-600">{t('dashboard.pending')}:</span>
                   <span className="font-bold text-yellow-600">{(totalRevenue - paidRevenue).toLocaleString()} Rwf</span>
                 </div>
               </div>
@@ -323,20 +325,20 @@ const Dashboard = () => {
 
           <Card>
             <CardHeader>
-              <CardTitle className="text-lg font-medium">Order Statistics</CardTitle>
+              <CardTitle className="text-lg font-medium">{t('dashboard.order_statistics')}</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="space-y-3">
                 <div className="flex justify-between">
-                  <span className="text-gray-600">Total Orders:</span>
+                  <span className="text-gray-600">{t('dashboard.total_orders')}:</span>
                   <span className="font-bold">{totalOrders}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-gray-600">Paid Orders:</span>
+                  <span className="text-gray-600">{t('dashboard.paid_orders')}:</span>
                   <span className="font-bold text-green-600">{paymentStatusData.find(p => p.name === 'Paid')?.value || 0}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-gray-600">Pending Orders:</span>
+                  <span className="text-gray-600">{t('dashboard.pending_orders')}:</span>
                   <span className="font-bold text-yellow-600">{paymentStatusData.find(p => p.name === 'Pending')?.value || 0}</span>
                 </div>
               </div>
@@ -345,20 +347,20 @@ const Dashboard = () => {
 
           <Card>
             <CardHeader>
-              <CardTitle className="text-lg font-medium">User Statistics</CardTitle>
+              <CardTitle className="text-lg font-medium">{t('dashboard.user_statistics')}</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="space-y-3">
                 <div className="flex justify-between">
-                  <span className="text-gray-600">Total Users:</span>
+                  <span className="text-gray-600">{t('dashboard.total_users')}:</span>
                   <span className="font-bold">{totalUsers}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-gray-600">Buyers:</span>
+                  <span className="text-gray-600">{t('dashboard.buyers')}:</span>
                   <span className="font-bold text-purple-600">{buyers}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-gray-600">Sellers:</span>
+                  <span className="text-gray-600">{t('dashboard.sellers')}:</span>
                   <span className="font-bold text-blue-600">{sellers}</span>
                 </div>
               </div>

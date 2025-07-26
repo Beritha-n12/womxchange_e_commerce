@@ -1,20 +1,27 @@
-
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue
+} from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
 import { ArrowLeft, Mail, CheckCircle } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
 import api from "@/api/api";
 import { PasswordInput } from "@/components/ui/password-input";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 const SellerRequest = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
+  const { t } = useLanguage();
   const [formData, setFormData] = useState({
     name: "",
     phoneNumber: "",
@@ -31,18 +38,18 @@ const SellerRequest = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!agreeTerms) {
       toast({
-        title: "Error",
-        description: "Please accept the terms and conditions",
+        title: t('seller_request.error'),
+        description: t('seller_request.accept_terms'),
         variant: "destructive",
       });
       return;
     }
 
     setIsSubmitting(true);
-    
+
     try {
       const sellerRequestData = {
         name: formData.name,
@@ -51,30 +58,28 @@ const SellerRequest = () => {
         phone: formData.phoneNumber,
         businessName: formData.businessName,
         gender: formData.gender,
-        role: "seller"
+        role: "SELLER"
       };
 
       await api.post('/sellers/request', sellerRequestData);
-      
+
       setIsSuccess(true);
       toast({
-        title: "Success!",
-        description: "Your seller request has been submitted. You will be notified once approved by an admin.",
+        title: t('seller_request.success_title'),
+        description: t('seller_request.success_message'),
       });
-      
-      // Redirect to login after 3 seconds
+
       setTimeout(() => {
-        navigate('/login', { 
-          state: { 
-            message: "Please login with your credentials once your seller account is approved." 
+        navigate('/login', {
+          state: {
+            message: t('seller_request.redirect_message')
           }
         });
       }, 3000);
-      
     } catch (error: any) {
-      const errorMessage = error.response?.data?.message || 'Failed to submit seller request';
+      const errorMessage = error.response?.data?.message || t('seller_request.submit_failed');
       toast({
-        title: "Error",
+        title: t('seller_request.error'),
         description: errorMessage,
         variant: "destructive",
       });
@@ -89,14 +94,9 @@ const SellerRequest = () => {
         <div className="w-full max-w-md">
           <div className="bg-white rounded-lg p-8 shadow-2xl text-center">
             <CheckCircle className="w-16 h-16 text-green-500 mx-auto mb-4" />
-            <h2 className="text-2xl font-bold text-gray-800 mb-4">Request Submitted!</h2>
-            <p className="text-gray-600 mb-6">
-              Your seller account request has been submitted successfully. 
-              You'll receive an email notification once an admin approves your account.
-            </p>
-            <p className="text-sm text-gray-500">
-              Redirecting to login page in a few seconds...
-            </p>
+            <h2 className="text-2xl font-bold text-gray-800 mb-4">{t('seller_request.request_submitted')}</h2>
+            <p className="text-gray-600 mb-6">{t('seller_request.await_email')}</p>
+            <p className="text-sm text-gray-500">{t('seller_request.redirecting_login')}</p>
           </div>
         </div>
       </div>
@@ -109,18 +109,18 @@ const SellerRequest = () => {
         <div className="bg-white rounded-lg p-8 shadow-2xl">
           <div className="mb-6 text-center">
             <img src="/wxc.png" alt="Logo" className="w-16 h-16 mx-auto mb-4" />
-            
+
             <Link to="/" className="inline-flex items-center text-gray-600 hover:text-gray-800 mb-4">
               <ArrowLeft className="w-4 h-4 mr-2" />
-              Back to Home
+              {t('seller_request.back_to_home')}
             </Link>
-            
-            <h2 className="text-2xl font-bold text-gray-800 mb-2">Become a Seller</h2>
-            
+
+            <h2 className="text-2xl font-bold text-gray-800 mb-2">{t('seller_request.become_seller')}</h2>
+
             <div className="text-sm text-gray-600">
-              <span>Already have an account? </span>
+              <span>{t('seller_request.have_account')} </span>
               <Link to="/login" className="text-purple-600 hover:underline">
-                Log In
+                {t('auth.login')}
               </Link>
             </div>
           </div>
@@ -128,29 +128,26 @@ const SellerRequest = () => {
           <form onSubmit={handleSubmit} className="space-y-6">
             <Input
               type="text"
-              placeholder="Full Name"
+              placeholder={t('seller_request.full_name')}
               value={formData.name}
               onChange={(e) => handleInputChange("name", e.target.value)}
-              className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-purple-500 focus:border-transparent"
               required
             />
 
             <Input
               type="tel"
-              placeholder="Phone Number"
+              placeholder={t('seller_request.phone')}
               value={formData.phoneNumber}
               onChange={(e) => handleInputChange("phoneNumber", e.target.value)}
-              className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-purple-500 focus:border-transparent"
               required
             />
 
             <div className="relative">
               <Input
                 type="email"
-                placeholder="Email Address"
+                placeholder={t('seller_request.email')}
                 value={formData.emailAddress}
                 onChange={(e) => handleInputChange("emailAddress", e.target.value)}
-                className="w-full p-3 pr-14 border border-gray-300 rounded-md focus:ring-2 focus:ring-purple-500 focus:border-transparent"
                 required
               />
               <Mail className="absolute right-4 top-[50%] translate-y-[-50%] w-5 h-5 text-cyan-500 pointer-events-none" />
@@ -158,31 +155,29 @@ const SellerRequest = () => {
 
             <Input
               type="text"
-              placeholder="Business Name"
+              placeholder={t('seller_request.business_name')}
               value={formData.businessName}
               onChange={(e) => handleInputChange("businessName", e.target.value)}
-              className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-purple-500 focus:border-transparent"
               required
             />
 
             <Select onValueChange={(value) => handleInputChange("gender", value)} required>
-              <SelectTrigger className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-purple-500 focus:border-transparent">
-                <SelectValue placeholder="Gender" />
+              <SelectTrigger>
+                <SelectValue placeholder={t('seller_request.gender')} />
               </SelectTrigger>
-              <SelectContent className="bg-white">
-                <SelectItem value="male">Male</SelectItem>
-                <SelectItem value="female">Female</SelectItem>
-                <SelectItem value="other">Other</SelectItem>
-                <SelectItem value="prefer-not-to-say">Prefer not to say</SelectItem>
+              <SelectContent>
+                <SelectItem value="male">{t('seller_request.male')}</SelectItem>
+                <SelectItem value="female">{t('seller_request.female')}</SelectItem>
+                <SelectItem value="other">{t('seller_request.other')}</SelectItem>
+                <SelectItem value="prefer-not-to-say">{t('seller_request.prefer_not')}</SelectItem>
               </SelectContent>
             </Select>
 
             <PasswordInput
               id="password"
-              placeholder="Password"
+              placeholder={t('seller_request.password')}
               value={formData.password}
               onChange={(e) => handleInputChange("password", e.target.value)}
-              className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-purple-500 focus:border-transparent"
               required
             />
 
@@ -191,12 +186,11 @@ const SellerRequest = () => {
                 id="seller-terms"
                 checked={agreeTerms}
                 onCheckedChange={(checked) => setAgreeTerms(checked as boolean)}
-                className="data-[state=checked]:bg-purple-600 data-[state=checked]:border-purple-600"
               />
               <label htmlFor="seller-terms" className="text-sm text-gray-600">
-                I have read the{" "}
+                {t('seller_request.agree_text')}{" "}
                 <Link to="/terms" className="text-purple-600 hover:underline">
-                  Terms and Conditions
+                  {t('seller_request.terms')}
                 </Link>
               </label>
             </div>
@@ -206,7 +200,7 @@ const SellerRequest = () => {
               className="w-full bg-purple-600 hover:bg-purple-700 text-white py-3 rounded-md transition-colors"
               disabled={!agreeTerms || isSubmitting}
             >
-              {isSubmitting ? "Submitting..." : "Submit Request"}
+              {isSubmitting ? t('seller_request.submitting') : t('seller_request.submit')}
             </Button>
           </form>
         </div>

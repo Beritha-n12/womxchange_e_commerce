@@ -16,12 +16,14 @@ import { useToast } from '@/hooks/use-toast';
 import { APP_CONSTANTS, ROUTES } from '@/constants/app';
 import { GuestCheckoutModal } from '@/components/GuestCheckoutModal';
 import { useAutoSave } from '@/hooks/useAutoSave';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 const Checkout = () => {
   const navigate = useNavigate();
   const auth = useContext(AuthContext);
   const { toast } = useToast();
   const { cart, isLoading } = useCart();
+  const { t } = useLanguage();
   const [paymentMethod, setPaymentMethod] = useState<string>(APP_CONSTANTS.PAYMENT_METHODS.MTN);
   const [sameAsBilling, setSameAsBilling] = useState(true);
   const [processing, setProcessing] = useState(false);
@@ -94,8 +96,8 @@ const Checkout = () => {
     if (!formData.firstName || !formData.lastName || !formData.location || !formData.streetLine || 
         !formData.city || !formData.state || !formData.postalCode || !formData.country) {
       toast({
-        title: "Error",
-        description: "Please fill in all required billing address fields",
+        title: t("Error"),
+        description: t("Please.fill"),
         variant: "destructive",
       });
       return;
@@ -104,8 +106,8 @@ const Checkout = () => {
     // Email is required for anonymous users
     if (!auth?.user && !formData.email) {
       toast({
-        title: "Error",
-        description: "Email is required to receive order confirmation",
+        title: t("Error"),
+        description: t("Email.confirmation"),
         variant: "destructive",
       });
       return;
@@ -132,22 +134,11 @@ const Checkout = () => {
         // Clear saved form data after successful order
         localStorage.removeItem('checkoutFormData');
 
-        if (paymentMethod === APP_CONSTANTS.PAYMENT_METHODS.MTN) {
-          toast({
-            title: "Order Placed Successfully!",
-            description: "Please use the MoMo code below to complete your payment. You will receive email confirmation shortly.",
-          });
-        } else if (paymentMethod === APP_CONSTANTS.PAYMENT_METHODS.PAY_ON_DELIVERY) {
-          toast({
-            title: "Order Placed Successfully!",
-            description: "Your order will be delivered and payment will be collected on delivery. You will receive email confirmation shortly.",
-          });
-        }
       } catch (error: any) {
         console.error('Checkout error:', error);
         toast({
-          title: "Error",
-          description: error.response?.data?.message || "Failed to place order",
+          title: t('common.error'),
+          description: error.response?.data?.message || t('modal.failed_place_order'),
           variant: "destructive",
         });
       } finally {
@@ -214,16 +205,16 @@ const Checkout = () => {
         {/* Back Button */}
         <Link to={ROUTES.CART} className="inline-flex items-center text-gray-600 hover:text-gray-800 mb-6">
           <ArrowLeft className="w-4 h-4 mr-2" />
-          Back to Cart
+          {t('checkout.back_to_cart')}
         </Link>
 
-        <h1 className="text-3xl font-bold mb-8">Checkout</h1>
+        <h1 className="text-3xl font-bold mb-8">{t('checkout.title')}</h1>
 
         {cartItems.length === 0 ? (
           <div className="text-center py-12">
-            <p className="text-gray-600 mb-6">Your cart is empty</p>
+            <p className="text-gray-600 mb-6">{t('checkout.empty_cart')}</p>
             <Link to="/products">
-              <Button>Continue Shopping</Button>
+              <Button>{t('checkout.continue_shopping')}</Button>
             </Link>
           </div>
         ) : (
@@ -234,29 +225,29 @@ const Checkout = () => {
               <div>
                 <div className="flex items-center mb-4">
                   <span className="w-6 h-6 bg-black text-white rounded-full flex items-center justify-center text-sm mr-3">1</span>
-                  <h2 className="text-xl font-semibold">Customer Information</h2>
+                  <h2 className="text-xl font-semibold">{t('checkout.customer_information')}</h2>
                 </div>
                 
                 <div className="grid grid-cols-2 gap-4 mb-4">
-                  <Input 
-                    placeholder="First Name *" 
-                    value={formData.firstName}
-                    onChange={(e) => handleInputChange('firstName', e.target.value)}
-                  />
-                  <Input 
-                    placeholder="Last Name *" 
-                    value={formData.lastName}
-                    onChange={(e) => handleInputChange('lastName', e.target.value)}
-                  />
+                   <Input 
+                     placeholder={t('checkout.first_name')} 
+                     value={formData.firstName}
+                     onChange={(e) => handleInputChange('firstName', e.target.value)}
+                   />
+                   <Input 
+                     placeholder={t('checkout.last_name')} 
+                     value={formData.lastName}
+                     onChange={(e) => handleInputChange('lastName', e.target.value)}
+                   />
                 </div>
                 
                 <div className="grid grid-cols-2 gap-4 mb-4">
-                  <Input 
-                    placeholder={auth?.user ? "Email" : "Email *"} 
-                    type="email" 
-                    value={formData.email}
-                    onChange={(e) => handleInputChange('email', e.target.value)}
-                  />
+                   <Input 
+                     placeholder={auth?.user ? t('checkout.email') : t('checkout.email_required')} 
+                     type="email" 
+                     value={formData.email}
+                     onChange={(e) => handleInputChange('email', e.target.value)}
+                   />
                   <div className="flex gap-2">
                     <select 
                       value={formData.countryCode}
@@ -270,36 +261,36 @@ const Checkout = () => {
                       <option value="+1">🇺🇸 +1</option>
                       <option value="+44">🇬🇧 +44</option>
                     </select>
-                    <Input 
-                      placeholder="Phone Number" 
-                      type="tel"
-                      value={formData.phone}
-                      onChange={(e) => handleInputChange('phone', e.target.value)}
-                      className="flex-1"
-                    />
+                     <Input 
+                       placeholder={t('checkout.phone_number')} 
+                       type="tel"
+                       value={formData.phone}
+                       onChange={(e) => handleInputChange('phone', e.target.value)}
+                       className="flex-1"
+                     />
                   </div>
                 </div>
                 
                 <div className="grid grid-cols-2 gap-4 mb-4">
-                  <Input 
-                    placeholder="Location *" 
-                    value={formData.location}
-                    onChange={(e) => handleInputChange('location', e.target.value)}
-                  />
+                   <Input 
+                     placeholder={t('checkout.location')} 
+                     value={formData.location}
+                     onChange={(e) => handleInputChange('location', e.target.value)}
+                   />
                   <div></div>
                 </div>
                 
-                <Input 
-                  placeholder="Street Line *" 
-                  className="mb-4" 
-                  value={formData.streetLine}
-                  onChange={(e) => handleInputChange('streetLine', e.target.value)}
-                />
+                 <Input 
+                   placeholder={t('checkout.street_line')} 
+                   className="mb-4" 
+                   value={formData.streetLine}
+                   onChange={(e) => handleInputChange('streetLine', e.target.value)}
+                 />
                 
                 {!auth?.user && (
-                  <p className="text-sm text-gray-600">
-                    * Required fields. You will receive order confirmation via email.
-                  </p>
+                 <p className="text-sm text-gray-600">
+                   {t('checkout.required_fields_note')}
+                 </p>
                 )}
               </div>
 
@@ -307,33 +298,33 @@ const Checkout = () => {
               <div>
                 <div className="flex items-center mb-4">
                   <span className="w-6 h-6 bg-black text-white rounded-full flex items-center justify-center text-sm mr-3">2</span>
-                  <h2 className="text-xl font-semibold">Billing Address</h2>
+                  <h2 className="text-xl font-semibold">{t('checkout.billing_address')}</h2>
                 </div>
                 
                 <div className="grid grid-cols-2 gap-4 mb-4">
-                  <Input 
-                    placeholder="City *" 
-                    value={formData.city || ''}
-                    onChange={(e) => handleInputChange('city', e.target.value)}
-                  />
-                  <Input 
-                    placeholder="State/Province *" 
-                    value={formData.state || ''}
-                    onChange={(e) => handleInputChange('state', e.target.value)}
-                  />
+                   <Input 
+                     placeholder={t('checkout.city')} 
+                     value={formData.city || ''}
+                     onChange={(e) => handleInputChange('city', e.target.value)}
+                   />
+                   <Input 
+                     placeholder={t('checkout.state_province')} 
+                     value={formData.state || ''}
+                     onChange={(e) => handleInputChange('state', e.target.value)}
+                   />
                 </div>
                 
                 <div className="grid grid-cols-2 gap-4 mb-4">
-                  <Input 
-                    placeholder="Postal Code *" 
-                    value={formData.postalCode || ''}
-                    onChange={(e) => handleInputChange('postalCode', e.target.value)}
-                  />
-                  <Input 
-                    placeholder="Country *" 
-                    value={formData.country || ''}
-                    onChange={(e) => handleInputChange('country', e.target.value)}
-                  />
+                   <Input 
+                     placeholder={t('checkout.postal_code')} 
+                     value={formData.postalCode || ''}
+                     onChange={(e) => handleInputChange('postalCode', e.target.value)}
+                   />
+                   <Input 
+                     placeholder={t('checkout.country')} 
+                     value={formData.country || ''}
+                     onChange={(e) => handleInputChange('country', e.target.value)}
+                   />
                 </div>
               </div>
 
@@ -341,7 +332,7 @@ const Checkout = () => {
               <div>
                 <div className="flex items-center mb-4">
                   <span className="w-6 h-6 bg-black text-white rounded-full flex items-center justify-center text-sm mr-3">3</span>
-                  <h2 className="text-xl font-semibold">Shipping Address</h2>
+                  <h2 className="text-xl font-semibold">{t('checkout.shipping_address')}</h2>
                 </div>
                 
                 <div className="flex items-center space-x-2 mb-4">
@@ -350,12 +341,12 @@ const Checkout = () => {
                     checked={sameAsBilling}
                     onCheckedChange={handleSameAsBillingChange}
                   />
-                  <Label htmlFor="same-address" className="text-purple-600">Same as customer address </Label>
+                  <Label htmlFor="same-address" className="text-purple-600">{t('checkout.same_as_customer_address')}</Label>
                 </div>
 
                 {!sameAsBilling && (
                   <Input 
-                    placeholder="Shipping Address" 
+                    placeholder={t('checkout.shipping_address')} 
                     value={formData.shippingAddress}
                     onChange={(e) => handleInputChange('shippingAddress', e.target.value)}
                   />
@@ -366,7 +357,7 @@ const Checkout = () => {
               <div>
                 <div className="flex items-center mb-4">
                   <span className="w-6 h-6 bg-black text-white rounded-full flex items-center justify-center text-sm mr-3">4</span>
-                  <h2 className="text-xl font-semibold">Payment Method</h2>
+                  <h2 className="text-xl font-semibold">{t('checkout.payment_method')}</h2>
                 </div>
                 
                 <RadioGroup value={paymentMethod} onValueChange={handlePaymentMethodChange} className="mb-4 space-y-3">
@@ -376,25 +367,25 @@ const Checkout = () => {
                   </div>
                   <div className="flex items-center space-x-2">
                     <RadioGroupItem value={APP_CONSTANTS.PAYMENT_METHODS.PAY_ON_DELIVERY} id="pay-on-delivery" />
-                    <Label htmlFor="pay-on-delivery">Pay on Delivery</Label>
+                    <Label htmlFor="pay-on-delivery">{t('checkout.pay_on_delivery')}</Label>
                   </div>
                 </RadioGroup>
 
                 {/* MoMo Payment Code Display */}
                 {paymentMethod === APP_CONSTANTS.PAYMENT_METHODS.MTN && (
                   <div className="mt-4 p-4 bg-gray-50 rounded-lg">
-                    <h3 className="font-semibold mb-2">MoMo Payment Code</h3>
+                    <h3 className="font-semibold mb-2">{t('checkout.momo_payment_code')}</h3>
                     <div className="bg-white p-3 rounded border-2 border-green-500">
                       <h6>* Beritha Niyotwagira</h6>
-                      <div className="text-lg font-bold text-green-600">{paymentCode}</div>
-                      <p className="text-sm text-gray-600 mt-1">
-                        Use this number to complete your MoMo payment
-                      </p>
+                      <div className="text-lg font-bold text-green-600">+250784720984</div>
+                       <p className="text-sm text-gray-600 mt-1">
+                         {t('checkout.momo_payment_instructions')}
+                       </p>
                     </div>
                     {currentOrderId && (
-                      <p className="text-sm text-blue-600 mt-2">
-                        ✅ Order placed successfully! Check your email for confirmation.
-                      </p>
+                       <p className="text-sm text-blue-600 mt-2">
+                         ✅ {t('checkout.order_placed_success')}
+                       </p>
                     )}
                   </div>
                 )}
@@ -402,26 +393,26 @@ const Checkout = () => {
                 {/* Pay on Delivery Notice */}
                 {paymentMethod === APP_CONSTANTS.PAYMENT_METHODS.PAY_ON_DELIVERY && (
                   <div className="mt-4 p-4 bg-blue-50 rounded-lg">
-                    <h3 className="font-semibold mb-2 text-blue-800">Pay on Delivery</h3>
-                    <p className="text-sm text-blue-700">
-                      Your order will be delivered to your address. Payment including delivery fee will be collected upon delivery.
-                    </p>
+                     <h3 className="font-semibold mb-2 text-blue-800">{t('checkout.pay_on_delivery')}</h3>
+                     <p className="text-sm text-blue-700">
+                       {t('checkout.pay_on_delivery_description')}
+                     </p>
                     {currentOrderId && (
-                      <p className="text-sm text-blue-600 mt-2">
-                        ✅ Order placed successfully! Check your email for confirmation.
-                      </p>
+                       <p className="text-sm text-blue-600 mt-2">
+                         ✅ {t('checkout.order_placed_success')}
+                       </p>
                     )}
                   </div>
                 )}
 
                 <div className="flex items-center space-x-2 mt-4">
                   <Shield className="w-4 h-4 text-green-500" />
-                  <span className="text-sm text-gray-600">Secure Payment</span>
+                  <span className="text-sm text-gray-600">{t('checkout.secure_payment')}</span>
                 </div>
                 
-                <p className="text-xs text-gray-500 mt-2">
-                  Your purchases are secured by industry-standard encryption
-                </p>
+                 <p className="text-xs text-gray-500 mt-2">
+                   {t('checkout.security_notice')}
+                 </p>
               </div>
 
               <Button 
@@ -429,30 +420,45 @@ const Checkout = () => {
                 disabled={processing || currentOrderId !== null}
                 className="w-full bg-purple-500 hover:bg-purple-600 text-white py-3 rounded-lg"
               >
-                {processing ? "Processing..." : currentOrderId ? "Order Completed ✓" : "Complete Order →"}
+                {processing ? t('checkout.processing') : currentOrderId ? t('checkout.order_completed') : t('checkout.complete_order')}
               </Button>
 
-              {currentOrderId && (
+                          {currentOrderId === null ? (
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                  {/* Left Side - Forms */}
+                  <div className="space-y-8">
+                    {/* Your full form fields go here */}
+                    ...
+                  </div>
+
+                  {/* Right Side - Order Summary */}
+                  <div className="lg:pl-8">
+                    {/* Your summary block here */}
+                    ...
+                  </div>
+                </div>
+              ) : (
                 <div className="mt-4 p-4 bg-green-50 rounded-lg">
-                  <h3 className="font-semibold text-green-800 mb-2">✅ Order Completed!</h3>
+                  <h3 className="font-semibold text-green-800 mb-2">✅ {t('Order.Completed!')}</h3>
                   <p className="text-green-700 text-sm">
-                    Your order has been placed successfully. 
-                    {paymentMethod === APP_CONSTANTS.PAYMENT_METHODS.MTN && " Please complete the payment using the MoMo code above."}
-                    {paymentMethod === APP_CONSTANTS.PAYMENT_METHODS.PAY_ON_DELIVERY && " Payment will be collected on delivery."}
-                    You will receive email updates about your order status.
+                    {t('placed.successfully')}
+                    {paymentMethod === APP_CONSTANTS.PAYMENT_METHODS.MTN &&
+                      ' Please complete the payment using the MoMo code above.'}
+                    {paymentMethod === APP_CONSTANTS.PAYMENT_METHODS.PAY_ON_DELIVERY &&
+                      ' Payment will be collected on delivery.'}
+                    {t('order.status.')}
                   </p>
                   <Link to="/products" className="inline-block mt-2">
-                    <Button variant="outline" size="sm">
-                      Continue Shopping
-                    </Button>
+                    <Button variant="outline" size="sm">{t('Continue.Shopping')}</Button>
                   </Link>
                 </div>
               )}
+
             </div>
 
             {/* Right Side - Order Summary */}
             <div className="lg:pl-8">
-              <h2 className="text-xl font-semibold mb-6">Order Summary</h2>
+              <h2 className="text-xl font-semibold mb-6">{t('Order.Summary')}</h2>
               
               <div className="space-y-4 mb-6">
                 {cartItems.map((item) => (
@@ -473,31 +479,31 @@ const Checkout = () => {
 
               <div className="space-y-3 pt-4 border-t">
                 <div className="flex justify-between">
-                  <span>Subtotal</span>
+                  <span>{t('Subtotal')}</span>
                   <span>{subtotal.toLocaleString()} Rwf</span>
                 </div>
                 <div className="flex justify-between text-red-600">
-                  <span>Discount ({(APP_CONSTANTS.DISCOUNT_RATE * 100)}%)</span>
+                  <span>{t('Discount')} ({(APP_CONSTANTS.DISCOUNT_RATE * 100)}%)</span>
                   <span>-{discount.toLocaleString()} Rwf</span>
                 </div>
                 {showDeliveryFee ? (
                   <div className="flex justify-between">
-                    <span>Delivery Fee</span>
+                    <span>{t('Delivery.Fee')}</span>
                     <span>{APP_CONSTANTS.DELIVERY_FEE.toLocaleString()} Rwf</span>
                   </div>
                 ) : (
                   <div className="flex justify-between text-blue-600">
-                    <span>Delivery Fee</span>
-                    <span>Paid on delivery</span>
+                    <span>{('Delivery.Fee')}</span>
+                    <span>{t('Paid.on.delivery')}</span>
                   </div>
                 )}
                 <div className="flex justify-between font-bold text-lg pt-2 border-t">
-                  <span>Total</span>
+                  <span>{t('Total')}</span>
                   <span>{total.toLocaleString()} Rwf</span>
                 </div>
                 {!showDeliveryFee && (
                   <p className="text-sm text-blue-600 text-center mt-2">
-                    + {APP_CONSTANTS.DELIVERY_FEE.toLocaleString()} Rwf delivery fee to be paid on delivery
+                    + {APP_CONSTANTS.DELIVERY_FEE.toLocaleString()} Rwf {t('delivery.fee.delivery')}
                   </p>
                 )}
               </div>
