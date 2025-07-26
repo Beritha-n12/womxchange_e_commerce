@@ -1428,7 +1428,7 @@ const translations = {
     'common.view': 'Kureba',
     
     // Authentication
-    'auth.login': 'Kwinjira',
+    'auth.login': 'Injira',
     'auth.register': 'Kwiyandikisha',
     'auth.logout': 'Gusohoka',
     'auth.email': 'Imeli',
